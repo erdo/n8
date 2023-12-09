@@ -1,0 +1,59 @@
+[versions]
+kotlinVersion = "1.9.10"
+foreVersion = "1.6.1"
+foreComposeVersion = "1.5.2"
+composeCompilerVersion = "1.5.3"
+ktorVersion = "2.3.2"
+jvmToolchain = "8"
+apolloVersion = "3.8.1"
+sqlDelightVersion = "2.0.0"
+androidCompileSdk = "34"
+androidTargetSdk = "33"
+androidMinSdk = "21"
+core-ktx = "1.9.0"
+junit = "4.13.2"
+androidx-test-ext-junit = "1.1.5"
+espresso-core = "3.5.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+
+[libraries]
+androidGradlePlugin = "com.android.tools.build:gradle:8.1.2"
+kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
+kotlinx-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
+coil-compose = "io.coil-kt:coil-compose:2.4.0"
+lottie = "com.airbnb.android:lottie-compose:6.0.1"
+persista = "co.early.persista:persista:1.5.2"
+koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
+koin-core = "io.insert-koin:koin-core:3.4.2"
+multidex = "androidx.multidex:multidex:2.0.1"
+apollo =  { module = "com.apollographql.apollo3:apollo-runtime", version.ref = "apolloVersion" }
+compose-activity = "androidx.activity:activity-compose:1.8.0"
+compose-constraint-layout = "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+compose-bom = "androidx.compose:compose-bom:2023.10.00"
+splashscreen = "androidx.core:core-splashscreen:1.0.1"
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinVersion" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinVersion" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinVersion" }
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinVersion" }
+fore-core = { module = "co.early.fore:fore-kt-core", version.ref = "foreVersion" }
+fore-network = { module = "co.early.fore:fore-kt-network", version.ref = "foreVersion" }
+fore-android = { module = "co.early.fore:fore-kt-android", version.ref = "foreVersion" }
+fore-compose = { module = "co.early.fore:fore-kt-android-compose", version.ref = "foreComposeVersion" }
+ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
+ktor-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
+ktor-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorVersion" }
+sqldelightGradlePlugin = { module = "app.cash.sqldelight:gradle-plugin", version.ref = "sqlDelightVersion" }
+sqldelight-core = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelightVersion" }
+sqldelight-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelightVersion" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+[plugins]
+
+[bundles]
+kotlinx = ["kotlinx-coroutines", "kotlinx-serialization"]

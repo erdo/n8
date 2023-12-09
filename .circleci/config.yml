@@ -1,0 +1,32 @@
+version: 2 #circleci yml api version
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: cimg/android:2023.09
+    environment:
+      JVM_OPTS: -Xmx3200m
+      GRADLE_OPTS: -Dorg.gradle.daemon=true
+    steps:
+      - checkout
+      - restore_cache:
+          # bump the cache version number if you want to wipe the gradle cache
+          key: v1-gradle-dependencies-cache
+#      - run:
+#         name: Chmod permissions #if permission for Gradlew Dependencies fail, use this.
+#         command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-gradle-dependencies-cache
+
+      - run:
+          name: Run Tests persista-lib
+          command: ./gradlew persista-lib:test
+      - store_artifacts:
+          path: persista-lib/build/reports
+      - store_test_results:
+          path: persista-lib/build/test-results

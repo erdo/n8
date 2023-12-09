@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+
+    <!-- check assumes all AsyncTasks are being used inside Activities/Fragments (we never do that!) so it gives us bad advice to help us deal with non-existent memory leak risks -->
+    <issue id="StaticFieldLeak" severity="ignore"/>
+    <!-- whilst this is valid for a normal app, these are bare-bones samples for the fore-library, not meant to demonstrate app internationalisation -->
+    <issue id="HardcodedText" severity="ignore"/>
+
+</lint>
