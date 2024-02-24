@@ -8,8 +8,7 @@ object Shared {
 
     object Publish {
 
-        const val LIB_VERSION_NAME = "0.1.0" //"x.x.x-SNAPSHOT"
-        const val LIB_VERSION_CODE = 1
+        const val LIB_VERSION_NAME = "0.0.1" //"x.x.x-SNAPSHOT"
 
         const val LIB_GROUP = "co.early.n8"
         const val PROJ_NAME = "n8"
@@ -19,7 +18,6 @@ object Shared {
         const val POM_URL = "https://github.com/erdo/n8/"
         const val POM_SCM_URL = "https://github.com/erdo/n8/"
         const val POM_SCM_CONNECTION = "scm:git@github.com:erdo/n8.git"
-        const val LICENCE_SHORT_NAME = "Apache-2.0"
         const val LICENCE_NAME = "The Apache Software License, Version 2.0"
         const val LICENCE_URL = "http://www.apache.org/licenses/LICENSE-2.0.txt"
     }

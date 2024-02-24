@@ -10,10 +10,10 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
--keep,includedescriptorclasses class foo.bar.example.**$$serializer { *; }
+-keep,includedescriptorclasses class foo.bar.n8.**$$serializer { *; }
 -keepclassmembers class foo.bar.example.** {
     *** Companion;
 }
--keepclasseswithmembers class foo.bar.example.** {
+-keepclasseswithmembers class foo.bar.n8.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

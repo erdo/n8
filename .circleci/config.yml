@@ -24,9 +24,9 @@ jobs:
           key: v1-gradle-dependencies-cache
 
       - run:
-          name: Run Tests persista-lib
-          command: ./gradlew persista-lib:test
+          name: Run Tests n8-core
+          command: ./gradlew n8-core:test
       - store_artifacts:
-          path: persista-lib/build/reports
+          path: n8-core/build/reports
       - store_test_results:
-          path: persista-lib/build/test-results
+          path: n8-core/build/test-results

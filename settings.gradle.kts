@@ -25,4 +25,5 @@ dependencyResolutionManagement {
 
 include(":example-app")
 include(":n8-core")
+include(":n8-compose")
 rootProject.name = "n8"

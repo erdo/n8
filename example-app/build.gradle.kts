@@ -67,20 +67,14 @@ android {
 dependencies {
 
     implementation(project(":n8-core"))
+    implementation(project(":n8-compose"))
     //implementation("co.early.n8:n8:1.0.0")
 
     // serialization
     implementation(libs.kotlinx.serialization)
-    // splash screen
-    implementation(libs.splashscreen)
-    // images
-    implementation(libs.coil.compose)
-    implementation(libs.lottie)
     // reactivity
     implementation(libs.fore.android)
     implementation(libs.fore.compose)
-    // db
-    implementation(libs.sqldelight.android)
     // di
     implementation(libs.koin.compose)
     implementation(libs.koin.core)

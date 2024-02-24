@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">PerSista Ex</string>
+    <string name="app_name">N8 Sample</string>
+    <string name="show_state">show state</string>
+    <string name="hide_state">hide state</string>
 </resources>

@@ -30,16 +30,16 @@ val LIB_DESCRIPTION: String? by project
 
 println("[$LIB_ARTIFACT_ID lib publish file]")
 
-group = "${co.early.n8.Shared.Publish.LIB_GROUP}"
-version =  "${co.early.n8.Shared.Publish.LIB_VERSION_NAME}"
+group = "${Shared.Publish.LIB_GROUP}"
+version =  "${Shared.Publish.LIB_VERSION_NAME}"
 
 configure<PublishingExtension> {
 	publications {
 		create<MavenPublication>("release") {
 
-			groupId = "${co.early.n8.Shared.Publish.LIB_GROUP}"
+			groupId = "${Shared.Publish.LIB_GROUP}"
 			artifactId = LIB_ARTIFACT_ID
-			version = "${co.early.n8.Shared.Publish.LIB_VERSION_NAME}"
+			version = "${Shared.Publish.LIB_VERSION_NAME}"
 
 			val binaryJar = components["java"]
 
@@ -58,27 +58,27 @@ configure<PublishingExtension> {
 			artifact(javadocJar)
 
 			pom {
-				name.set("${co.early.n8.Shared.Publish.PROJ_NAME}")
+				name.set("${Shared.Publish.PROJ_NAME}")
 				description.set(LIB_DESCRIPTION)
-				url.set("${co.early.n8.Shared.Publish.POM_URL}")
+				url.set("${Shared.Publish.POM_URL}")
 
 				licenses {
 					license {
-						name.set("${co.early.n8.Shared.Publish.LICENCE_NAME}")
-						url.set("${co.early.n8.Shared.Publish.LICENCE_URL}")
+						name.set("${Shared.Publish.LICENCE_NAME}")
+						url.set("${Shared.Publish.LICENCE_URL}")
 					}
 				}
 				developers {
 					developer {
-						id.set("${co.early.n8.Shared.Publish.LIB_DEVELOPER_ID}")
-						name.set("${co.early.n8.Shared.Publish.LIB_DEVELOPER_NAME}")
-						email.set("${co.early.n8.Shared.Publish.LIB_DEVELOPER_EMAIL}")
+						id.set("${Shared.Publish.LIB_DEVELOPER_ID}")
+						name.set("${Shared.Publish.LIB_DEVELOPER_NAME}")
+						email.set("${Shared.Publish.LIB_DEVELOPER_EMAIL}")
 					}
 				}
 				scm {
-					connection.set("${co.early.n8.Shared.Publish.POM_SCM_CONNECTION}")
-					developerConnection.set("${co.early.n8.Shared.Publish.POM_SCM_CONNECTION}")
-					url.set("${co.early.n8.Shared.Publish.POM_SCM_URL}")
+					connection.set("${Shared.Publish.POM_SCM_CONNECTION}")
+					developerConnection.set("${Shared.Publish.POM_SCM_CONNECTION}")
+					url.set("${Shared.Publish.POM_SCM_URL}")
 				}
 			}
 		}
@@ -89,13 +89,13 @@ configure<PublishingExtension> {
 
 			val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
 			val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-			val repoUrl = if (co.early.n8.Shared.Publish.LIB_VERSION_NAME.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+			val repoUrl = if (Shared.Publish.LIB_VERSION_NAME.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
 
 			url = URI(repoUrl)
 
 			credentials {
-				username = "${co.early.n8.Shared.Secrets.MAVEN_USER}"
-				password = "${co.early.n8.Shared.Secrets.MAVEN_PASSWORD}"
+				username = "${Shared.Secrets.MAVEN_USER}"
+				password = "${Shared.Secrets.MAVEN_PASSWORD}"
 			}
 		}
 	}
@@ -103,9 +103,9 @@ configure<PublishingExtension> {
 
 configure<SigningExtension> {
 
-	extra["signing.keyId"] = "${co.early.n8.Shared.Secrets.SIGNING_KEY_ID}"
-	extra["signing.password"] = "${co.early.n8.Shared.Secrets.SIGNING_PASSWORD}"
-	extra["signing.secretKeyRingFile"] = "${co.early.n8.Shared.Secrets.SIGNING_KEY_RING_FILE}"
+	extra["signing.keyId"] = "${Shared.Secrets.SIGNING_KEY_ID}"
+	extra["signing.password"] = "${Shared.Secrets.SIGNING_PASSWORD}"
+	extra["signing.secretKeyRingFile"] = "${Shared.Secrets.SIGNING_KEY_RING_FILE}"
 
 	val pubExt = checkNotNull(extensions.findByType(PublishingExtension::class.java))
 	val publication = pubExt.publications["release"]
