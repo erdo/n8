@@ -15,6 +15,7 @@ sealed class Location {
     @Serializable
     data class Sydney(val withSunCreamFactor: Int? = null) : Location()
 
+    @Serializable
     data object SunCreamSelector : Location()
 
     @Serializable

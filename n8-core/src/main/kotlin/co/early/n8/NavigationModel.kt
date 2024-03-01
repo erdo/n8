@@ -5,33 +5,70 @@ import co.early.fore.kt.core.coroutine.launchIO
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.logging.Logger
 import co.early.fore.kt.core.observer.ObservableImp
+import co.early.n8.Navigation.BackStack
+import co.early.n8.Navigation.EndNode
+import co.early.n8.Navigation.TabHost
 import co.early.persista.PerSista
+import kotlinx.serialization.json.Json
 import java.io.File
+import kotlin.reflect.KType
+
+//TODO serialise to json for import amd export. maybe different class
 
 /**
- * This is implemented as an observable model that exposes its state. That state is persisted across
- * rotation or process death with PerSista (PerSista stores data classes as json on the file system)
+ * # Navigation
  *
- * This state is the source of truth that defines the navigation backstack for an app, any time it
- * changes (when there is a navigation to a new location) all observers of the model are notified
- * that the state has changed. The top of the back stack at any point in time (the last element
- * in the list) is the current location.
+ * This model is the source of truth for the navigation state of an app. The navigation state
+ * principally describes the locations that were visited by a user to reach their current location.
  *
- * Public functions provide for pushing locations on to the backstack (navigating forward) and
- * popping locations off the backstack (navigating backwards) as the user navigates around the app,
- * the backstack can also be completely rewritten or reordered at will to provide for custom
- * navigation schemes or the handling of deep links.
+ * Public functions provide for navigating forward and backwards as the user navigates
+ * around the app. In the most basic case this involves pushing new locations on to a backstack
+ * when navigating forwards, and popping locations off a backstack when navigating backwards.
+ *
+ * The navigation state also handles an arbitrary number of nested navigation schemes such as you
+ * might use for Tab style UI layouts (with each tab represented as its own backstack). Here public
+ * functions enable the user to switch to previously visited tabs (with their own back stacks),
+ * or backing out of the tabs entirely.
+ *
+ * This navigation scheme is built up using 3 Node types:
+ *
+ * - EndNodes (representing a single location)
+ * - BackStacks (a mixed list of EndNodes and TabHosts)
+ * - TabHosts (a list of BackStacks)
+ *
+ * The top level Node is always a BackStack
+ *
+ * The simplest implementation would therefore be a BackStack containing a number of EndNodes with
+ * the last EndNode in the BackStack representing the current location, and the first EndNode
+ * representing the home location.
+ *
+ * Aside from the forward / backwards navigation functions, the navigation state can also be
+ * completely rewritten or reordered at will to provide for custom navigation schemes or the
+ * handling of deep links etc..
+ *
+ * # Observable State
+ *
+ * The state exposed by this model is persisted across rotation or process death with PerSista
+ * (PerSista stores data classes as json on the file system). This navigation model is also
+ * observable, meaning that any time its navigation state changes (when there is a
+ * navigation to a new location) all observers of this model are notified that the state has
+ * changed. The observing code (which will typically be UI code) can interrogate the
+ * currentLocation (to redraw its UI for example)
+ *
+ * # Pure Kotlin
  *
  * This is pure kotlin logic, there is no dependency on Android or even Compose, and there is
- * minimal coupling between an app screen classes and the n8 library because the Location class is
- * entirely defined by the client, it just needs to be serializable to play nicely with persistence
- * (a sealed class would be a good candidate - see the example).
+ * minimal coupling between an app's screen classes and the n8 library because the "Location" class
+ * is entirely defined by client code, it just needs to be serializable to play nicely with
+ * persistence (a sealed class would be a good candidate - see the example).
+ *
+ * # Usage
  *
  * It's not necessary to define the navigation graph beforehand, the backstack just keeps track of
  * whatever navigation operations are performed via the public functions, these functions allow you
  * to pass arbitrary data forwards or backwards, reuse previous locations, optionally not save a
  * location to the backstack at all, or arbitrarily rewrite the backstack as you wish. Nested
- * backstacks are also supported for youtube style tab implementations
+ * back stacks are supported for youtube style tab implementations
  *
  * Example usage below, but see the UnitTests for the definitive guide to the behaviour of the
  * public functions
@@ -105,6 +142,7 @@ import java.io.File
  *
  * navigateTo(Paris) (OR just use navigateBackTo(Paris) each time, see example F.)
  * navigateTo(NewYork)
+ * navigateTo(London)
  * navigateBackTo(Paris)
  * navigateTo(Tokyo)
  *
@@ -176,25 +214,41 @@ import java.io.File
  * backstack: Paris > London > Sydney(50) > Tokyo > London
  * currentLocation: London
  *
- *
- * Copyright © 2015-2023 early.co. All rights reserved.
+ * Copyright © 2015-2024 early.co. All rights reserved.
  */
-class NavigationModel<T: Any>(
-    homeLocation: T,
+class NavigationModel<T>(
+    homeLocation: T?,
+    initialNavigation: BackStack<T>? = null,
+    private val locationKType: KType,
     addHomeLocationToHistory: Boolean = true,
     dataDirectory: File,
     private val logger: Logger = Fore.getLogger(),
     private val perSista: PerSista = PerSista(
         dataDirectory = dataDirectory,
         logger = logger,
-    )
+    ),
 ) : Observable by ObservableImp() {
 
     var state = NavigationState(
-        backStack = listOf(homeLocation),
-        currentLocationWillBeAddedToHistoryOnNextNavigation = addHomeLocationToHistory,
+        navigation = homeLocation?.let { backStackOf(endNodeOf(it)) } ?: initialNavigation!!,
+        willBeAddedToHistory = addHomeLocationToHistory,
     )
         private set
+
+    init {
+        require(homeLocation == null || initialNavigation == null) {
+            "Either homeLocation OR initialNavigation must be null"
+        }
+        require(homeLocation != null || initialNavigation != null) {
+            "Either homeLocation OR initialNavigation must be specified"
+        }
+//        require(locationKType){ //TODO how to check this and fail early
+//            "locationKType = typeOf<NavigationState<Location>>(),"
+//        }
+        load()
+    }
+
+    //TODO allow for clearing the navigation memory via this model, and maybe a flag via constructor too
 
     fun load() {
 
@@ -208,9 +262,10 @@ class NavigationModel<T: Any>(
         notifyObservers()
 
         launchIO {
-            perSista.read(state) {
+            perSista.read(state, locationKType) {
                 state = it.copy(
                     loading = false,
+                    navigation = it.navigation.populateParents()
                 )
                 notifyObservers()
             }
@@ -218,110 +273,195 @@ class NavigationModel<T: Any>(
     }
 
     fun navigateTo(location: T, addToHistory: Boolean = true) {
-        logger.i("navigateTo() ${location.javaClass.simpleName} addToHistory:$addToHistory")
-        val stack = state.backStack.toMutableList()
-        if (!state.currentLocationWillBeAddedToHistoryOnNextNavigation) {
-            stack.removeLast()
-        }
-        stack.add(location)
+        logger.d("navigateTo() ${location!!::class.simpleName} addToHistory:$addToHistory currentAddToHist:${state.willBeAddedToHistory}")
+
+        val trimmed = if (!state.willBeAddedToHistory) {
+            calculateBackStep(state.navigation.currentItem())
+        } else state.navigation
+
+        val navigated = trimmed?.currentItem()?.requireParent()?.isBackStack()?.let { parent ->
+            val newParent = parent.copy(
+                stack = parent.stack.toMutableList().also { it.add(endNodeOf(location)) }
+            ).populateParents()
+
+            mutateNavigation(
+                oldItem = parent,
+                newItem = newParent
+            ).isBackStack()
+        } ?: backStackOf<T>(endNodeOf(location))
+
         updateState(
             state.copy(
-                backStack = stack,
-                currentLocationWillBeAddedToHistoryOnNextNavigation = addToHistory
-            )
-        )
-    }
-
-    fun navigateBackTo(location: T, addToHistory: Boolean = true) {
-        logger.i("navigateBackTo() ${location.javaClass.simpleName} addToHistory:$addToHistory")
-        val indexInBackStack = state.backStack.indexOfLast {
-            it.javaClass.canonicalName == location.javaClass.canonicalName
-        }
-
-        val newBackStack = if (indexInBackStack >= 0) {
-            state.backStack.subList(0, indexInBackStack)
-        } else {
-            logger.i(" >>> ${location.javaClass.simpleName} not found in back stack, adding new location: ${location.javaClass.simpleName}")
-            state.backStack
-        }.toMutableList()
-
-        newBackStack.add(location)
-        updateState(
-            state.copy(
-                backStack = newBackStack,
-                currentLocationWillBeAddedToHistoryOnNextNavigation = addToHistory
+                navigation = navigated,
+                willBeAddedToHistory = addToHistory
             )
         )
     }
 
     /**
-     * @setData - use this to pass data to locations further back in the backstack. Once the
-     * backStack has been popped the required number of times, setData{} will be run with the
+     * @setData - use this to pass data to locations further back in the graph. Once the
+     * back operation has been applied the required number of times, setData{} will be run with the
      * new current location passed in as a parameter. This gives the caller an opportunity to
-     * set data on the new location before it is set at the new top of the backstack
+     * set data on the new location before it is set as the new currentLocation of the navigation
+     * graph
      *
-     * returns false if we cannot go back any further (i.e. we are already at the home location)
+     * returns false if we were not able to go back the requested number of times (i.e. we reached
+     * the home location item first)
      */
-    fun popBackStack(times: Int = 1, setData: (T) -> T = { it }): Boolean {
-        logger.i("popBackStack() times:$times")
-        if (state.backStack.size == 1) {
-            return false
+    fun navigateBack(times: Int = 1, setData: (T) -> T = { it }): Boolean {
+        logger.d("navigateBack() times:$times")
+
+        var backUpSuccessful = true
+        var newNavigation = state.navigation.currentItem()
+        for (i in 1..times) {
+            val backed = calculateBackStep(newNavigation)
+            if (backed != null) {
+                newNavigation = backed.currentItem()
+            } else {
+                logger.d("navigateBack()... no more room to back up")
+                backUpSuccessful = false
+                break
+            }
         }
 
-        val stack = state.backStack.toMutableList()
-        if (state.backStack.size > times) {
-            for (count in 1..times) {
-                stack.removeLast()
-            }
-        } else {
-            stack.clear()
-            stack.add(state.backStack.first())
-        }
-        val locationWithData = setData(stack.last())
-        stack.removeLast()
-        stack.add(locationWithData)
         updateState(
             state.copy(
-                backStack = stack,
-                currentLocationWillBeAddedToHistoryOnNextNavigation = true
+                navigation = setDataOnCurrentLocation(newNavigation, setData).isBackStack(),
+                willBeAddedToHistory = true
             )
         )
-        return true
+
+        return backUpSuccessful
+    }
+
+    fun navigateBackTo(location: T, tabHostId: String? = null, addToHistory: Boolean = true) {
+        logger.d("navigateBackTo() ${location!!::class.simpleName} addToHistory:$addToHistory")
+
+        val foundLocationNav = tabHostId?.let {
+            reverseToLocation(location, tabsOf()) //TODO
+        } ?: reverseToLocation(location, state.navigation)
+
+        if (foundLocationNav != null) { //replace location as it might have different data
+            Fore.d("navigateBackTo()... location found in history: ${foundLocationNav.currentLocation()!!::class.simpleName}")
+            val newNavigation = mutateNavigation(
+                oldItem = foundLocationNav.currentItem(),
+                newItem = endNodeOf(location)
+            ).isBackStack()
+            updateState(
+                state.copy(
+                    navigation = newNavigation,
+                    willBeAddedToHistory = addToHistory,
+                )
+            )
+        } else { // didn't find location so just navigate forward
+            Fore.d("navigateBackTo()... location not found in history, navigating forward instead")
+            navigateTo(location, addToHistory)
+        }
     }
 
     /**
-     * @newBackStack - [0] represents the home location, [size-1] is the current location
+     * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+     * function initially (not required for subsequent recursive calls)
+     *
+     * @location location to be searched for
+     *
+     * @nav search will be conducted from the currentLocation of this nav graph, and up via
+     * parent relationships, and in the same manner as would a user continually
+     * navigating back from the current item until they exit the app
+     *
+     * @returns a mutated navigation graph containing the location in current position or null if
+     * the location is not found
      */
-    fun updateBackStack(newBackStack: List<T>, currentLocationAddToHistory: Boolean = true) {
-        logger.i("updateBackStack()")
-        require(newBackStack.isNotEmpty()) {
-            logger.e("newBackStack is empty")
-            "newBack stack cannot be empty, it needs to contain at least one location"
+    private fun reverseToLocation(locationToFind: T, nav: Navigation<T>): Navigation<T>? {
+        Fore.d("reverseToLocation() locationToFind:${locationToFind!!::class.simpleName} nav:${nav}")
+        return if (nav.currentLocation()!!::class.simpleName == locationToFind!!::class.simpleName) {
+            Fore.d("reverseToLocation()... MATCHED ${nav.currentLocation()!!::class.simpleName}")
+            nav
+        } else {
+            calculateBackStep(nav.currentItem())?.let {
+                reverseToLocation(locationToFind, it)
+            }
         }
+    }
+
+    /**
+     * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+     * function initially (not required for subsequent recursive calls)
+     *
+     * @location location to be searched for
+     *
+     * @tabHost the search will visit only the tabHost identified, starting by going backwards
+     * along the selectedTabHistory as usual, but then including any other tab backStacks not
+     * checked in the previous step, in order, from tab [0] to tab [size-1]
+     *
+     * @returns a mutated navigation graph containing the location in current position or null if
+     * the location is not found
+     */
+    private fun reverseToLocation(location: T, tabHost: TabHost<T>): EndNode<T>? {
+        TODO()
+    }
+
+    /**
+     * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+     * function initially (not required for subsequent recursive calls)
+     *
+     * @navigation opportunities for navigating back will be looked for from
+     * this point in the navigation graph, and up via parents (i.e. ignoring children), therefore
+     * clients will typically start by sending currentItem() here
+     *
+     * @returns the complete new navigation graph after the back operation has been
+     * performed or null if it was not possible to navigate further back in the graph
+     */
+    private fun calculateBackStep(navigation: Navigation<T>): Navigation<T>? {
+        Fore.d("calculateBackStep() type:${navigation::class.simpleName} navigation:${navigation}")
+        return if (navigation.specificItemCanNavigateBack()) {
+            Fore.d("calculateBackStep()... item CAN navigate back")
+            mutateNavigation(
+                oldItem = navigation,
+                newItem = navigation.createNavigatedBackCopy()
+            )
+        } else { // try to move up the chain
+            Fore.d("calculateBackStep()... item CANNOT navigate back, (need to move up chain to parent) directParent:${navigation.directParent}")
+            navigation.directParent?.invoke()?.let {
+                calculateBackStep(it)
+            }
+        }
+    }
+
+    private fun setDataOnCurrentLocation(
+        currentItem: EndNode<T>,
+        setData: (T) -> T = { it },
+    ): Navigation<T> {
+        return mutateNavigation(
+            oldItem = currentItem,
+            newItem = EndNode(setData(currentItem.location))
+        )
+    }
+
+    fun reWriteNavigation(
+        navigation: BackStack<T>,
+        willBeAddedToHistory: Boolean = true
+    ) {
+        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()!!::class.simpleName} willBeAddedToHistory:$willBeAddedToHistory")
         updateState(
-            state.copy(
-                backStack = newBackStack,
-                currentLocationWillBeAddedToHistoryOnNextNavigation = currentLocationAddToHistory
+            NavigationState(
+                navigation = navigation,
+                willBeAddedToHistory = willBeAddedToHistory,
             )
         )
     }
 
-    override fun toString(): String = toString(" > ")
+    override fun toString(): String {
+        return toString(diagnostics = false)
+    }
 
-    fun toString(breadCrumbIndicator: String): String {
-        return buildString {
-            state.backStack.forEach {
-                append(it.toString())
-                append(breadCrumbIndicator)
-            }
-            deleteRange(length - breadCrumbIndicator.length, length - 1)
-        }
+    fun toString(diagnostics: Boolean = true): String {
+        return state.navigation.toString(diagnostics)
     }
 
     private fun updateState(newState: NavigationState<T>) {
         state = newState
-        perSista.write(state) {
-            notifyObservers()
-        }
+        notifyObservers()
+        perSista.write(state, locationKType) {}
     }
 }

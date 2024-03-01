@@ -3,24 +3,29 @@ package co.early.n8
 import co.early.fore.core.observer.Observer
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.kt.core.logging.Logger
+import co.early.fore.kt.core.logging.SystemLogger
 import co.early.n8.Location.EuropeanLocations.London
 import co.early.n8.Location.EuropeanLocations.Paris
 import co.early.n8.Location.NewYork
 import co.early.n8.Location.SunCreamSelector
 import co.early.n8.Location.Sydney
 import co.early.n8.Location.Tokyo
+import co.early.persista.PerSista
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK
 import io.mockk.verify
-import org.junit.Assert
+import kotlinx.coroutines.asCoroutineDispatcher
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.util.concurrent.Executors
+import kotlin.reflect.typeOf
 
-class NavigationModelSingleBackStackTest {
+class NavigationModelLinearTest {
 
     private lateinit var dataDirectory: File
 
@@ -45,16 +50,18 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backStack.size)
-        assertEquals(London, navigationModel.state.currentPage())
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
     @Test
@@ -63,18 +70,65 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
         navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(NewYork)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(3, navigationModel.state.backStack.size)
-        assertEquals(NewYork, navigationModel.state.currentPage())
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+    }
+
+    @Test
+    fun `when navigating back with room, location is reverted & returns true`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location>(
+            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        val result= navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `when navigating back with no room, location is not changed & returns false`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location>(
+            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val result= navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(false, result)
     }
 
     @Test
@@ -83,6 +137,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -90,35 +145,13 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Paris, addToHistory = false)
         navigationModel.navigateTo(NewYork, addToHistory = false)
         navigationModel.navigateTo(Tokyo)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(2, navigationModel.state.backStack.size)
-        assertEquals(Tokyo, navigationModel.state.currentPage())
-        assertEquals(London, navigationModel.state.backStack[0])
-    }
-
-    @Test
-    fun `given previous location was added with addToHistory = false, when popping backstack, addToHistory is set back to true`() {
-
-        // arrange
-        val navigationModel = NavigationModel<Location>(
-            homeLocation = London,
-            dataDirectory = dataDirectory
-        )
-
-        // act
-        navigationModel.navigateTo(Paris)
-        navigationModel.navigateTo(NewYork, addToHistory = false)
-        navigationModel.popBackStack()
-        navigationModel.navigateTo(Tokyo)
-        Fore.i(navigationModel.toString())
-
-        // assert
-        assertEquals(false, navigationModel.state.loading)
-        assertEquals(3, navigationModel.state.backStack.size)
-        assertEquals(Paris, navigationModel.state.backStack[1])
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
@@ -127,6 +160,32 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateTo(NewYork, addToHistory = false)
+        navigationModel.navigateBack()
+        navigationModel.navigateTo(Tokyo)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.navigation.stack[1].currentLocation())
+    }
+
+    @Test
+    fun `given previous location was added with addToHistory = false, when navigating back to x, addToHistory is set back to true`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location>(
+            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -135,12 +194,14 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(NewYork, addToHistory = false)
         navigationModel.navigateBackTo(Paris)
         navigationModel.navigateTo(Tokyo)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(3, navigationModel.state.backStack.size)
-        assertEquals(Paris, navigationModel.state.backStack[1])
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.navigation.stack[1].currentLocation())
     }
 
     @Test
@@ -149,6 +210,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -157,47 +219,51 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Sydney(), addToHistory = false)
         navigationModel.navigateBackTo(Sydney(50))
         navigationModel.navigateTo(Tokyo)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertEquals(Sydney(50), navigationModel.state.backStack[2])
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Sydney(50), navigationModel.state.navigation.stack[2].currentLocation())
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when rewriting backstack, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false, when rewriting path, addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
-        navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(Tokyo, addToHistory = false)
-        navigationModel.updateBackStack(
-            listOf(
-                NewYork,
-                London,
-            )
+        navigationModel.reWriteNavigation(
+            navigation = backStackOf(
+                endNodeOf(Paris),
+                endNodeOf(NewYork),
+            ),
         )
-        navigationModel.navigateTo(Paris)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(3, navigationModel.state.backStack.size)
-        assertEquals(London, navigationModel.state.backStack[1])
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
-    fun `when popBackStack is called, back stack is cleared`() {
+    fun `when navigateBack() is called, back stack is cleared`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -205,22 +271,24 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(NewYork)
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
-        navigationModel.popBackStack()
-        navigationModel.popBackStack()
-        Fore.i(navigationModel.toString())
+        navigationModel.navigateBack()
+        navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(2, navigationModel.state.backStack.size)
-        assertEquals(NewYork, navigationModel.state.currentPage())
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `when popBackStack is called with times=3, back stack is cleared three times`() {
+    fun `when navigateBack() is called with times=3, back stack is cleared three times`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -229,42 +297,46 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(Tokyo)
-        navigationModel.popBackStack(times = 3)
-        Fore.i(navigationModel.toString())
+        navigationModel.navigateBack(times = 3)
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(2, navigationModel.state.backStack.size)
-        assertEquals(NewYork, navigationModel.state.currentPage())
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `given the backStack is only 3 items long, when popBackStack is called with times=5, back stack is cleared to home item`() {
+    fun `given the backstack is only 3 items long, when navigateBack is called with times=5, back stack is cleared to home item`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
         navigationModel.navigateTo(NewYork)
         navigationModel.navigateTo(Tokyo)
-        navigationModel.popBackStack(times = 5)
-        Fore.i(navigationModel.toString())
+        navigationModel.navigateBack(times = 5)
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backStack.size)
-        assertEquals(London, navigationModel.state.currentPage())
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `given location is visited twice, both entries are added to backstack`() {
+    fun `given location is visited twice, both entries are added to navigation back stack`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -273,13 +345,15 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(5, navigationModel.state.backStack.size)
-        assertEquals(Tokyo, navigationModel.state.backStack[2])
-        assertEquals(Tokyo, navigationModel.state.backStack[3])
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.navigation.stack[2].currentLocation())
+        assertEquals(Tokyo, navigationModel.state.navigation.stack[3].currentLocation())
     }
 
     @Test
@@ -288,6 +362,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -296,12 +371,28 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(NewYork)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(2, navigationModel.state.backStack.size)
-        assertEquals(NewYork, navigationModel.state.currentPage())
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+    }
+
+    private fun createPerSista(
+        dataDirectory: File,
+        strictMode: Boolean = false,
+        testLogger: Logger = SystemLogger()
+    ): PerSista {
+        val testDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        return PerSista(
+            dataDirectory = dataDirectory,
+            mainDispatcher = testDispatcher,
+            writeReadDispatcher = testDispatcher,
+            logger = testLogger,
+            strictMode = strictMode
+        )
     }
 
     @Test
@@ -310,6 +401,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -319,13 +411,14 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(NewYork)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(NewYork)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertEquals(Tokyo, navigationModel.state.backStack[2])
-        assertEquals(NewYork, navigationModel.state.currentPage())
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.navigation.stack[2].currentLocation())
     }
 
     @Test
@@ -334,6 +427,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -342,15 +436,16 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(Paris, addToHistory = false)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertEquals(Paris, navigationModel.state.currentPage())
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(
             false,
-            navigationModel.state.currentLocationWillBeAddedToHistoryOnNextNavigation
+            navigationModel.state.willBeAddedToHistory
         )
     }
 
@@ -360,6 +455,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -367,12 +463,13 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(NewYork)
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateBackTo(Paris)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertEquals(Paris, navigationModel.state.currentPage())
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
@@ -381,6 +478,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -389,13 +487,14 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateBackTo(Sydney(50))
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertNotEquals(Sydney(), navigationModel.state.currentPage())
-        assertEquals(Sydney(50), navigationModel.state.currentPage())
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
@@ -404,6 +503,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = Sydney(),
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -412,94 +512,79 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(Sydney(50))
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backStack.size)
-        assertNotEquals(Sydney(), navigationModel.state.currentPage())
-        assertEquals(Sydney(50), navigationModel.state.currentPage())
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `when rewriting back stack, with a non empty back stack, back stack is replaced`() {
+    fun `when rewriting back stack, back stack is replaced`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
         navigationModel.navigateTo(NewYork)
         navigationModel.navigateTo(Tokyo)
-        navigationModel.updateBackStack(
-            listOf(
-                Paris,
-                London,
+        navigationModel.reWriteNavigation(
+            navigation = backStackOf(
+                endNodeOf(Paris),
+                endNodeOf(London),
             )
         )
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(2, navigationModel.state.backStack.size)
-        assertEquals(London, navigationModel.state.currentPage())
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
-    fun `when rewriting back stack, with an empty back stack, exception is thrown`() {
+    fun `when rewriting back stack with addToHistory = false, back stack is replaced`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
-            dataDirectory = dataDirectory
-        )
-        var exception: Exception? = null
-
-        // act
-        navigationModel.navigateTo(NewYork)
-        navigationModel.navigateTo(Tokyo)
-        try {
-            navigationModel.updateBackStack(emptyList())
-        } catch (e: Exception) {
-            exception = e
-        }
-        Fore.i(navigationModel.toString())
-
-        // assert
-        Assert.assertEquals(IllegalArgumentException::class.java, exception?.javaClass)
-    }
-
-    @Test
-    fun `when rewriting back stack, with a single entry, home location is replaced`() {
-
-        // arrange
-        val navigationModel = NavigationModel<Location>(
-            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
-        navigationModel.updateBackStack(
-            listOf(
-                Paris,
-            )
+        navigationModel.reWriteNavigation(
+            navigation = backStackOf(
+                endNodeOf(Paris),
+            ),
+            willBeAddedToHistory = false
         )
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backStack.size)
-        assertEquals(Paris, navigationModel.state.currentPage())
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
-    fun `when popBackStack is called with setData, final location receives data`() {
+    fun `when navigateBack is called with setData, final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -508,7 +593,7 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.popBackStack(
+        navigationModel.navigateBack(
             setData = {
                 when (it) {
                     is Sydney -> {
@@ -518,21 +603,23 @@ class NavigationModelSingleBackStackTest {
                 }
             }
         )
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(4, navigationModel.state.backStack.size)
-        assertNotEquals(Sydney(), navigationModel.state.currentPage())
-        assertEquals(Sydney(50), navigationModel.state.currentPage())
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `when popBackStack is called with times = 2 and setData, final location receives data`() {
+    fun `when navigateBack is called with times = 2 and setData, final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -541,7 +628,7 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.popBackStack(
+        navigationModel.navigateBack (
             times = 2,
             setData = {
                 when (it) {
@@ -552,44 +639,48 @@ class NavigationModelSingleBackStackTest {
                 }
             }
         )
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(3, navigationModel.state.backStack.size)
-        assertEquals(Sydney(50), navigationModel.state.currentPage())
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
     @Test
-    fun `given we are already on the home location, when popBackStack is called, false is returned`() {
+    fun `given we are already on the home location, when navigateBack is called, false is returned`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
-        val result = navigationModel.popBackStack()
-        Fore.i(navigationModel.toString())
+        val result = navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, result)
     }
 
     @Test
-    fun `given we are not on the home location, when popBackStack is called, true is returned`() {
+    fun `given we are not on the home location, when navigateBack is called, true is returned`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
         navigationModel.navigateTo(Tokyo)
-        val result = navigationModel.popBackStack()
-        Fore.i(navigationModel.toString())
+        val result = navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(true, result)
@@ -615,13 +706,14 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
         navigationModel.addObserver(mockObserver)
 
         // act
         navigationModel.navigateTo(Tokyo)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         verify(atLeast = 1) {
@@ -635,6 +727,7 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
@@ -642,7 +735,7 @@ class NavigationModelSingleBackStackTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.addObserver(mockObserver) // add observer here
         navigationModel.navigateBackTo(London)
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         verify(atLeast = 1) {
@@ -651,19 +744,20 @@ class NavigationModelSingleBackStackTest {
     }
 
     @Test
-    fun `when popping back stack, observers are notified`() {
+    fun `when navigating back, observers are notified`() {
 
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
 
         // act
         navigationModel.navigateTo(Tokyo)
         navigationModel.addObserver(mockObserver) // add observer here
-        navigationModel.popBackStack()
-        Fore.i(navigationModel.toString())
+        navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         verify(atLeast = 1) {
@@ -677,22 +771,57 @@ class NavigationModelSingleBackStackTest {
         // arrange
         val navigationModel = NavigationModel<Location>(
             homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
             dataDirectory = dataDirectory
         )
-        navigationModel.addObserver(mockObserver)
 
         // act
-        navigationModel.updateBackStack(
-            listOf(
-                Paris,
-                Tokyo,
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.addObserver(mockObserver) // add observer here
+        navigationModel.reWriteNavigation(
+            navigation = backStackOf(
+                endNodeOf(Paris),
             )
         )
-        Fore.i(navigationModel.toString())
+        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         verify(atLeast = 1) {
             mockObserver.somethingChanged()
         }
+    }
+
+    @Test
+    fun `navigation state is persisted between instantiations`() {
+
+        // arrange
+        var navigationModel = NavigationModel<Location>(
+            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Tokyo, addToHistory = false)
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        navigationModel = NavigationModel(
+            homeLocation = London,
+            locationKType = typeOf<NavigationState<Location>>(),
+            dataDirectory = dataDirectory
+        )
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(
+            false,
+            navigationModel.state.willBeAddedToHistory
+        )
     }
 }
