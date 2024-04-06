@@ -31,6 +31,7 @@ android {
     defaultConfig {
         versionCode = 1
         versionName = "0.5"
+        applicationId = appId
         minSdk = libs.versions.androidMinSdk.get().toInt()
         targetSdk = libs.versions.androidTargetSdk.get().toInt()
         multiDexEnabled = true

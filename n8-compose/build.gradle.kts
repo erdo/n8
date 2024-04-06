@@ -18,7 +18,6 @@ println("[${ext.get("LIB_ARTIFACT_ID")} build file]")
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(libs.versions.jvmToolchain.get().toInt()))
-        languageVersion.set(JavaLanguageVersion.of(8))
     }
 }
 
@@ -35,16 +34,33 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            consumerProguardFiles("../proguard-library-consumer.pro")
+        }
+    }
+
     lint {
         abortOnError = true
-        lintConfig = File(project.rootDir, "app/lint-app.xml")
+        lintConfig = File(project.rootDir, "app/lint-library.xml")
     }
 
     buildFeatures {
+        buildConfig = false
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompilerVersion.get()
+    }
+
+    // register (not create) - we want this to run after the rest of the android
+    // block has been configured in the individual build files as they add files
+    // to the source sets
+    project.tasks.register("androidSourcesJar", Jar::class.java) {
+        archiveClassifier.set("sources")
+        from(sourceSets.getByName("main").java.srcDirs)
     }
 }
 
@@ -56,4 +72,4 @@ dependencies {
     implementation("androidx.compose.ui:ui")
 }
 
-//apply(from = "../publish-android-lib.gradle.kts")
+apply(from = "../publish-android-lib.gradle.kts")

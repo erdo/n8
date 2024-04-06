@@ -78,8 +78,8 @@ project.afterEvaluate {
             maven {
                 name = "mavenCentral"
 
-                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 val repoUrl = if (Shared.Publish.LIB_VERSION_NAME.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
 
                 url = URI(repoUrl)
