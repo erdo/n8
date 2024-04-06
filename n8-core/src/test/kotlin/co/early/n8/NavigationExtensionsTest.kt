@@ -98,6 +98,80 @@ class NavigationExtensionsTest {
     }
 
     @Test
+    fun `when logging nav graph without diagnostics, output is correct`() {
+
+        // arrange
+        val nav = backStackOf(
+            endNodeOf(A) ,
+            endNodeOf(B) ,
+            tabsOf(
+                selectedTabHistory = listOf(0),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(X1) ,
+                    endNodeOf(C) ,
+                    endNodeOf(D) ,
+                    tabsOf(
+                        selectedTabHistory = listOf(0,1),
+                        tabHostId = "TABS_02",
+                        backStackOf(
+                            endNodeOf(Y1) ,
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(X1)
+                ),
+                backStackOf(
+                    endNodeOf(X2)
+                )
+            )
+        )
+
+        Fore.i(nav.toString(false))
+
+        // assert
+        assertEquals(
+            "\n" +
+                    "backStackOf( \n" +
+                    "    endNodeOf(A),\n" +
+                    "    endNodeOf(B),\n" +
+                    "    tabsOf( \n" +
+                    "        tabHostId = TABS_01\n" +
+                    "        selectedTabHistory = listOf(0),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X1),\n" +
+                    "            endNodeOf(C),\n" +
+                    "            endNodeOf(D),\n" +
+                    "            tabsOf( \n" +
+                    "                tabHostId = TABS_02\n" +
+                    "                selectedTabHistory = listOf(0,1),\n" +
+                    "                backStackOf( \n" +
+                    "                    endNodeOf(Y1),\n" +
+                    "                    endNodeOf(E)\n" +
+                    "                ),\n" +
+                    "                backStackOf( \n" +
+                    "                    endNodeOf(Y2) <---\n" +
+                    "                )\n" +
+                    "            )\n" +
+                    "        ),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X1)\n" +
+                    "        ),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X2)\n" +
+                    "        )\n" +
+                    "    )\n" +
+                    ")",
+            nav.toString(false)
+        )
+    }
+
+    @Test
     fun `given a BackStack, createdBackCopy is correct`() {
 
         // arrange

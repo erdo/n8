@@ -147,7 +147,7 @@ sealed class Navigation<L, T> {
             return "\n" + render(
                 builder = StringBuilder(),
                 incDiagnostics = diagnostics,
-                current = diagnostics
+                current = true
             ).toString()
         }
 
@@ -220,7 +220,7 @@ sealed class Navigation<L, T> {
             return "\n" + render(
                 builder = StringBuilder(),
                 incDiagnostics = diagnostics,
-                current = diagnostics
+                current = true
             ).toString()
         }
 
@@ -298,7 +298,7 @@ sealed class Navigation<L, T> {
             return "\n" + render(
                 builder = StringBuilder(),
                 incDiagnostics = diagnostics,
-                current = diagnostics
+                current = true
             ).toString()
         }
 

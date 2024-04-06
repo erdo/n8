@@ -20,10 +20,8 @@ class NestedExample {
         @Serializable
         data object TabAbc : TabHost()
 
-
         @Serializable
         data object TabAbcStructural : TabHost()
-
 
         @Serializable
         data object TabX12 : TabHost()

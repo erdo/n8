@@ -277,6 +277,10 @@ private fun <L, T> EndNode<L, T>.render(
             if (current) {
                 append("     <--- Current Item")
             }
+        } else {
+            if (current) {
+                append(" <---")
+            }
         }
         return this
     }
@@ -311,7 +315,7 @@ private fun <L, T> TabHost<L, T>.render(
             if (index == selectedTabHistory.last()) {
                 tab.render(pad, builder, incDiagnostics, current)
             } else {
-                tab.render(pad, builder, incDiagnostics)
+                tab.render(pad, builder, incDiagnostics, false)
             }
             append(",\n")
         }
@@ -344,7 +348,7 @@ private fun <L, T> BackStack<L, T>.render(
             if (index == lastIndex) {
                 stackItem.render(pad, builder, incDiagnostics, current)
             } else {
-                stackItem.render(pad, builder, incDiagnostics)
+                stackItem.render(pad, builder, incDiagnostics, false)
             }
             append(",\n")
         }
