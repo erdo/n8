@@ -250,12 +250,15 @@ fun <T> List<TabHostLocation<T>>.isSelected(tabHostId: T, index: Int): Boolean {
     return firstOrNull { it.tabHostId == tabHostId }?.tabIndex == index
 }
 
-suspend fun <L:Any, T:Any> NavigationModel<L, T>.exportState(): String {
+suspend fun <L : Any, T : Any> NavigationModel<L, T>.exportState(): String {
     Fore.d("exportState() ${this.state}")
     TODO()
 }
 
-suspend fun <L:Any, T:Any> NavigationModel<L, T>.importState(serializedState: String, addToHistory: Boolean = true) {
+suspend fun <L : Any, T : Any> NavigationModel<L, T>.importState(
+    serializedState: String,
+    addToHistory: Boolean = true
+) {
     Fore.d("importState() addToHistory:$addToHistory")
     TODO()
 //    val state = serializedState
@@ -379,7 +382,7 @@ private fun <L, T> BackStack<L, T>.render(
  * valid for this type of navigation item)
  */
 internal fun <L, T> Navigation<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
-    return when(this) {
+    return when (this) {
         is BackStack -> createNavigatedBackCopy()
         is EndNode -> createNavigatedBackCopy()
         is TabHost -> createNavigatedBackCopy()
@@ -414,12 +417,13 @@ private fun <L, T> BackStack<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
  * @param navigation start by sending the top most navigation item here
  */
 internal fun <L, T> Navigation<L, T>.findTabHost(tabHostId: T): TabHost<L, T>? {
-    return when(this){
+    return when (this) {
         is BackStack -> {
             stack.firstNotNullOfOrNull {
                 it.findTabHost(tabHostId)
             }
         }
+
         is EndNode -> null
         is TabHost -> {
             if (this.tabHostId == tabHostId) {

@@ -474,7 +474,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -510,7 +510,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -575,7 +575,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -590,7 +590,7 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 0)
 
         // act
-        navigationModel.navigateTo(location = X1){ null }
+        navigationModel.navigateTo(location = X1) { null }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
@@ -789,20 +789,20 @@ class NavigationModelNestedNavTest {
             dataDirectory = dataDirectory
         )
         val nav = backStackOf(
-            endNodeOf(A) ,
-            endNodeOf(B) ,
+            endNodeOf(A),
+            endNodeOf(B),
             tabsOf(
                 selectedTabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
-                    endNodeOf(X1) ,
-                    endNodeOf(C) ,
-                    endNodeOf(D) ,
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0,1),
+                        selectedTabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
-                            endNodeOf(Y1) ,
+                            endNodeOf(Y1),
                             endNodeOf(E)
                         ),
                         backStackOf(
@@ -843,20 +843,20 @@ class NavigationModelNestedNavTest {
             dataDirectory = dataDirectory
         )
         val nav = backStackOf(
-            endNodeOf(A) ,
-            endNodeOf(B) ,
+            endNodeOf(A),
+            endNodeOf(B),
             tabsOf(
                 selectedTabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
-                    endNodeOf(X1) ,
-                    endNodeOf(C) ,
-                    endNodeOf(D) ,
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0,1),
+                        selectedTabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
-                            endNodeOf(Y1) ,
+                            endNodeOf(Y1),
                             endNodeOf(E)
                         ),
                         backStackOf(
@@ -897,20 +897,20 @@ class NavigationModelNestedNavTest {
             dataDirectory = dataDirectory
         )
         val nav = backStackOf(
-            endNodeOf(A) ,
-            endNodeOf(B) ,
+            endNodeOf(A),
+            endNodeOf(B),
             tabsOf(
                 selectedTabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
-                    endNodeOf(X1) ,
-                    endNodeOf(C) ,
-                    endNodeOf(D) ,
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0,1),
+                        selectedTabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
-                            endNodeOf(Y1) ,
+                            endNodeOf(Y1),
                             endNodeOf(E)
                         ),
                         backStackOf(

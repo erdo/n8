@@ -4,10 +4,9 @@ import co.early.fore.core.observer.Observer
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations
-import co.early.n8.LinearExample.Location.EuropeanLocations.*
+import co.early.n8.LinearExample.Location.EuropeanLocations.London
+import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
 import co.early.n8.LinearExample.Location.NewYork
-import co.early.n8.LinearExample.Location.Sydney.Companion
 import co.early.n8.LinearExample.Location.Tokyo
 import co.early.persista.PerSista
 import io.mockk.MockKAnnotations
@@ -130,7 +129,7 @@ class NavigationModelTest {
         // arrange
         val navigationModel = NavigationModel(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = "MyTabs",
                 backStackOf(endNodeOf(Tokyo), endNodeOf(NewYork)),
                 backStackOf(endNodeOf(London), endNodeOf(Paris)),
@@ -165,7 +164,7 @@ class NavigationModelTest {
                 dataDirectory = dataDirectory
             )
         } catch (e: Exception) {
-            Fore.e(e.message?: "exception with no message")
+            Fore.e(e.message ?: "exception with no message")
             exception = e
         }
 
@@ -193,7 +192,7 @@ class NavigationModelTest {
                 )
             )
         } catch (e: Exception) {
-            Fore.e(e.message?: "exception with no message")
+            Fore.e(e.message ?: "exception with no message")
             exception = e
         }
 
