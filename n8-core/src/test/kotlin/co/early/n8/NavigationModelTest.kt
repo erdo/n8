@@ -129,7 +129,7 @@ class NavigationModelTest {
         // arrange
         val navigationModel = NavigationModel(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = "MyTabs",
                 backStackOf(endNodeOf(Tokyo), endNodeOf(NewYork)),
                 backStackOf(endNodeOf(London), endNodeOf(Paris)),
@@ -164,7 +164,7 @@ class NavigationModelTest {
                 dataDirectory = dataDirectory
             )
         } catch (e: Exception) {
-            Fore.e(e.message?: "exception with no message")
+            Fore.e(e.message ?: "exception with no message")
             exception = e
         }
 
@@ -192,7 +192,7 @@ class NavigationModelTest {
                 )
             )
         } catch (e: Exception) {
-            Fore.e(e.message?: "exception with no message")
+            Fore.e(e.message ?: "exception with no message")
             exception = e
         }
 
@@ -342,80 +342,6 @@ class NavigationModelTest {
     @Ignore
     @Test
     fun `clearing previously saved navigation state functions correctly`() {
-
-//        // arrange
-//        var navigationModel = NavigationModel<Location, Unit>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo, addToHistory = false)
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        navigationModel = NavigationModel(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(Tokyo, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
-
-        assert(false)
-    }
-
-    @Ignore
-    @Test
-    fun `exporting state functions correctly`() {
-
-//        // arrange
-//        var navigationModel = NavigationModel<Location, Unit>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo, addToHistory = false)
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        navigationModel = NavigationModel(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(Tokyo, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
-
-        assert(false)
-    }
-
-    @Ignore
-    @Test
-    fun `importing state functions correctly`() {
 
 //        // arrange
 //        var navigationModel = NavigationModel<Location, Unit>(

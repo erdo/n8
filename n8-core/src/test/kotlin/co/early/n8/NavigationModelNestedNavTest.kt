@@ -5,6 +5,7 @@ import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.NestedExample.Location
 import co.early.n8.NestedExample.Location.A
 import co.early.n8.NestedExample.Location.B
+import co.early.n8.NestedExample.Location.C
 import co.early.n8.NestedExample.Location.D
 import co.early.n8.NestedExample.Location.E
 import co.early.n8.NestedExample.Location.F
@@ -15,6 +16,7 @@ import co.early.n8.NestedExample.Location.X3
 import co.early.n8.NestedExample.Location.Y1
 import co.early.n8.NestedExample.Location.Y2
 import co.early.n8.NestedExample.Location.Y3
+import co.early.n8.NestedExample.Location.Z1
 import co.early.n8.NestedExample.TabHost
 import io.mockk.MockKAnnotations
 import org.junit.Assert
@@ -472,7 +474,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -508,7 +510,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -573,7 +575,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0,1),
+                selectedTabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -588,7 +590,7 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 0)
 
         // act
-        navigationModel.navigateTo(location = X1){ null }
+        navigationModel.navigateTo(location = X1) { null }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
@@ -777,31 +779,167 @@ class NavigationModelNestedNavTest {
         assert(false)
     }
 
-    @Ignore
     @Test
-    fun `re-writing history including tabHosts`() {
-//
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Paris)
-//        navigationModel.navigateBack()
-//        navigationModel.navigateBack()
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(NewYork, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+    fun `given previous location was added with addToHistory = false, when rewriting navigation state with nested graph, addToHistory is set back to true`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, String>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, String>>(),
+            dataDirectory = dataDirectory
+        )
+        val nav = backStackOf(
+            endNodeOf(A),
+            endNodeOf(B),
+            tabsOf(
+                selectedTabHistory = listOf(0),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
+                    tabsOf(
+                        selectedTabHistory = listOf(0, 1),
+                        tabHostId = "TABS_02",
+                        backStackOf(
+                            endNodeOf(Y1),
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(X1)
+                ),
+                backStackOf(
+                    endNodeOf(X2)
+                )
+            )
+        )
+
+        // act
+        navigationModel.navigateTo(Z1, addToHistory = false)
+        navigationModel.reWriteNavigation(navigation = nav)
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertEquals(Y2, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+    }
+
+    @Test
+    fun `when rewriting navigation state with nested graph, state is replaced correctly`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, String>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, String>>(),
+            dataDirectory = dataDirectory
+        )
+        val nav = backStackOf(
+            endNodeOf(A),
+            endNodeOf(B),
+            tabsOf(
+                selectedTabHistory = listOf(0),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
+                    tabsOf(
+                        selectedTabHistory = listOf(0, 1),
+                        tabHostId = "TABS_02",
+                        backStackOf(
+                            endNodeOf(Y1),
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(X1)
+                ),
+                backStackOf(
+                    endNodeOf(X2)
+                )
+            )
+        )
+
+        // act
+        navigationModel.navigateTo(Z1, addToHistory = false)
+        navigationModel.reWriteNavigation(navigation = nav)
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertEquals(Y2, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+    }
+
+
+    @Test
+    fun `when rewriting navigation graph with a history including tabHosts with willBeAddedToHistory=false, state is replaced correctly`() {
+        // arrange
+        val navigationModel = NavigationModel<Location, String>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, String>>(),
+            dataDirectory = dataDirectory
+        )
+        val nav = backStackOf(
+            endNodeOf(A),
+            endNodeOf(B),
+            tabsOf(
+                selectedTabHistory = listOf(0),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(X1),
+                    endNodeOf(C),
+                    endNodeOf(D),
+                    tabsOf(
+                        selectedTabHistory = listOf(0, 1),
+                        tabHostId = "TABS_02",
+                        backStackOf(
+                            endNodeOf(Y1),
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(X1)
+                ),
+                backStackOf(
+                    endNodeOf(X2)
+                )
+            )
+        )
+
+
+        // act
+        navigationModel.reWriteNavigation(navigation = nav, addToHistory = false)
+        navigationModel.navigateTo(Z1)
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertEquals(Z1, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
     @Ignore

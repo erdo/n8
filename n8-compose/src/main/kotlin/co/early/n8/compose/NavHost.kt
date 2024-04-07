@@ -18,9 +18,9 @@ val LocalN8Host =
  * current page for rendering
  */
 @Composable
-fun <L:Any, T:Any> Activity.N8Host(
-    navigationModel: NavigationModel<L,T> = N8.n8(),
-    content: @Composable (NavigationState<L,T>) -> Unit,
+fun <L : Any, T : Any> Activity.N8Host(
+    navigationModel: NavigationModel<L, T> = N8.n8(),
+    content: @Composable (NavigationState<L, T>) -> Unit,
 ) {
 
     val navigationState by navigationModel.observeAsState { navigationModel.state }
@@ -38,11 +38,12 @@ fun <L:Any, T:Any> Activity.N8Host(
 class N8 {
     companion object {
         private lateinit var navigationModel: NavigationModel<*, *>
-        fun <L:Any, T:Any> setNavigationModel(n8: NavigationModel<L, T>) {
+        fun <L : Any, T : Any> setNavigationModel(n8: NavigationModel<L, T>) {
             this.navigationModel = n8
         }
+
         @Suppress("UNCHECKED_CAST")
-        fun <L:Any, T:Any> n8(): NavigationModel<L, T> {
+        fun <L : Any, T : Any> n8(): NavigationModel<L, T> {
             return navigationModel as NavigationModel<L, T>
         }
     }

@@ -239,6 +239,7 @@ class NavigationModelLinearNavTest {
                 endNodeOf(NewYork),
             ),
         )
+
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
@@ -543,7 +544,7 @@ class NavigationModelLinearNavTest {
             navigation = backStackOf(
                 endNodeOf(Paris),
             ),
-            willBeAddedToHistory = false
+            addToHistory = false
         )
         Fore.i(navigationModel.toString(diagnostics = true))
 

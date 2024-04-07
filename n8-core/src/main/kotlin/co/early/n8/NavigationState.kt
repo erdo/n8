@@ -60,6 +60,7 @@ sealed class Navigation<L, T> {
      * back is listed first, inner tabHosts are listed after
      */
     internal abstract fun hostedBy(): List<TabHostLocation<T>>
+
     /**
      * All the items contained in the stack of a BackStack have that BackStack as their parent.
      *
@@ -69,6 +70,7 @@ sealed class Navigation<L, T> {
      * when pressing back.
      */
     internal abstract val parent: Navigation<L, T>?
+
     /**
      * The child of a BackStack is the last item in the stack (often but not always, this is also
      * the currentItem)

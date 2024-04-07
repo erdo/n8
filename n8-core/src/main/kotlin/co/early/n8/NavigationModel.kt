@@ -5,10 +5,10 @@ import co.early.fore.kt.core.coroutine.launchIO
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.logging.Logger
 import co.early.fore.kt.core.observer.ObservableImp
-import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
-import co.early.n8.Navigation.TabHost
-import co.early.n8.NavigationModel.TabHostTarget.*
+import co.early.n8.NavigationModel.TabHostTarget.ChangeTabHostTo
+import co.early.n8.NavigationModel.TabHostTarget.NoChange
+import co.early.n8.NavigationModel.TabHostTarget.TopLevel
 import co.early.persista.PerSista
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -224,7 +224,7 @@ import kotlin.reflect.KType
  *
  * Copyright © 2015-2024 early.co. All rights reserved.
  */
-class NavigationModel<L: Any, T:Any> (
+class NavigationModel<L : Any, T : Any>(
     private val stateKType: KType,
     initialNavigation: Navigation<L, T>,
     addHomeLocationToHistory: Boolean = true,
@@ -289,9 +289,9 @@ class NavigationModel<L: Any, T:Any> (
     private var tabHostClassChecked = false
 
     private sealed class TabHostTarget {
-        data object NoChange: TabHostTarget()
-        data object TopMostTabHost: TabHostTarget()
-        data class ChangeTabHostTo<T>(val target: T): TabHostTarget()
+        data object NoChange : TabHostTarget()
+        data object TopLevel : TabHostTarget()
+        data class ChangeTabHostTo<T>(val target: T) : TabHostTarget()
     }
 
     init {
@@ -351,7 +351,7 @@ class NavigationModel<L: Any, T:Any> (
         val tabHostTarget: TabHostTarget = breakTo?.let {
             breakTo()?.let {
                 ChangeTabHostTo(it)
-            } ?: TopMostTabHost
+            } ?: TopLevel
         } ?: NoChange
         navigateTo(location, addToHistory, tabHostTarget)
     }
@@ -366,7 +366,7 @@ class NavigationModel<L: Any, T:Any> (
 
         val navigated = trimmed?.let { trimmedNav ->
 
-            val parentSwap: Pair<Navigation<L,T>, Navigation<L,T>> = when(tabHostTarget){
+            val parentSwap: Pair<Navigation<L, T>, Navigation<L, T>> = when (tabHostTarget) {
                 is ChangeTabHostTo<*> -> {
                     @Suppress("UNCHECKED_CAST")
                     val target = tabHostTarget.target as T
@@ -386,13 +386,14 @@ class NavigationModel<L: Any, T:Any> (
                     parent to newParent
                 }
 
-                TopMostTabHost -> {
-                    when(val parentWrapper = trimmedNav.topParent().notEndNode()){
+                TopLevel -> {
+                    when (val parentWrapper = trimmedNav.topParent().notEndNode()) {
                         is RestrictedNavigation.NotEndNode.IsBackStack -> {
                             val parent = parentWrapper.value
                             val newParent = parent.addLocation(location)
                             parent to newParent
                         }
+
                         is RestrictedNavigation.NotEndNode.IsTabHost -> {
                             val parent = parentWrapper.value
                             val newParent = parent.addLocationToCurrentTab(location)
@@ -439,7 +440,7 @@ class NavigationModel<L: Any, T:Any> (
         require(tabHostSpec.homeTabLocations.size > tabIndex) {
             "tabIndex [$tabIndex] is out of bounds for tabs size:${tabHostSpec.homeTabLocations.size}"
         }
-        require(tabIndex >= 0){
+        require(tabIndex >= 0) {
             "tabIndex must be positive, $tabIndex is an invalid index"
         }
         requireValidTabHostClass(tabHostSpec)
@@ -456,7 +457,7 @@ class NavigationModel<L: Any, T:Any> (
 
                 Fore.e("[${tabHostSpec.tabHostId}] FOUND")
 
-                val newSelectedHistory = when(tabHostSpec.backMode) {
+                val newSelectedHistory = when (tabHostSpec.backMode) {
                     TabBackMode.Structural -> listOf(tabIndex)
                     TabBackMode.Temporal -> {
                         tabHost.selectedTabHistory.filter { tab ->
@@ -472,7 +473,7 @@ class NavigationModel<L: Any, T:Any> (
                     newItem = tabHost.copy(
                         selectedTabHistory = newSelectedHistory,
                         tabs = tabHost.tabs.mapIndexed { index, backStack ->
-                            if (clearToTabRoot && index == tabIndex){
+                            if (clearToTabRoot && index == tabIndex) {
                                 backStackOf(endNodeOf(tabHostSpec.homeTabLocations[tabIndex]))
                             } else {
                                 backStack
@@ -511,10 +512,13 @@ class NavigationModel<L: Any, T:Any> (
 
     }
 
-    private fun requireValidTabHostClass(tabHostSpec: TabHostSpecification<L, T>){
+    private fun requireValidTabHostClass(tabHostSpec: TabHostSpecification<L, T>) {
         if (!tabHostClassChecked) {
             try {
-                Json.encodeToString(serializer(stateKType), NavigationState(backStackOf(tabsOf(tabHostSpec, 0))))
+                Json.encodeToString(
+                    serializer(stateKType),
+                    NavigationState(backStackOf(tabsOf(tabHostSpec, 0)))
+                )
             } catch (e: Exception) {
                 require(false) {
                     "\nFailed to serialise the specified tabHost type. There might be something wrong \n" +
@@ -579,7 +583,10 @@ class NavigationModel<L: Any, T:Any> (
         logger.d("navigateBackTo() ${location::class.simpleName} addToHistory:$addToHistory")
 
         val foundLocationNav = tabHostId?.let {
-            reverseToLocation(location, state.navigation) // TODO reverseToLocation(location, tabsOf(tabHostSpec = TabHostSpecification(T, emptyList())))
+            reverseToLocation(
+                location,
+                state.navigation
+            ) // TODO reverseToLocation(location, tabsOf(tabHostSpec = TabHostSpecification(T, emptyList())))
         } ?: reverseToLocation(location, state.navigation)
 
         if (foundLocationNav != null) { //replace location as it might have different data
@@ -654,13 +661,13 @@ class NavigationModel<L: Any, T:Any> (
 
     fun reWriteNavigation(
         navigation: Navigation<L, T>,
-        willBeAddedToHistory: Boolean = true
+        addToHistory: Boolean = true
     ) {
-        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$willBeAddedToHistory")
+        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
         updateState(
             NavigationState(
                 navigation = navigation,
-                willBeAddedToHistory = willBeAddedToHistory,
+                willBeAddedToHistory = addToHistory,
             )
         )
     }
