@@ -1,7 +1,5 @@
 ## n8
 
-state based navigation library
-
 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
 ** WIP if you want to help, open an issue and submit a PR! **
