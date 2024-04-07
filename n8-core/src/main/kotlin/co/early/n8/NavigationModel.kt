@@ -5,9 +5,7 @@ import co.early.fore.kt.core.coroutine.launchIO
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.logging.Logger
 import co.early.fore.kt.core.observer.ObservableImp
-import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
-import co.early.n8.Navigation.TabHost
 import co.early.n8.NavigationModel.TabHostTarget.*
 import co.early.persista.PerSista
 import kotlinx.serialization.json.Json
@@ -290,7 +288,7 @@ class NavigationModel<L: Any, T:Any> (
 
     private sealed class TabHostTarget {
         data object NoChange: TabHostTarget()
-        data object TopMostTabHost: TabHostTarget()
+        data object TopLevel: TabHostTarget()
         data class ChangeTabHostTo<T>(val target: T): TabHostTarget()
     }
 
@@ -351,7 +349,7 @@ class NavigationModel<L: Any, T:Any> (
         val tabHostTarget: TabHostTarget = breakTo?.let {
             breakTo()?.let {
                 ChangeTabHostTo(it)
-            } ?: TopMostTabHost
+            } ?: TopLevel
         } ?: NoChange
         navigateTo(location, addToHistory, tabHostTarget)
     }
@@ -386,7 +384,7 @@ class NavigationModel<L: Any, T:Any> (
                     parent to newParent
                 }
 
-                TopMostTabHost -> {
+                TopLevel -> {
                     when(val parentWrapper = trimmedNav.topParent().notEndNode()){
                         is RestrictedNavigation.NotEndNode.IsBackStack -> {
                             val parent = parentWrapper.value
@@ -654,13 +652,13 @@ class NavigationModel<L: Any, T:Any> (
 
     fun reWriteNavigation(
         navigation: Navigation<L, T>,
-        willBeAddedToHistory: Boolean = true
+        addToHistory: Boolean = true
     ) {
-        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$willBeAddedToHistory")
+        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
         updateState(
             NavigationState(
                 navigation = navigation,
-                willBeAddedToHistory = willBeAddedToHistory,
+                willBeAddedToHistory = addToHistory,
             )
         )
     }

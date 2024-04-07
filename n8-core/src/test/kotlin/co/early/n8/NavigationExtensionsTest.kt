@@ -1,5 +1,6 @@
 package co.early.n8
 
+import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.NestedExample.Location.A
@@ -14,9 +15,14 @@ import co.early.n8.NestedExample.Location.Y2
 import co.early.n8.NestedExample.Location.Z2
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
+import java.io.File
+import kotlin.reflect.typeOf
 
 class NavigationExtensionsTest {
+
+    private lateinit var dataDirectory: File
 
     @Before
     fun setup() {
@@ -467,5 +473,176 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
+    }
+
+    @Ignore
+    @Test
+    fun `when exporting state, serialized representation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<NestedExample.Location, String>(
+            homeLocation = NestedExample.Location.Home,
+            stateKType = typeOf<NavigationState<NestedExample.Location, String>>(),
+            dataDirectory = dataDirectory
+        )
+        val nav = backStackOf(
+            endNodeOf(A) ,
+            endNodeOf(B) ,
+            tabsOf(
+                selectedTabHistory = listOf(0),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(X1) ,
+                    endNodeOf(C) ,
+                    endNodeOf(D) ,
+                    tabsOf(
+                        selectedTabHistory = listOf(0,1),
+                        tabHostId = "TABS_02",
+                        backStackOf(
+                            endNodeOf(Y1) ,
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(X1)
+                ),
+                backStackOf(
+                    endNodeOf(X2)
+                )
+            )
+        )
+
+        // act
+        navigationModel.reWriteNavigation(navigation = nav)
+        val serialized = launchDefault {
+            navigationModel.exportState()
+        }
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(
+            "\n" +
+                    "backStackOf( \n" +   // TODO needs to be the json representation
+                    "    endNodeOf(A),\n" +
+                    "    endNodeOf(B),\n" +
+                    "    tabsOf( \n" +
+                    "        tabHostId = TABS_01\n" +
+                    "        selectedTabHistory = listOf(0),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X1),\n" +
+                    "            endNodeOf(C),\n" +
+                    "            endNodeOf(D),\n" +
+                    "            tabsOf( \n" +
+                    "                tabHostId = TABS_02\n" +
+                    "                selectedTabHistory = listOf(0,1),\n" +
+                    "                backStackOf( \n" +
+                    "                    endNodeOf(Y1),\n" +
+                    "                    endNodeOf(E)\n" +
+                    "                ),\n" +
+                    "                backStackOf( \n" +
+                    "                    endNodeOf(Y2) <---\n" +
+                    "                )\n" +
+                    "            )\n" +
+                    "        ),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X1)\n" +
+                    "        ),\n" +
+                    "        backStackOf( \n" +
+                    "            endNodeOf(X2)\n" +
+                    "        )\n" +
+                    "    )\n" +
+                    ")",
+            serialized
+        )  // TODO need to remove all whitespace before making comparison, maybe add an extension function for the test: fun String.removeWhiteSpace() ?
+    }
+
+    @Ignore
+    @Test
+    fun `when importing serialized state, state is rewritten correctly`() {
+
+        // arrange
+        val navigationModel = NavigationModel<NestedExample.Location, String>(
+            homeLocation = NestedExample.Location.Home,
+            stateKType = typeOf<NavigationState<NestedExample.Location, String>>(),
+            dataDirectory = dataDirectory
+        )
+        val serializedState = "backStackOf( \n" +  // TODO needs to be the json representation
+                "    endNodeOf(A),\n" +
+                "    endNodeOf(B),\n" +
+                "    tabsOf( \n" +
+                "        tabHostId = TABS_01\n" +
+                "        selectedTabHistory = listOf(0),\n" +
+                "        backStackOf( \n" +
+                "            endNodeOf(X1),\n" +
+                "            endNodeOf(C),\n" +
+                "            endNodeOf(D),\n" +
+                "            tabsOf( \n" +
+                "                tabHostId = TABS_02\n" +
+                "                selectedTabHistory = listOf(0,1),\n" +
+                "                backStackOf( \n" +
+                "                    endNodeOf(Y1),\n" +
+                "                    endNodeOf(E)\n" +
+                "                ),\n" +
+                "                backStackOf( \n" +
+                "                    endNodeOf(Y2) <---\n" +
+                "                )\n" +
+                "            )\n" +
+                "        ),\n" +
+                "        backStackOf( \n" +
+                "            endNodeOf(X1)\n" +
+                "        ),\n" +
+                "        backStackOf( \n" +
+                "            endNodeOf(X2)\n" +
+                "        )\n" +
+                "    )\n" +
+                ")"
+
+        // act
+        launchDefault {
+            navigationModel.importState(serializedState)
+        }
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(
+            backStackOf(
+                endNodeOf(A) ,
+                endNodeOf(B) ,
+                tabsOf(
+                    selectedTabHistory = listOf(0),
+                    tabHostId = "TABS_01",
+                    backStackOf(
+                        endNodeOf(X1) ,
+                        endNodeOf(C) ,
+                        endNodeOf(D) ,
+                        tabsOf(
+                            selectedTabHistory = listOf(0,1),
+                            tabHostId = "TABS_02",
+                            backStackOf(
+                                endNodeOf(Y1) ,
+                                endNodeOf(E)
+                            ),
+                            backStackOf(
+                                endNodeOf(Y2)
+                            )
+                        )
+                    ),
+                    backStackOf(
+                        endNodeOf(X1)
+                    ),
+                    backStackOf(
+                        endNodeOf(X2)
+                    )
+                )
+            ),
+            navigationModel.state
+        )
+
     }
 }

@@ -4,9 +4,10 @@ import co.early.fore.core.observer.Observer
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations.London
-import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
+import co.early.n8.LinearExample.Location.EuropeanLocations
+import co.early.n8.LinearExample.Location.EuropeanLocations.*
 import co.early.n8.LinearExample.Location.NewYork
+import co.early.n8.LinearExample.Location.Sydney.Companion
 import co.early.n8.LinearExample.Location.Tokyo
 import co.early.persista.PerSista
 import io.mockk.MockKAnnotations
@@ -342,80 +343,6 @@ class NavigationModelTest {
     @Ignore
     @Test
     fun `clearing previously saved navigation state functions correctly`() {
-
-//        // arrange
-//        var navigationModel = NavigationModel<Location, Unit>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo, addToHistory = false)
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        navigationModel = NavigationModel(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(Tokyo, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
-
-        assert(false)
-    }
-
-    @Ignore
-    @Test
-    fun `exporting state functions correctly`() {
-
-//        // arrange
-//        var navigationModel = NavigationModel<Location, Unit>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo, addToHistory = false)
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        navigationModel = NavigationModel(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(Tokyo, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
-
-        assert(false)
-    }
-
-    @Ignore
-    @Test
-    fun `importing state functions correctly`() {
 
 //        // arrange
 //        var navigationModel = NavigationModel<Location, Unit>(
