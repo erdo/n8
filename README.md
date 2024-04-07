@@ -22,9 +22,9 @@ needs to call to navigate around the app:
 
 ``` kotlin
 n8.navigateTo(Paris)
-n8.switchTab(mainTabs, tabIndex = 1)
 n8.navigateBack()
 n8.navigateBackTo(NewYork)
+n8.switchTab(mainTabs, tabIndex = 1)
 ```
 
 To use n8 in your app, you don't need to implement any special interfaces on your screens, so your
@@ -32,10 +32,28 @@ UI code remains largely independent of n8 itself.
 
 You do need to tell n8 what class you are using to keep track of your user's *Location* and your
 *TabHosts* - something like a sealed class works well here, but there is nothing stopping you from
-using String. If you don't have any TabHosts, you can just put Unit
+using basic Strings to identify your locations. If you don't have any TabHosts, you can just put
+Unit
 
-Here's an example. "Location" and "TabHostId" are your own class and nothing to do with n8 code, you
+Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with n8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted
+
+``` kotlin
+@Serializable
+sealed class Location {
+
+    @Serializable
+    data object NewYork : Location()
+    
+    @Serializable
+    data object Tokyo : Location()
+    
+    @Serializable
+    data object Paris : Location()
+   
+}
+```
+Or perhaps slightly more realistically:
 
 ``` kotlin
 @Serializable
@@ -139,7 +157,9 @@ underlying data structure used to represent the state of the navigation at any p
 
 The navigation graph is represented as an immutable tree structure, when n8 logs its state, it logs
 that
-tree structure from top-left to bottom-right, like a file explorer. The first item is drawn at the
+tree structure from top-left to bottom-right, like a file explorer.
+
+The first item is drawn at the
 top-left location, and represents the
 entry into the app, and as the user navigates to different locations in the app, the tree structure
 grows down and right as locations are added in such a way that the user can always find their way
@@ -147,6 +167,20 @@ back to the home location and ultimately to the "exit", by continually pressing 
 
 The "current" location represents the screen the user is currently on and is typically towards the
 bottom right of the graph.
+
+Here's the state of a very simple linear navigation graph showing that the user entered on the
+London screen, and is currently on the Tokyo screen:
+
+``` kotlin
+backStackOf<Location, Unit>(
+    endNodeOf(London),     <--- home location
+    endNodeOf(Paris),
+    endNodeOf(Tokyo),     <--- current location
+)
+```
+
+To exit the app in this case, the user would have to press back 3 times
+(Tokyo -> Paris -> London -> [exit])
 
 There are a few utility functions that will let you create standalone navigation graphs for use in
 unit tests or constructing deep links etc:
@@ -166,19 +200,6 @@ backStackOf<MyLocationClass, MyTabHostIdClass>(
     endNodeOf(Welcome)
 )
 ```
-
-Here's the state of a very simple linear navigation graph showing that the user entered on the
-London screen, and is currently on the Tokyo screen:
-
-``` kotlin
-backStackOf<Location, Unit>(
-    endNodeOf(London),     <--- home location
-    endNodeOf(Paris),
-    endNodeOf(Tokyo),     <--- current location
-)
-```
-
-To exit the app in this case, the user would have to press back 3 times
 
 Here's a more complicated nested navigation graph:
 
@@ -244,7 +265,7 @@ If some n8 behaviour is confusing, it can be helpful to print out the current st
 navigation graph.
 
 ``` kotlin
-navigationModel.toString(diagnostics = false)
+n8.toString(diagnostics = false)
 ```
 
 will give you an output
@@ -253,7 +274,7 @@ directly into your kotlin code with only minor changes so you can re-create the 
 experimentation.
 
 ``` kotlin
-navigationModel.toString(diagnostics = true)
+n8.toString(diagnostics = true)
 ```
 
 will display parent and child relationships, that's useful for library developers diagnosing
@@ -327,7 +348,7 @@ user presses back, they would visit the previously visited locations in this tab
 exit the app (so in the above example, 3 clicks back to exit: Shanghai -> Mumbai -> London -> exit)
 
 By Temporal we mean something more like a time based history. Let's take the example from above, a
-temporal version of the above navigation graph might look like this:
+temporal version might look like this:
 
 ``` kotlin
     tabsOf(
@@ -356,10 +377,10 @@ visited while on ```tabIndex = 2```, and then do the same for ```tabIndex = 0```
 So in our example, that would take 7 clicks back to exit:
 Shanghai -> Mumbai -> London -> Tokyo -> Houston -> Sydney -> Paris -> [exit]
 
-The navigation graph implements those two modes using only the selectedTabHistory list.
+The n8 implements those two modes using only the **selectedTabHistory** field.
 
-The ```TabBackMode``` is set in the ```TabHostSpecification<L, T>``` class passed to the
-```switchTab()``` function, the default is ```TabBackMode.Temporal```
+You can set the TabBackMode via the ```switchTab()``` function. The default
+is ```TabBackMode.Temporal```
 
 ### Passing data
 
@@ -377,7 +398,7 @@ typeOf<NavigationState<Location, TabHostId>>()
 ```
 
 that's how n8 can serialise and persist your navigation state across rotations or sessions without
-knowing anything about the class you chose for Location or TabHostId in advance. It's very
+knowing anything about the class you chose for Location or TabHostId in advance. That line is very
 important, but it can't be verified by the compiler unfortunately. n8 will let you know if it's
 wrong though, either at construction, or the first time you try to add a TabHost (if one wasn't
 added during construction).
@@ -413,7 +434,7 @@ Review%28productId%3D7898%29%29%2C%0A%29
 So you might want to encode/decode as you wish before sending it to your users, but that's outside
 the scope of a navigation library
 
-##### Custom Navigation behaviour
+#### Custom Navigation behaviour
 
 n8 tries to make standard navigation behaviour available to your app using basic functions by
 default, but you can implement any behaviour you like by writing a custom state mutation yourself.
@@ -429,7 +450,7 @@ available for client use too which should make life easier.
 
 ## Example App
 
-![example app screenshot](exampleapp.png)
+![example app screenshot](example-app/screenshot.png)
 
 There is a mini android app in this repo if you want something to play around with
 
