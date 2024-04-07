@@ -22,7 +22,7 @@ needs to call to navigate around the app:
 
 ``` kotlin
 n8.navigateTo(Paris)
-n8.switchTab(tabHostSpec = mainTabs, tabIndex = 1)
+n8.switchTab(mainTabs, tabIndex = 1)
 n8.navigateBack()
 n8.navigateBackTo(NewYork)
 ```
