@@ -324,50 +324,50 @@ only navigated to 2 new locations.
 The navigation graph might look like this:
 
 ``` kotlin
-    tabsOf(
-        selectedTabHistory = listOf(2),
-        tabHostId = "TABHOST_MAIN",
-        backStackOf(
-            endNodeOf(Houston),
-            endNodeOf(Tokyo),
-        ),
-        backStackOf(
-            endNodeOf(Paris),
-            endNodeOf(Sydney),
-        ),
-        backStackOf(
-            endNodeOf(London),
-            endNodeOf(Mumbai),
-            endNodeOf(Shanghai), <--- current location
-        ),
-    )
+tabsOf(
+    selectedTabHistory = listOf(2),
+    tabHostId = "TABHOST_MAIN",
+    backStackOf(
+        endNodeOf(Houston),
+        endNodeOf(Tokyo),
+    ),
+    backStackOf(
+        endNodeOf(Paris),
+        endNodeOf(Sydney),
+    ),
+    backStackOf(
+        endNodeOf(London),
+        endNodeOf(Mumbai),
+        endNodeOf(Shanghai), <--- current location
+    ),
+)
 ```
 
 **Structural** back navigation here would mean that when the
 user presses back, they would visit the previously visited locations in this tab only, and then
 exit the app (so in the above example, 3 clicks back to exit: Shanghai -> Mumbai -> London -> exit)
 
-By Temporal we mean something more like a time based history. Let's take the example from above, a
+By **Temporal** we mean something more like a time based history. Let's take the example from above, a
 temporal version might look like this:
 
 ``` kotlin
-    tabsOf(
-        selectedTabHistory = listOf(1,0,2),
-        tabHostId = "TABHOST_MAIN",
-        backStackOf(
-            endNodeOf(Houston),
-            endNodeOf(Tokyo),
-        ),
-        backStackOf(
-            endNodeOf(Paris),
-            endNodeOf(Sydney),
-        ),
-        backStackOf(
-            endNodeOf(London),
-            endNodeOf(Mumbai),
-            endNodeOf(Shanghai), <--- current location
-        ),
-    )
+tabsOf(
+    selectedTabHistory = listOf(1,0,2),
+    tabHostId = "TABHOST_MAIN",
+    backStackOf(
+        endNodeOf(Houston),
+        endNodeOf(Tokyo),
+    ),
+    backStackOf(
+        endNodeOf(Paris),
+        endNodeOf(Sydney),
+    ),
+    backStackOf(
+        endNodeOf(London),
+        endNodeOf(Mumbai),
+        endNodeOf(Shanghai), <--- current location
+    ),
+)
 ```
 
 In this case when the user presses back, they would re-trace their steps through the locations
@@ -405,6 +405,8 @@ added during construction).
 
 ### DeepLinking
 
+// TODO (add functionality and tests)
+
 The current state of the navigation is always exportable/importable. In fact the whole state is
 serialized and persisted to local storage at each navigation step. You can take this serialized
 state, send the String to someone in a message, import it into their app and thus transfer an entire
@@ -421,8 +423,6 @@ backStackOf<Location, Unit>(
 ).export()
 ```
 
-// TODO (add functionality and tests)
-
 The default serialized state is human readable, but not that pretty, especially once URLEncoded:
 
 ```
@@ -434,7 +434,7 @@ Review%28productId%3D7898%29%29%2C%0A%29
 So you might want to encode/decode as you wish before sending it to your users, but that's outside
 the scope of a navigation library
 
-#### Custom Navigation behaviour
+### Custom Navigation behaviour
 
 n8 tries to make standard navigation behaviour available to your app using basic functions by
 default, but you can implement any behaviour you like by writing a custom state mutation yourself.
