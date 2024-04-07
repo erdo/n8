@@ -12,8 +12,8 @@ state based navigation library
 - type safe
 
 ``` kotlin
-implementation("co.early.n8:n8-core:0.1.0")
-implementation("co.early.n8:n8-compose:0.1.0")
+implementation("co.early.n8:n8-core:0.0.2")
+implementation("co.early.n8:n8-compose:0.0.2")
 ```
 
 ### Usage
