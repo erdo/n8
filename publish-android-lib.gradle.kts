@@ -19,12 +19,11 @@ project.afterEvaluate {
         publications {
             create<MavenPublication>("release") {
 
+                from(components["release"])
+
                 groupId = "${Shared.Publish.LIB_GROUP}"
                 artifactId = LIB_ARTIFACT_ID
                 version = "${Shared.Publish.LIB_VERSION_NAME}"
-
-                artifact(tasks["bundleReleaseAar"])
-                artifact(project.tasks["androidSourcesJar"])
 
                 pom {
                     name.set("${Shared.Publish.PROJ_NAME}")
@@ -48,28 +47,6 @@ project.afterEvaluate {
                         connection.set("${Shared.Publish.POM_SCM_CONNECTION}")
                         developerConnection.set("${Shared.Publish.POM_SCM_CONNECTION}")
                         url.set("${Shared.Publish.POM_SCM_URL}")
-                    }
-
-                    withXml {
-                        val dependenciesNode = asNode().appendNode("dependencies")
-
-                        // List all compile dependencies and write to POM
-                        fun addDependency(dep: Dependency, scope: String) {
-                            if (dep.group == null || dep.version == null || dep.name == "unspecified") {
-                                return
-                            } // Ignore invalid dependencies.
-
-                            val dependencyNode = dependenciesNode.appendNode("dependency")
-                            dependencyNode.appendNode("groupId", dep.group)
-                            dependencyNode.appendNode("artifactId", dep.name)
-                            dependencyNode.appendNode("version", dep.version)
-                            dependencyNode.appendNode("scope", scope)
-                        }
-
-                        // List all "api" dependencies (for new Gradle) as "compile" dependencies.
-                        configurations.getByName("api").dependencies.forEach { addDependency(it, "compile") }
-                        // List all "implementation" dependencies (for new Gradle) as "runtime" dependencies.
-                        configurations.getByName("implementation").dependencies.forEach { addDependency(it, "runtime") }
                     }
                 }
             }

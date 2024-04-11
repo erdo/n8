@@ -53,12 +53,10 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.composeCompilerVersion.get()
     }
 
-    // register (not create) - we want this to run after the rest of the android
-    // block has been configured in the individual build files as they add files
-    // to the source sets
-    project.tasks.register("androidSourcesJar", Jar::class.java) {
-        archiveClassifier.set("sources")
-        from(sourceSets.getByName("main").java.srcDirs)
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 }
 
