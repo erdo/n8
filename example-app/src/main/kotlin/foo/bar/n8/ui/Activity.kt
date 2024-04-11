@@ -158,14 +158,6 @@ private fun RowScope.TabUi(text: String, image: ImageVector, enabled: Boolean, a
 }
 
 @Composable
-private fun TitleContent(titleText: String) = Text(
-    modifier = Modifier,
-    text = titleText,
-    maxLines = 1,
-    overflow = TextOverflow.Ellipsis
-)
-
-@Composable
 fun MainContent(location: Location, paddingValues: PaddingValues) {
 
     Box(modifier = Modifier.padding(paddingValues)) {
