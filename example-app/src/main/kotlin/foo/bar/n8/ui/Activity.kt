@@ -29,11 +29,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
+import co.early.n8.N8
 import co.early.n8.NavigationModel
-import co.early.n8.compose.N8
-import co.early.n8.compose.N8Host
-import co.early.n8.isSelected
+import co.early.n8.showSelected
 import foo.bar.n8.ui.navigation.Location
+import foo.bar.n8.ui.navigation.NavHost
 import foo.bar.n8.ui.navigation.TabHostId
 import foo.bar.n8.ui.navigation.tabHostSpecMain
 import foo.bar.n8.ui.screens.BangkokScreen
@@ -67,13 +67,14 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                // TODO would like to get rid of having to specify the generics if possible
-                N8Host<Location, TabHostId> { navigationState ->
+                NavHost { navigationState ->
 
                     val location = navigationState.currentLocation
                     Fore.i("Location is:$location")
 
                     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+                    // access N8 via the delegate or pass the instance around using DI
                     val n8: NavigationModel<Location, TabHostId> = N8.n8()
 
                     Scaffold(
@@ -94,7 +95,7 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 0",
                                         image = Default.AddCircle,
-                                        enabled = !n8.state.hostedBy.isSelected(
+                                        enabled = !navigationState.hostedBy.showSelected(
                                             tabHostId = tabHostSpecMain.tabHostId,
                                             index = 0
                                         )
@@ -104,7 +105,7 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 1",
                                         image = Default.Favorite,
-                                        enabled = !n8.state.hostedBy.isSelected(
+                                        enabled = !navigationState.hostedBy.showSelected(
                                             tabHostId = tabHostSpecMain.tabHostId,
                                             index = 1
                                         )
@@ -114,7 +115,7 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 2",
                                         image = Default.Settings,
-                                        enabled = !n8.state.hostedBy.isSelected(
+                                        enabled = !navigationState.hostedBy.showSelected(
                                             tabHostId = tabHostSpecMain.tabHostId,
                                             index = 2
                                         )

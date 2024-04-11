@@ -246,7 +246,7 @@ fun <L, T> TabHost<L, T>.addLocationToCurrentTab(location: L): TabHost<L, T> {
     ).populateChildParents()
 }
 
-fun <T> List<TabHostLocation<T>>.isSelected(tabHostId: T, index: Int): Boolean {
+fun <T> List<TabHostLocation<T>>.showSelected(tabHostId: T, index: Int): Boolean {
     return firstOrNull { it.tabHostId == tabHostId }?.tabIndex == index
 }
 

@@ -125,7 +125,6 @@ all the lifecycle issues for you. To use the wrapper, first set the navigation m
 
 ``` kotlin
 N8.setNavigationModel(n8)
-
 ```
 
 Then add the n8 navigation host, and your compose code will be updated whenever the navigation
@@ -135,7 +134,7 @@ state changes (i.e. your user has navigated forward or pressed back)
 setContent {
     AppTheme {
         ...
-        N8Host<Location, TabHostId> { navigationState ->
+        N8Host { navigationState ->
         
             val location = navigationState.currentPage()
 
@@ -149,6 +148,21 @@ setContent {
             )
         }
     }
+}
+```
+
+Pass the n8 instance around the app using your choice of DI, or access it directly like this:
+
+``` kotlin
+N8.n8()
+```
+
+Call the navigation functions from within ClickListeners / ViewModels / ActionHandlers etc as
+appropriate for your architecture
+
+``` kotlin
+onClick = {
+  n8.navigateTo(Paris)
 }
 ```
 

@@ -3,9 +3,9 @@ package foo.bar.n8
 import android.app.Application
 import co.early.fore.kt.core.delegate.DebugDelegateDefault
 import co.early.fore.kt.core.delegate.Fore
+import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
-import co.early.n8.compose.N8
 import foo.bar.n8.ui.navigation.Location
 import foo.bar.n8.ui.navigation.TabHostId
 import kotlin.reflect.typeOf
@@ -28,6 +28,5 @@ class App : Application() {
             dataDirectory = filesDir
         )
         N8.setNavigationModel(n8)
-
     }
 }

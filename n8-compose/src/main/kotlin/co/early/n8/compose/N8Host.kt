@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import co.early.fore.compose.observeAsState
+import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 
@@ -31,20 +32,5 @@ fun <L : Any, T : Any> Activity.N8Host(
 
     CompositionLocalProvider(LocalN8Host provides navigationState) {
         content(navigationState)
-    }
-}
-
-
-class N8 {
-    companion object {
-        private lateinit var navigationModel: NavigationModel<*, *>
-        fun <L : Any, T : Any> setNavigationModel(n8: NavigationModel<L, T>) {
-            this.navigationModel = n8
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        fun <L : Any, T : Any> n8(): NavigationModel<L, T> {
-            return navigationModel as NavigationModel<L, T>
-        }
     }
 }
