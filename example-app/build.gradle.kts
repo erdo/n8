@@ -1,3 +1,5 @@
+import co.early.n8.Shared
+
 plugins {
     id("kotlin-kapt")
     id("kotlin-android")
@@ -69,7 +71,8 @@ dependencies {
 
     implementation(project(":n8-core"))
     implementation(project(":n8-compose"))
-    //implementation("co.early.n8:n8:1.0.0")
+    //implementation("co.early.n8:n8-core:${Shared.Publish.LIB_VERSION_NAME}")
+    //implementation("co.early.n8:n8-compose:${Shared.Publish.LIB_VERSION_NAME}")
 
     // serialization
     implementation(libs.kotlinx.serialization)
@@ -85,14 +88,9 @@ dependencies {
     implementation(libs.compose.activity)
     implementation(libs.compose.constraint.layout)
     implementation(platform(libs.compose.bom))
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("io.mockk:mockk:1.11.0")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui)
 }

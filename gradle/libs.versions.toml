@@ -1,7 +1,7 @@
 [versions]
 gradle = "8.3.1"
 kotlinVersion = "1.9.22"
-foreVersion = "1.6.3"
+foreVersion = "1.6.4"
 foreComposeVersion = "1.5.10"
 composeCompilerVersion = "1.5.10"
 jvmToolchain = "8"
@@ -20,18 +20,21 @@ appcompatVersion = "1.6.1"
 materialVersion = "1.11.0"
 
 [libraries]
-kotlinSerialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinVersion" }
+kotlinSerializationPlugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinVersion" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinVersion" }
 androidGradlePlugin = "com.android.tools.build:gradle:8.3.1"
-kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
-persista = "co.early.persista:persista:1.5.3"
+kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+persista = "co.early.persista:persista:1.5.4"
 koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
 koin-core = "io.insert-koin:koin-core:3.4.2"
 multidex = "androidx.multidex:multidex:2.0.1"
 compose-activity = "androidx.activity:activity-compose:1.8.2"
 compose-constraint-layout = "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-compose-bom = "androidx.compose:compose-bom:2024.03.00"
+compose-bom = "androidx.compose:compose-bom:2024.04.00"
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
 fore-core = { module = "co.early.fore:fore-kt-core", version.ref = "foreVersion" }
 fore-android = { module = "co.early.fore:fore-kt-android", version.ref = "foreVersion" }
 fore-compose = { module = "co.early.fore:fore-kt-android-compose", version.ref = "foreComposeVersion" }
-

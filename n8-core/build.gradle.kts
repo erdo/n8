@@ -18,9 +18,9 @@ dependencies {
     // serialization
     implementation(libs.kotlinx.serialization)
     // persistence
-    implementation(libs.persista)
+    api(libs.persista)
     // reactivity
-    implementation(libs.fore.core)
+    api(libs.fore.core)
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.mockk:mockk:1.11.0")

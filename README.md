@@ -8,9 +8,11 @@
 - type safe
 
 ``` kotlin
-implementation("co.early.n8:n8-core:0.0.2")
-implementation("co.early.n8:n8-compose:0.0.2")
+implementation("co.early.n8:n8-core:0.0.3")
+implementation("co.early.n8:n8-compose:0.0.3")
 ```
+
+The GPG fingerprint used to sign the maven packages is: <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the GPG public certificate.
 
 ### Usage
 

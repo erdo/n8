@@ -5,6 +5,7 @@ import org.gradle.kotlin.dsl.signing
 import java.net.URI
 
 apply(plugin = "maven-publish")
+apply(plugin = "java-library")
 apply(plugin = "signing")
 
 val LIB_ARTIFACT_ID: String? by project
@@ -15,7 +16,13 @@ println("[$LIB_ARTIFACT_ID lib publish file]")
 group = "${Shared.Publish.LIB_GROUP}"
 version =  "${Shared.Publish.LIB_VERSION_NAME}"
 
+configure<JavaPluginExtension> {
+	withSourcesJar()
+	withJavadocJar()
+}
+
 configure<PublishingExtension> {
+
 	publications {
 		create<MavenPublication>("release") {
 
@@ -23,21 +30,7 @@ configure<PublishingExtension> {
 			artifactId = LIB_ARTIFACT_ID
 			version = "${Shared.Publish.LIB_VERSION_NAME}"
 
-			val binaryJar = components["java"]
-
-			val sourcesJar by tasks.creating(Jar::class) {
-				archiveClassifier.set("sources")
-				from(project.the<SourceSetContainer>()["main"].allSource)
-			}
-
-			val javadocJar: Jar by tasks.creating(Jar::class) {
-				archiveClassifier.set("javadoc")
-				from("$buildDir/javadoc")
-			}
-
-			from(binaryJar)
-			artifact(sourcesJar)
-			artifact(javadocJar)
+			from(components["java"])
 
 			pom {
 				name.set("${Shared.Publish.PROJ_NAME}")

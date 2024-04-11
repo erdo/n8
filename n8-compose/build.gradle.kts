@@ -1,5 +1,3 @@
-import co.early.n8.Shared
-
 plugins {
     id("kotlin-android")
     id("com.android.library")
@@ -69,7 +67,7 @@ dependencies {
     implementation(libs.fore.compose)
     implementation(libs.compose.activity)
     implementation(platform(libs.compose.bom))
-    implementation("androidx.compose.ui:ui")
+    implementation(libs.compose.ui)
 }
 
 apply(from = "../publish-android-lib.gradle.kts")
