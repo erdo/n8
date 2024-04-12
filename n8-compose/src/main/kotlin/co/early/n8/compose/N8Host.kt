@@ -12,7 +12,7 @@ import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 
 val LocalN8Host =
-    compositionLocalOf<NavigationState<*, *>> { error("To access LocalN8Host, your compose code must be wrapped in a N8Host{} block, we'd suggest somewhere high up in the UI tree/hierarchy, just inside setContent{}") }
+    compositionLocalOf<NavigationState<*, *>> { error("To access LocalN8Host, your compose code must be wrapped in a N8Host<L, T>{} block, we'd suggest somewhere high up in the UI tree/hierarchy, just inside setContent{}") }
 
 /**
  * Top level navigation container for the app, anything wrapped inside this element will receive the
