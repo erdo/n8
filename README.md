@@ -12,11 +12,13 @@ implementation("co.early.n8:n8-core:0.0.4")
 implementation("co.early.n8:n8-compose:0.0.4")
 ```
 
-The GPG fingerprint used to sign the maven packages is: <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the GPG public certificate.
+GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
 ### Usage
 
 (But see the little sample app and unit tests for the full picture)
+
+Note: a legacy or hybrid android app that still uses fragments or multiple activities, can't maintain its back stack in the same stateful manner as a 100% compose app can and therefore won't get much utility from N8
 
 It's not necessary to specify navigation routes upfront, n8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
