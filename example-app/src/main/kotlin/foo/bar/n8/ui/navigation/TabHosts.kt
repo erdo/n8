@@ -20,3 +20,13 @@ val tabHostSpecMain = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.TabsMain,
     homeTabLocations = listOf(Location.EuropeanLocations.Paris, Location.NewYork, Location.Tokyo),
 )
+
+val tabHostSpecSettings = TabHostSpecification<Location, TabHostId>(
+    tabHostId = TabHostId.TabsSettings,
+    homeTabLocations = listOf(Location.Dakar, Location.Bangkok),
+)
+
+val tabHostSpecAccount = TabHostSpecification<Location, TabHostId>(
+    tabHostId = TabHostId.TabsAccount,
+    homeTabLocations = listOf(Location.Mumbai, Location.LA, Location.Seoul),
+)
