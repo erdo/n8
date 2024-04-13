@@ -469,6 +469,7 @@ available for client use too which should make life easier.
 ## Example App
 
 ![example app screenshot](example-app/screenshot.png)
+![example app screenshot landscape view](example-app/screenshot-land.png)
 
 There is a mini android app in this repo if you want something to play around with
 
