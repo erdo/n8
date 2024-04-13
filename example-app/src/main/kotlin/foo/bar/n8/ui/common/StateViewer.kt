@@ -17,8 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,22 +28,25 @@ import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.ui.size.LocalWindowSize
 import co.early.fore.ui.size.WidthBasedTextUnit
 import co.early.fore.ui.size.WindowSize
+import foo.bar.n8.App
 import foo.bar.n8.R
+import foo.bar.n8.feature.ViewStateFlagModel
+import foo.bar.n8.feature.toState
 import foo.bar.n8.ui.common.elements.TextSpec
 import foo.bar.n8.ui.common.elements.Txt
 
 @Composable
 fun StateWrapperView(
     stateAsString: String,
-    uiIsVisibleDefault: Boolean = true,
+    stateFlagModel: ViewStateFlagModel = App[ViewStateFlagModel::class],
     size: WindowSize = LocalWindowSize.current,
     content: @Composable () -> Unit,
 ) {
 
-    val show = remember { mutableStateOf(uiIsVisibleDefault) }
+    val showStateFlag by stateFlagModel.toState()
 
     AnimatedVisibility(
-        visible = show.value,
+        visible = !showStateFlag.showState,
         enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
         exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
     ) {
@@ -58,7 +60,7 @@ fun StateWrapperView(
     )
 
     AnimatedVisibility(
-        visible = !show.value,
+        visible = showStateFlag.showState,
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
@@ -81,23 +83,23 @@ fun StateWrapperView(
             .fillMaxSize()
     ) {
         DisplayToggleView(
-            displayed = show.value,
+            hideButtonVisible = showStateFlag.showState,
             size = size,
-            toggleDisplayCallback = { show.value = !show.value },
+            toggleDisplayCallback = { stateFlagModel.toggle() },
         )
     }
 }
 
 @Composable
 fun BoxScope.DisplayToggleView(
-    displayed: Boolean,
+    hideButtonVisible: Boolean,
     size: WindowSize = LocalWindowSize.current,
     toggleDisplayCallback: () -> Unit,
 ) {
 
     Fore.i("DisplayToggleView")
 
-    val label = stringResource(id = if (displayed) R.string.show_state else R.string.hide_state)
+    val label = stringResource(id = if (hideButtonVisible) R.string.hide_state else R.string.show_state)
     val alignment = if (size.isRound) Alignment.TopCenter else Alignment.TopEnd
 
     OutlinedButton(
