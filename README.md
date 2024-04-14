@@ -1,14 +1,14 @@
 ## n8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
-⚠️** WIP (~75% feature complete) & help wanted 🙏(check the issues) ** ⚠️
+⚠️WIP (~75% feature complete) & help wanted 🙏(check the issues) ⚠️
 
 ![example app screenshot landscape view](example-app/screenshot-land.png)
 
 Clone the repo and run the sample app... (that's the quickest way to understand what's going on here)
 
-### Usage
+### Quick Start
 
-n8 navigation is: pure kotlin, low config, minimally coupled & type safe, but do see the little sample app and unit tests for the full picture
+The second quickest way to grok this is to see the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe)
 
 ``` kotlin
 implementation("co.early.n8:n8-core:0.0.4")
@@ -18,7 +18,9 @@ GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC724
 
 _Note: a legacy or hybrid android app that still uses fragments or multiple activities, can't maintain its back stack in the same stateful manner as a 100% compose app can and therefore won't get much utility from N8_
 
----
+### Details
+
+Goals of n8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
 
 It's not necessary to specify navigation routes upfront, n8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
