@@ -1,24 +1,24 @@
 ## n8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
-** WIP if you want to help, open an issue and submit a PR! **
+⚠️** WIP (~75% feature complete) & help wanted 🙏(check the issues) ** ⚠️
 
-- pure kotlin
-- low config
-- minimally coupled
-- type safe
+![example app screenshot landscape view](example-app/screenshot-land.png)
+
+Clone the repo and run the sample app... (that's the quickest way to understand what's going on here)
+
+### Usage
+
+n8 navigation is: pure kotlin, low config, minimally coupled & type safe, but do see the little sample app and unit tests for the full picture
 
 ``` kotlin
 implementation("co.early.n8:n8-core:0.0.4")
 implementation("co.early.n8:n8-compose:0.0.4")
 ```
-
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
-### Usage
-
-(But see the little sample app and unit tests for the full picture)
-
 _Note: a legacy or hybrid android app that still uses fragments or multiple activities, can't maintain its back stack in the same stateful manner as a 100% compose app can and therefore won't get much utility from N8_
+
+---
 
 It's not necessary to specify navigation routes upfront, n8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
@@ -465,13 +465,6 @@ available for client use too which should make life easier.
 ### Example custom mutation
 
 //TODO
-
-## Example App
-
-![example app screenshot](example-app/screenshot.png)
-![example app screenshot landscape view](example-app/screenshot-land.png)
-
-There is a mini android app in this repo if you want something to play around with
 
 ### Some ideas for what to do next
 
