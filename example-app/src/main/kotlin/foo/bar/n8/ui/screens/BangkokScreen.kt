@@ -24,7 +24,7 @@ fun BangkokScreen(
         ),
         BtnSpec(
             label = "Go To NewYork (no history)",
-            clicked = { n8.navigateTo(Location.EuropeanLocations.Stockholm, addToHistory = false) }
+            clicked = { n8.navigateTo(Location.NewYork, addToHistory = false) }
         ),
     )
 
