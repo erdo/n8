@@ -27,6 +27,5 @@ fun DakarScreen(
     ScreenTemplate(
         location = Location.Dakar,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

@@ -27,6 +27,5 @@ fun NewYorkScreen(
     ScreenTemplate(
         location = Location.NewYork,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

@@ -27,6 +27,5 @@ fun SydneyScreen(
     ScreenTemplate(
         location = Location.Sydney,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

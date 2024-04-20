@@ -1,4 +1,4 @@
-## n8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
+## N8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
 ⚠️WIP (~75% feature complete) & help wanted 🙏(check the issues) ⚠️
 
@@ -20,9 +20,9 @@ _Note: a legacy or hybrid android app that still uses fragments or multiple acti
 
 ### Details
 
-Goals of n8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
+Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
 
-It's not necessary to specify navigation routes upfront, n8 just builds the navigation graph
+It's not necessary to specify navigation routes upfront, N8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
 needs to call to navigate around the app:
 
@@ -33,15 +33,15 @@ n8.navigateBackTo(NewYork)
 n8.switchTab(mainTabs, tabIndex = 1)
 ```
 
-To use n8 in your app, you don't need to implement any special interfaces on your screens, so your
-UI code remains largely independent of n8 itself.
+To use N8 in your app, you don't need to implement any special interfaces on your screens, so your
+UI code remains largely independent of N8 itself.
 
-You do need to tell n8 what class you are using to keep track of your user's *Location* and your
+You do need to tell N8 what class you are using to keep track of your user's *Location* and your
 *TabHosts* - something like a sealed class works well here, but there is nothing stopping you from
 using basic Strings to identify your locations. If you don't have any TabHosts, you can just put
 Unit
 
-Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with n8 code, you
+Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with N8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted
 
 ``` kotlin
@@ -113,7 +113,7 @@ sealed class TabHostId {
 }
 ```
 
-Tell n8 what classes you decided on like this:
+Tell N8 what classes you decided on like this:
 
 ``` kotlin
 val n8 = NavigationModel<Location, TabHostId>(
@@ -131,7 +131,7 @@ all the lifecycle issues for you. To use the wrapper, first set the navigation m
 N8.setNavigationModel(n8)
 ```
 
-Then add the n8 navigation host, and your compose code will be updated whenever the navigation
+Then add the N8 navigation host, and your compose code will be updated whenever the navigation
 state changes (i.e. your user has navigated forward or pressed back)
 
 ``` kotlin
@@ -155,7 +155,7 @@ setContent {
 }
 ```
 
-Pass the n8 instance around the app using your choice of DI, or access it directly like this:
+Pass the N8 instance around the app using your choice of DI, or access it directly like this:
 
 ``` kotlin
 N8.n8()
@@ -175,7 +175,7 @@ onClick = {
 If you want to know how all this is working, the first step is to understand the
 underlying data structure used to represent the state of the navigation at any point in time.
 
-The navigation graph is represented as an immutable tree structure, when n8 logs its state, it logs
+The navigation graph is represented as an immutable tree structure, when N8 logs its state, it logs
 that
 tree structure from top-left to bottom-right, like a file explorer.
 
@@ -281,7 +281,7 @@ directly contain either EndNodes or other TabHosts
 
 #### Logging the state
 
-If some n8 behaviour is confusing, it can be helpful to print out the current state of the
+If some N8 behaviour is confusing, it can be helpful to print out the current state of the
 navigation graph.
 
 ``` kotlin
@@ -333,7 +333,7 @@ navigationModel.navigateTo(location = SignOutScreen) { null }
 
 ##### Structural v Temporal
 
-TabHosts tend to treat the back operation in one of 2 different ways. n8 calls these two modes
+TabHosts tend to treat the back operation in one of 2 different ways. N8 calls these two modes
 "Structural" and "Temporal".
 
 By Structural we mean something akin to the old "up" operation in android. Let's say you have an
@@ -397,7 +397,7 @@ visited while on ```tabIndex = 2```, and then do the same for ```tabIndex = 0```
 So in our example, that would take 7 clicks back to exit:
 Shanghai -> Mumbai -> London -> Tokyo -> Houston -> Sydney -> Paris -> [exit]
 
-The n8 implements those two modes using only the **selectedTabHistory** field.
+Note that N8 implements those two modes using only the **selectedTabHistory** field.
 
 You can set the TabBackMode via the ```switchTab()``` function. The default
 is ```TabBackMode.Temporal```
@@ -409,7 +409,7 @@ is ```TabBackMode.Temporal```
 ### Persistence
 
 Whichever classes you chose to use to represent your Locations and TabHosts, make sure they are
-serializable and n8 will take care of persisting the user's navigation graph for you locally
+serializable and N8 will take care of persisting the user's navigation graph for you locally
 
 Notice this line in the constructor:
 
@@ -417,9 +417,9 @@ Notice this line in the constructor:
 typeOf<NavigationState<Location, TabHostId>>()
 ```
 
-that's how n8 can serialise and persist your navigation state across rotations or sessions without
+that's how N8 can serialise and persist your navigation state across rotations or sessions without
 knowing anything about the class you chose for Location or TabHostId in advance. That line is very
-important, but it can't be verified by the compiler unfortunately. n8 will let you know if it's
+important, but it can't be verified by the compiler unfortunately. N8 will let you know if it's
 wrong though, either at construction, or the first time you try to add a TabHost (if one wasn't
 added during construction).
 
@@ -456,12 +456,12 @@ the scope of a navigation library
 
 ### Custom Navigation behaviour
 
-n8 tries to make standard navigation behaviour available to your app using basic functions by
+N8 tries to make standard navigation behaviour available to your app using basic functions by
 default, but you can implement any behaviour you like by writing a custom state mutation yourself.
 
-The n8 navigation state is immutable, but internally it also has parent / child relationships that
+The N8 navigation state is immutable, but internally it also has parent / child relationships that
 go in both directions and most of the mutation operations involve recursion, so it's definitely an
-advance topic, but there are mutation helper functions that n8 uses internally and that are
+advance topic, but there are mutation helper functions that N8 uses internally and that are
 available for client use too which should make life easier.
 
 ### Example custom mutation

@@ -139,9 +139,6 @@ sealed class Navigation<L, T> {
         }
 
         override fun hostedBy(): List<TabHostLocation<T>> {
-
-            Fore.e("hostedBy()")
-
             return parent?.hostedBy() ?: emptyList()
         }
 

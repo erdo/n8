@@ -27,6 +27,5 @@ fun MilanScreen(
     ScreenTemplate(
         location = Location.EuropeanLocations.Milan,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

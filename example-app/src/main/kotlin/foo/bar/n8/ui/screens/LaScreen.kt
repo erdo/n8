@@ -27,6 +27,5 @@ fun LaScreen(
     ScreenTemplate(
         location = Location.LA,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

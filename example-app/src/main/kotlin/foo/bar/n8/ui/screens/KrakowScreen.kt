@@ -27,6 +27,5 @@ fun KrakowScreen(
     ScreenTemplate(
         location = Location.EuropeanLocations.Krakow,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

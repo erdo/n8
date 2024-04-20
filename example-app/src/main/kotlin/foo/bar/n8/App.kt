@@ -22,7 +22,7 @@ class App : Application() {
         super.onCreate()
 
         if (BuildConfig.DEBUG) {
-            Fore.setDelegate(DebugDelegateDefault("n8_"))
+            Fore.setDelegate(DebugDelegateDefault("N8_"))
         }
 
 

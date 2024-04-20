@@ -32,6 +32,7 @@ import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.showSelected
+import foo.bar.n8.ui.common.StateWrapperView
 import foo.bar.n8.ui.navigation.Location
 import foo.bar.n8.ui.navigation.NavHost
 import foo.bar.n8.ui.navigation.TabHostId
@@ -159,33 +160,41 @@ private fun RowScope.TabUi(text: String, image: ImageVector, enabled: Boolean, a
 }
 
 @Composable
-fun MainContent(location: Location, paddingValues: PaddingValues) {
+fun MainContent(
+    location: Location,
+    paddingValues: PaddingValues,
+    n8: NavigationModel<Location, TabHostId> = N8.n8()
+) {
 
     Box(modifier = Modifier.padding(paddingValues)) {
 
-        Fore.d("appScreenContent()")
+        Fore.d("MainContent() location:$location")
 
-        when (location) {
-            Location.Home -> HomeScreen()
-            Location.Bangkok -> BangkokScreen()
-            Location.Dakar -> DakarScreen()
-            Location.Damascus -> DamascusScreen()
-            Location.Houston -> HoustonScreen()
-            Location.LA -> LaScreen()
-            Location.Lagos -> LagosScreen()
-            Location.Mumbai -> MumbaiScreen()
-            Location.NewYork -> NewYorkScreen()
-            Location.Seoul -> SeoulScreen()
-            Location.Shanghai -> ShanghaiScreen()
-            Location.Sydney -> SydneyScreen()
-            Location.Tokyo -> TokyoScreen()
-            is Location.EuropeanLocations -> {
-                when (location) {
-                    Location.EuropeanLocations.London -> LondonScreen()
-                    Location.EuropeanLocations.Milan -> MilanScreen()
-                    Location.EuropeanLocations.Paris -> ParisScreen()
-                    Location.EuropeanLocations.Stockholm -> StockholmScreen()
-                    Location.EuropeanLocations.Krakow -> KrakowScreen()
+        StateWrapperView(
+            stateAsString = n8.toString(diagnostics = false),
+        ) {
+            when (location) {
+                Location.Home -> HomeScreen()
+                Location.Bangkok -> BangkokScreen()
+                Location.Dakar -> DakarScreen()
+                Location.Damascus -> DamascusScreen()
+                Location.Houston -> HoustonScreen()
+                Location.LA -> LaScreen()
+                Location.Lagos -> LagosScreen()
+                Location.Mumbai -> MumbaiScreen()
+                Location.NewYork -> NewYorkScreen()
+                Location.Seoul -> SeoulScreen()
+                Location.Shanghai -> ShanghaiScreen()
+                Location.Sydney -> SydneyScreen()
+                Location.Tokyo -> TokyoScreen()
+                is Location.EuropeanLocations -> {
+                    when (location) {
+                        Location.EuropeanLocations.London -> LondonScreen()
+                        Location.EuropeanLocations.Milan -> MilanScreen()
+                        Location.EuropeanLocations.Paris -> ParisScreen()
+                        Location.EuropeanLocations.Stockholm -> StockholmScreen()
+                        Location.EuropeanLocations.Krakow -> KrakowScreen()
+                    }
                 }
             }
         }

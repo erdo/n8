@@ -31,6 +31,5 @@ fun ParisScreen(
     ScreenTemplate(
         location = Location.EuropeanLocations.Paris,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }
