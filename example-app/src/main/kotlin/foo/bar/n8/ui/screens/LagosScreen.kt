@@ -27,6 +27,5 @@ fun LagosScreen(
     ScreenTemplate(
         location = Location.Lagos,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

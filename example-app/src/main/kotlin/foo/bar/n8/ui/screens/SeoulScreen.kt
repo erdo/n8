@@ -31,6 +31,5 @@ fun SeoulScreen(
     ScreenTemplate(
         location = Location.Seoul,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

@@ -28,44 +28,38 @@ data class BtnSpec(
 fun ScreenTemplate(
     location: Location,
     buttons: List<BtnSpec>,
-    stateAsString: String,
     size: WindowSize = LocalWindowSize.current,
 ) {
-    StateWrapperView(
-        stateAsString = stateAsString,
-        size = size
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
 
-            Txt(
-                text = location.toString(),
-                textSpec = TextSpec.H2(size)
-            )
+        Txt(
+            text = location.toString(),
+            textSpec = TextSpec.H2(size)
+        )
 
-            Spacer(
-                modifier = Modifier.height(SH3(size))
-            )
+        Spacer(
+            modifier = Modifier.height(SH3(size))
+        )
 
-            buttons.forEach {
-                OutlinedButton(
-                    modifier = Modifier,
-                    colors = ButtonDefaults.textButtonColors(),
-                    onClick = { it.clicked() },
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = ButtonDefaults.textButtonColors().contentColor,
-                    ),
-                    shape = ButtonDefaults.textShape,
-                    enabled = true,
-                ) {
-                    Txt(
-                        text = it.label,
-                        textSpec = TextSpec.P2(size)
-                    )
-                }
+        buttons.forEach {
+            OutlinedButton(
+                modifier = Modifier,
+                colors = ButtonDefaults.textButtonColors(),
+                onClick = { it.clicked() },
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = ButtonDefaults.textButtonColors().contentColor,
+                ),
+                shape = ButtonDefaults.textShape,
+                enabled = true,
+            ) {
+                Txt(
+                    text = it.label,
+                    textSpec = TextSpec.P2(size)
+                )
             }
         }
     }

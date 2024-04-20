@@ -34,6 +34,7 @@ import co.early.fore.ui.size.WindowSize
 import foo.bar.n8.App
 import foo.bar.n8.R
 import foo.bar.n8.feature.ViewStateFlagModel
+import foo.bar.n8.feature.ViewStateFlagModelState
 import foo.bar.n8.feature.toState
 import foo.bar.n8.ui.common.elements.TextSpec
 import foo.bar.n8.ui.common.elements.Txt
@@ -53,47 +54,75 @@ fun StateWrapperView(
     ) {
         AspectBasedComposable(
             port = {
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.Center),
-                    visible = !showStateFlag.showState,
-                    enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
-                ) {
-                    content()
-                }
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.Center),
-                    visible = showStateFlag.showState,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    StateView(stateAsString)
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    DisplayToggleView(
-                        hideButtonVisible = showStateFlag.showState,
-                        size = size,
-                        toggleDisplayCallback = { stateFlagModel.toggle() },
-                    )
-                }
+                StateWrapperPortrait(
+                    stateAsString = stateAsString,
+                    showStateFlag = showStateFlag,
+                    content = content,
+                    toggleCallback = { stateFlagModel.toggle() }
+                )
             },
             land = {
-                Row {
-                    Box(
-                        modifier = Modifier
-                            .width(size.dpSize.width / 3),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        content()
-                    }
-                    StateView(stateAsString)
-                }
+                StateWrapperLandscape(
+                    stateAsString = stateAsString,
+                    content = content
+                )
             }
         )(size)
+    }
+}
+
+@Composable
+private fun BoxScope.StateWrapperPortrait(
+    stateAsString: String,
+    showStateFlag: ViewStateFlagModelState,
+    content: @Composable () -> Unit,
+    toggleCallback: () -> Unit,
+    size: WindowSize = LocalWindowSize.current,
+) {
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.Center),
+        visible = !showStateFlag.showState,
+        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
+    ) {
+        content()
+    }
+    AnimatedVisibility(
+        modifier = Modifier.align(Alignment.Center),
+        visible = showStateFlag.showState,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        StateView(stateAsString)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        StateToggle(
+            hideButtonVisible = showStateFlag.showState,
+            size = size,
+            toggleDisplayCallback = toggleCallback,
+        )
+    }
+}
+
+@Composable
+private fun StateWrapperLandscape(
+    stateAsString: String,
+    content: @Composable () -> Unit,
+    size: WindowSize = LocalWindowSize.current,
+) {
+    Row {
+        Box(
+            modifier = Modifier
+                .width(size.dpSize.width / 3),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            content()
+        }
+        StateView(stateAsString)
     }
 }
 
@@ -107,10 +136,15 @@ fun StateView(
         m = 20.sp,
         l = 35.sp
     )
+
+    val scrollState = rememberScrollState()
+
+    Fore.e("rememberScrollState(): ${scrollState.value}")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
     ) {
@@ -122,13 +156,13 @@ fun StateView(
 }
 
 @Composable
-fun BoxScope.DisplayToggleView(
+fun BoxScope.StateToggle(
     hideButtonVisible: Boolean,
     size: WindowSize = LocalWindowSize.current,
     toggleDisplayCallback: () -> Unit,
 ) {
 
-    Fore.i("DisplayToggleView")
+    Fore.i("StateToggle")
 
     val label =
         stringResource(id = if (hideButtonVisible) R.string.hide_state else R.string.show_state)

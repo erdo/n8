@@ -24,6 +24,5 @@ fun HomeScreen(
     ScreenTemplate(
         location = Location.Home,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false)
     )
 }

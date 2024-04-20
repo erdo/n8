@@ -27,6 +27,5 @@ fun LondonScreen(
     ScreenTemplate(
         location = Location.EuropeanLocations.London,
         buttons = btns,
-        stateAsString = n8.toString(diagnostics = false) // TODO can we remove some faff for client code re the generics?
     )
 }
