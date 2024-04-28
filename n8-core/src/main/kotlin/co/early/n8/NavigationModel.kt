@@ -434,7 +434,7 @@ class NavigationModel<L : Any, T : Any>(
         clearToTabRoot: Boolean = false,
     ) {
         logger.d(
-            "addTabHost() tabHostId:${tabHostSpec.tabHostId} currentAddToHist:${state.willBeAddedToHistory}"
+            "switchTab() tabHostId:${tabHostSpec.tabHostId} currentAddToHist:${state.willBeAddedToHistory}"
         )
 
         require(tabHostSpec.homeTabLocations.size > tabIndex) {
@@ -455,7 +455,7 @@ class NavigationModel<L : Any, T : Any>(
 
             tabHost?.let { // tabHost already exists in navigation graph
 
-                Fore.e("[${tabHostSpec.tabHostId}] FOUND")
+                logger.d("[${tabHostSpec.tabHostId}] Found")
 
                 val newSelectedHistory = when (tabHostSpec.backMode) {
                     TabBackMode.Structural -> listOf(tabIndex)
@@ -483,7 +483,7 @@ class NavigationModel<L : Any, T : Any>(
                 )
             } ?: run { // first time this tabHost has been added
 
-                Fore.e("[${tabHostSpec.tabHostId}] NOT FOUND")
+                logger.d("[${tabHostSpec.tabHostId}] Not Found, adding")
 
                 val newParent = parent.copy(
                     stack = parent.stack.toMutableList().also {
@@ -589,8 +589,12 @@ class NavigationModel<L : Any, T : Any>(
             ) // TODO reverseToLocation(location, tabsOf(tabHostSpec = TabHostSpecification(T, emptyList())))
         } ?: reverseToLocation(location, state.navigation)
 
+        // important, see note in reverseToLocation()
+        state.navigation.populateChildParents()
+        foundLocationNav?.populateChildParents()
+
         if (foundLocationNav != null) { //replace location as it might have different data
-            Fore.d("navigateBackTo()... location found in history: ${foundLocationNav.currentLocation()::class.simpleName}")
+            Fore.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
             val newNavigation = mutateNavigation(
                 oldItem = foundLocationNav.currentItem(),
                 newItem = endNodeOf(location)
@@ -602,12 +606,15 @@ class NavigationModel<L : Any, T : Any>(
                 )
             )
         } else { // didn't find location so just navigate forward
-            Fore.d("navigateBackTo()... location not found in history, navigating forward instead")
+            Fore.d("navigateBackTo()... location NOT FOUND in history, navigating forward instead")
             navigateTo(location, addToHistory)
         }
     }
 
     /**
+     * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
+     * this function as changing parent references is part of the reversal algorithm
+     *
      * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
      * function initially (not required for subsequent recursive calls)
      *
@@ -623,7 +630,7 @@ class NavigationModel<L : Any, T : Any>(
     private fun reverseToLocation(locationToFind: L, nav: Navigation<L, T>): Navigation<L, T>? {
         Fore.d("reverseToLocation() locationToFind:${locationToFind::class.simpleName} nav:${nav}")
         return if (nav.currentLocation()::class.simpleName == locationToFind::class.simpleName) {
-            Fore.d("reverseToLocation()... MATCHED ${nav.currentLocation()::class.simpleName}")
+            Fore.d("reverseToLocation()... << MATCHED ${nav.currentLocation()::class.simpleName} >>")
             nav
         } else {
             nav.currentItem().calculateBackStep()?.let {
