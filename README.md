@@ -11,8 +11,8 @@ Clone the repo and run the sample app... (that's the quickest way to understand 
 The second quickest way to grok this is to see the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe)
 
 ``` kotlin
-implementation("co.early.n8:n8-core:0.0.4")
-implementation("co.early.n8:n8-compose:0.0.4")
+implementation("co.early.n8:n8-core:0.0.5")
+implementation("co.early.n8:n8-compose:0.0.5")
 ```
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
@@ -72,10 +72,10 @@ sealed class Location {
     data object SignIn : Location()
     
     @Serializable
-    data object Feed : Location()
+    data class ProductPage(val productId: Int) : Location()
     
     @Serializable
-    data object Upload : Location()
+    data object Feed : Location()
     
     @Serializable
     sealed class SignUpFlow : Location() {

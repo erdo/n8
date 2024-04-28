@@ -48,7 +48,7 @@ internal fun <L, T> tabsOf(
         tabs = tabHostSpec.homeTabLocations.map {
             backStackOf(endNodeOf(it))
         },
-    )
+    ).populateChildParents()
 }
 
 fun <L, T> endNodeOf(
@@ -150,7 +150,7 @@ fun <L, T> mutateNavigation(
                         stack = oldParent.value.stack.toMutableList().map {
                             Fore.d("mutateNavigation()... FIND stack item $it")
                             if (it === oldItem) {
-                                Fore.d("mutateNavigation()... MATCH")
+                                Fore.d("mutateNavigation()... MATCHED Item to be replaced in BackStack")
                                 newItem// swap the item
                             } else {
                                 it
@@ -174,7 +174,7 @@ fun <L, T> mutateNavigation(
                         tabs = oldParent.value.tabs.toMutableList().map {
                             Fore.d("mutateNavigation()... FIND tab item $it")
                             if (it === oldItem) {
-                                Fore.d("mutateNavigation()... MATCH")
+                                Fore.d("mutateNavigation()... MATCHED BackStack to be replaced in TabHost")
                                 newItem.isBackStack() // swap the item, TabHosts can only contain BackStacks
                             } else {
                                 it
