@@ -72,10 +72,10 @@ sealed class Location {
     data object SignIn : Location()
     
     @Serializable
-    data object Feed : Location()
+    data class ProductPage(val productId: Int) : Location()
     
     @Serializable
-    data object Upload : Location()
+    data object Feed : Location()
     
     @Serializable
     sealed class SignUpFlow : Location() {
