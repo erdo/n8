@@ -73,15 +73,15 @@ class NavigationExtensionsTest {
                     "    endNodeOf(A) [parent=BackStack(3) child=null],\n" +
                     "    endNodeOf(B) [parent=BackStack(3) child=null],\n" +
                     "    tabsOf( [tabs=3 parent=BackStack(3) child=BackStack(4)]\n" +
-                    "        tabHostId = TABS_01\n" +
                     "        selectedTabHistory = listOf(0),\n" +
+                    "        tabHostId = TABS_01,\n" +
                     "        backStackOf( [stackSize=4 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=TabHost(TABS_02 tabs:2 hist:[0, 1])]\n" +
                     "            endNodeOf(X1) [parent=BackStack(4) child=null],\n" +
                     "            endNodeOf(C) [parent=BackStack(4) child=null],\n" +
                     "            endNodeOf(D) [parent=BackStack(4) child=null],\n" +
                     "            tabsOf( [tabs=2 parent=BackStack(4) child=BackStack(1)]\n" +
-                    "                tabHostId = TABS_02\n" +
                     "                selectedTabHistory = listOf(0,1),\n" +
+                    "                tabHostId = TABS_02,\n" +
                     "                backStackOf( [stackSize=2 parent=TabHost(TABS_02 tabs:2 hist:[0, 1]) child=EndNode]\n" +
                     "                    endNodeOf(Y1) [parent=BackStack(2) child=null],\n" +
                     "                    endNodeOf(E) [parent=BackStack(2) child=null]\n" +
@@ -147,15 +147,15 @@ class NavigationExtensionsTest {
                     "    endNodeOf(A),\n" +
                     "    endNodeOf(B),\n" +
                     "    tabsOf( \n" +
-                    "        tabHostId = TABS_01\n" +
                     "        selectedTabHistory = listOf(0),\n" +
+                    "        tabHostId = TABS_01,\n" +
                     "        backStackOf( \n" +
                     "            endNodeOf(X1),\n" +
                     "            endNodeOf(C),\n" +
                     "            endNodeOf(D),\n" +
                     "            tabsOf( \n" +
-                    "                tabHostId = TABS_02\n" +
                     "                selectedTabHistory = listOf(0,1),\n" +
+                    "                tabHostId = TABS_02,\n" +
                     "                backStackOf( \n" +
                     "                    endNodeOf(Y1),\n" +
                     "                    endNodeOf(E)\n" +

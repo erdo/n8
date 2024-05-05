@@ -317,15 +317,15 @@ private fun <L, T> TabHost<L, T>.render(
         }
         append("\n")
         repeat(pad) { append(" ") }
-        append("tabHostId = $tabHostId")
-        append("\n")
-        repeat(pad) { append(" ") }
         append("selectedTabHistory = listOf(")
         for (index in selectedTabHistory) {
             append("$index,")
         }
         setLength(length - 1)
-        append("),\n")
+        append("),")
+        append("\n")
+        repeat(pad) { append(" ") }
+        append("tabHostId = $tabHostId,\n")
         tabs.forEachIndexed { index, tab ->
             if (index == selectedTabHistory.last()) {
                 tab.render(pad, builder, incDiagnostics, current)
