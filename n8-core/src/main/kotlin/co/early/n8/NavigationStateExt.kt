@@ -8,17 +8,11 @@ import co.early.n8.RestrictedNavigation.NotBackStack
 
 private const val padStep: Int = 4
 
-/**
- * this lets us create a backStack 'that doesn't need a tabHost, without having to specify
- * explicitly the tabHost class Type (it just defaults it to Int)
- */
-fun <L> backStackNoTabsOf(
-    vararg items: Navigation<L, Unit>,
-): BackStack<L, Unit> {
-    return backStackOf(*items)
-}
 
-fun <L, T> backStackOf(
+// TODO some of these recursive functions work up the tree, some work down, is it worth highlighting this
+// or can we make it consistent?
+
+fun <L : Any, T : Any> backStackOf(
     vararg items: Navigation<L, T>,
 ): BackStack<L, T> {
     return BackStack(
@@ -26,7 +20,17 @@ fun <L, T> backStackOf(
     ).populateChildParents()
 }
 
-fun <L, T> tabsOf(
+/**
+ * this lets us create a backStack 'that doesn't need a tabHost, without having to specify
+ * explicitly the tabHost class Type (it just defaults it to Int)
+ */
+fun <L : Any> backStackNoTabsOf(
+    vararg items: Navigation<L, Unit>,
+): BackStack<L, Unit> {
+    return backStackOf(*items)
+}
+
+fun <L : Any, T : Any> tabsOf(
     selectedTabHistory: List<Int> = listOf(0),
     tabHostId: T,
     vararg tabs: BackStack<L, T>,
@@ -38,7 +42,7 @@ fun <L, T> tabsOf(
     ).populateChildParents()
 }
 
-internal fun <L, T> tabsOf(
+internal fun <L : Any, T : Any> tabsOf(
     tabHostSpec: TabHostSpecification<L, T>,
     initialTab: Int = 0
 ): TabHost<L, T> {
@@ -48,10 +52,12 @@ internal fun <L, T> tabsOf(
         tabs = tabHostSpec.homeTabLocations.map {
             backStackOf(endNodeOf(it))
         },
+        clearToTabRootDefault = tabHostSpec.clearToTabRoot,
+        tabBackModeDefault = tabHostSpec.backMode,
     ).populateChildParents()
 }
 
-fun <L, T> endNodeOf(
+fun <L : Any, T : Any> endNodeOf(
     location: L,
 ): EndNode<L, T> {
     return EndNode(location)
@@ -62,7 +68,7 @@ fun <L, T> endNodeOf(
  * original) the children may not realise who their new parent is, this function corrects that
  * information
  */
-internal fun <L, T> Navigation<L, T>.populateChildParents(): Navigation<L, T> {
+internal fun <L : Any, T : Any> Navigation<L, T>.populateChildParents(): Navigation<L, T> {
     return when (this) {
         is BackStack -> populateChildParents()
         is EndNode -> this
@@ -75,7 +81,7 @@ internal fun <L, T> Navigation<L, T>.populateChildParents(): Navigation<L, T> {
  * will contain a BackStack that does not realise who its new parent is, this function corrects that
  * information
  */
-internal fun <L, T> TabHost<L, T>.populateChildParents(): TabHost<L, T> {
+internal fun <L : Any, T : Any> TabHost<L, T>.populateChildParents(): TabHost<L, T> {
     for (backStack in tabs) {
         backStack.parent = this
         backStack.populateChildParents()
@@ -85,10 +91,10 @@ internal fun <L, T> TabHost<L, T>.populateChildParents(): TabHost<L, T> {
 
 /**
  * For a new BackStack (including one copied from an old BackStack with minor changes), none of the
- * items in the Stack will realise who its new parent is, this function corrects that
+ * items in the Stack will realise who their new parent is, this function corrects that
  * information
  */
-internal fun <L, T> BackStack<L, T>.populateChildParents(): BackStack<L, T> {
+internal fun <L : Any, T : Any> BackStack<L, T>.populateChildParents(): BackStack<L, T> {
     for (navigation in stack) {
         when (val notBackStack = navigation.notBackStack()) {
             is NotBackStack.IsEndNode -> notBackStack.value.parent = this
@@ -102,7 +108,7 @@ internal fun <L, T> BackStack<L, T>.populateChildParents(): BackStack<L, T> {
 }
 
 /**
- * Mutates the navigation item by replacing the oldItem with the newItem, applying the change
+ * Mutates the navigation graph by replacing the oldItem with the newItem, applying the change
  * all the way back up the chain, via parent references, finally returning the complete
  * mutated navigation graph
  *
@@ -126,60 +132,101 @@ internal fun <L, T> BackStack<L, T>.populateChildParents(): BackStack<L, T> {
  * @newItem the replacement for the oldItem, this may have different values, children or even be of
  * a different type (see above for restrictions). The parent value of the newItem will be ignored
  * and a new value set as part of the mutation
+ * @ensureOnHistoryPath If ensureOnHistoryPath is true, the newItem will also be placed on the
+ * path to the currentItem if it isn't already. Relevant for cases when the oldItem is not on the
+ * history path but is still present somewhere in the navigation graph. Replacing oldItem with
+ * newItem will mutate the navigation graph, but it will not necessarily change the history path
+ * if the oldItem was not on the history path in the first place (which may or may not be what was
+ * intended). ensureOnHistoryPath = true ensures that once the mutation is complete, the newItem is
+ * accessible by the user on the back stack (or is the actual currentItem)
  *
  * @returns a new complete mutated navigation graph containing the newItem, with all parent and child
  * references updated
  */
-fun <L, T> mutateNavigation(
+fun <L : Any, T : Any> mutateNavigation(
     oldItem: Navigation<L, T>,
     newItem: Navigation<L, T>,
+    ensureOnHistoryPath: Boolean = false,
 ): Navigation<L, T> {
 
-    Fore.d("mutateNavigation() OLD:$oldItem NEW:$newItem")
+    Fore.d("mutateNavigation() OLD:$oldItem NEW:$newItem ensureOnHistoryPath:$ensureOnHistoryPath")
 
     val result = oldItem.parent?.let { oldItemParent -> // only the top level item has no parent
-        val mutated = mutateNavigation(
+        mutateNavigation(
             oldItem = oldItemParent,
             newItem = when (val oldParent =
                 oldItemParent.notEndNode()) { // EndNodes are NOT valid parents
+
                 is RestrictedNavigation.NotEndNode.IsBackStack -> {
 
-                    Fore.d("mutateNavigation()... newItem is BackStack")
+                    Fore.d("mutateNavigation()... oldParent is BackStack")
 
                     oldParent.value.copy(
-                        stack = oldParent.value.stack.toMutableList().map {
-                            Fore.d("mutateNavigation()... FIND stack item $it")
-                            if (it === oldItem) {
-                                Fore.d("mutateNavigation()... MATCHED Item to be replaced in BackStack")
-                                newItem// swap the item
-                            } else {
-                                it
+                        stack = if (ensureOnHistoryPath) {
+                            oldParent.value.stack
+                                .takeWhile { it !== oldItem }
+                                .toMutableList()
+                                .also { it.add(newItem) }
+                        } else {
+                            oldParent.value.stack.map {
+                                if (it === oldItem) {
+                                    newItem
+                                } else it
+                            }
+                        }  // todo do we need a populatechildparents here?
+                    ).populateChildParents()
+                        .also { newParent ->  // all the entries in the parent stack need to reference their new parent
+                            newParent.stack.map {
+                                updateParent(
+                                    it,
+                                    newParent
+                                )
                             }
                         }
-                    ).also { newParent ->
-                        newParent.stack.toMutableList().map {
-                            updateParent(
-                                it,
-                                newParent
-                            ) // all the entries in the parent stack need to reference their new parent
-                        }
-                    }
                 }
 
                 is RestrictedNavigation.NotEndNode.IsTabHost -> {
 
-                    Fore.d("mutateNavigation()... newItem is Tabhost")
+                    Fore.d("mutateNavigation()... oldParent is Tabhost")
 
-                    oldParent.value.copy(
-                        tabs = oldParent.value.tabs.toMutableList().map {
-                            Fore.d("mutateNavigation()... FIND tab item $it")
-                            if (it === oldItem) {
-                                Fore.d("mutateNavigation()... MATCHED BackStack to be replaced in TabHost")
-                                newItem.isBackStack() // swap the item, TabHosts can only contain BackStacks
-                            } else {
-                                it
+                    val oldTabHostParent = oldParent.value
+
+                    var tabIndex = -1
+                    val newTabs = oldTabHostParent.tabs.mapIndexed { index, tab ->
+                        if (tab === oldItem) {
+                            tabIndex = index
+                            newItem.isBackStack()
+                        } else tab
+                    }
+
+                    require(tabIndex > -1) {
+                        "It should be impossible reach here, but if we do it's a bug [2]. Please file an issue, including the state of " +
+                                "the navigation graph just before the crash: " +
+                                "'navigationModel.toString(diagnostics = true)' and the operation performed"
+                    }
+
+                    val newHistory = if (ensureOnHistoryPath) {
+                        when (oldTabHostParent.tabBackModeDefault) {
+                            TabBackMode.Structural -> {
+                                listOf(tabIndex)
+                            }
+
+                            TabBackMode.Temporal -> {
+                                oldTabHostParent.selectedTabHistory.filter { tab ->
+                                    tab != tabIndex
+                                }.toMutableList().also { list ->
+                                    list.add(tabIndex)
+                                }
                             }
                         }
+                    } else {
+                        oldTabHostParent.selectedTabHistory
+                    }
+
+                    oldParent.value.copy(
+                        tabs = newTabs,
+                        selectedTabHistory = newHistory,
+                        // todo do we needa populatechildparents here?
                     ).also { newParent ->
                         newParent.tabs.toMutableList().map {
                             updateParent(
@@ -189,15 +236,15 @@ fun <L, T> mutateNavigation(
                         }
                     }
                 }
-            }
+            },
+            ensureOnHistoryPath = ensureOnHistoryPath
         )
-        mutated
     } ?: newItem.populateChildParents()
 
     return result
 }
 
-private fun <L, T> updateParent(
+private fun <L : Any, T : Any> updateParent(
     item: Navigation<L, T>,
     newParent: Navigation<L, T>
 ): Navigation<L, T> {
@@ -209,7 +256,7 @@ private fun <L, T> updateParent(
     return item
 }
 
-fun <L, T> Navigation<L, T>.requireParent(): Navigation<L, T> {
+internal fun <L : Any, T : Any> Navigation<L, T>.requireParent(): Navigation<L, T> {
     return parent ?: throw RuntimeException(
         "We were expecting a non null directParent " +
                 "here. Please file an issue, indicating the function called and the output of " +
@@ -217,24 +264,24 @@ fun <L, T> Navigation<L, T>.requireParent(): Navigation<L, T> {
     )
 }
 
-fun <L> List<L>.replaceLast(replacement: L): List<L> {
-    return replaceAt(size - 1, replacement)
-}
+//fun <L> List<L>.replaceLast(replacement: L): List<L> {
+//    return replaceAt(size - 1, replacement)
+//}
+//
+//fun <L> List<L>.replaceAt(index: Int, replacement: L): List<L> {
+//    return toMutableList().also {
+//        it.removeAt(index)
+//        it.add(index, replacement)
+//    }
+//}
 
-fun <L> List<L>.replaceAt(index: Int, replacement: L): List<L> {
-    return toMutableList().also {
-        it.removeAt(index)
-        it.add(index, replacement)
-    }
-}
-
-fun <L, T> BackStack<L, T>.addLocation(location: L): BackStack<L, T> {
+fun <L : Any, T : Any> BackStack<L, T>.addLocation(location: L): BackStack<L, T> {
     return copy(
         stack = stack.toMutableList().also { it.add(endNodeOf(location)) }
     ).populateChildParents()
 }
 
-fun <L, T> TabHost<L, T>.addLocationToCurrentTab(location: L): TabHost<L, T> {
+fun <L : Any, T : Any> TabHost<L, T>.addLocationToCurrentTab(location: L): TabHost<L, T> {
     return copy(
         tabs = tabs.mapIndexed { index, backStack ->
             if (index == selectedTabHistory.last()) {
@@ -246,7 +293,10 @@ fun <L, T> TabHost<L, T>.addLocationToCurrentTab(location: L): TabHost<L, T> {
     ).populateChildParents()
 }
 
-fun <T> List<TabHostLocation<T>>.showSelected(tabHostId: T, index: Int): Boolean {
+fun <T> List<TabHostLocation<T>>.showSelected(
+    tabHostId: T,
+    index: Int
+): Boolean { //todo review this naming
     return firstOrNull { it.tabHostId == tabHostId }?.tabIndex == index
 }
 
@@ -265,7 +315,7 @@ suspend fun <L : Any, T : Any> NavigationModel<L, T>.importState(
 //    this.reWriteNavigation(state, addToHistory = addToHistory)
 }
 
-internal fun <L, T> Navigation<L, T>.render(
+internal fun <L : Any, T : Any> Navigation<L, T>.render(
     padding: Int = 0,
     builder: StringBuilder,
     incDiagnostics: Boolean,
@@ -278,7 +328,7 @@ internal fun <L, T> Navigation<L, T>.render(
     }
 }
 
-private fun <L, T> EndNode<L, T>.render(
+private fun <L : Any, T : Any> EndNode<L, T>.render(
     padding: Int,
     builder: StringBuilder,
     incDiagnostics: Boolean,
@@ -301,7 +351,7 @@ private fun <L, T> EndNode<L, T>.render(
     }
 }
 
-private fun <L, T> TabHost<L, T>.render(
+private fun <L : Any, T : Any> TabHost<L, T>.render(
     padding: Int,
     builder: StringBuilder,
     incDiagnostics: Boolean,
@@ -326,6 +376,12 @@ private fun <L, T> TabHost<L, T>.render(
         append("\n")
         repeat(pad) { append(" ") }
         append("tabHostId = $tabHostId,\n")
+        if (incDiagnostics) {
+            repeat(pad) { append(" ") }
+            append("backMode = $tabBackModeDefault,\n")
+            repeat(pad) { append(" ") }
+            append("clearToTabRoot = $clearToTabRootDefault,\n")
+        }
         tabs.forEachIndexed { index, tab ->
             if (index == selectedTabHistory.last()) {
                 tab.render(pad, builder, incDiagnostics, current)
@@ -343,7 +399,7 @@ private fun <L, T> TabHost<L, T>.render(
     }
 }
 
-private fun <L, T> BackStack<L, T>.render(
+private fun <L : Any, T : Any> BackStack<L, T>.render(
     padding: Int,
     builder: StringBuilder,
     incDiagnostics: Boolean,
@@ -381,20 +437,20 @@ private fun <L, T> BackStack<L, T>.render(
  * end node, this will be the navigation item with no changes (a back operation is not
  * valid for this type of navigation item)
  */
-internal fun <L, T> Navigation<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
+internal fun <L : Any, T : Any> Navigation<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
     return when (this) {
-        is BackStack -> createNavigatedBackCopy()
-        is EndNode -> createNavigatedBackCopy()
-        is TabHost -> createNavigatedBackCopy()
+        is BackStack -> createItemNavigatedBackCopy()
+        is EndNode -> createItemNavigatedBackCopy()
+        is TabHost -> createItemNavigatedBackCopy()
     }.populateChildParents()
 }
 
 
-private fun <L, T> EndNode<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> EndNode<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
     return this
 }
 
-private fun <L, T> TabHost<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> TabHost<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
         copy(selectedTabHistory = selectedTabHistory.toMutableList().also { it.removeLast() })
     } else this
@@ -405,37 +461,37 @@ private fun <L, T> TabHost<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
  * once the complete nav graph has been recreated by calling populateParents()
  * on the top level navigation item
  */
-private fun <L, T> BackStack<L, T>.createNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> BackStack<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
         copy(stack = stack.toMutableList().also { it.removeLast() })
     } else this
 }
 
-/**
- * Find a TabHost match anywhere in the navigation graph. If no match is found null is returned
- * Recursively works it's way down the navigation graph from exit to current
- * @param navigation start by sending the top most navigation item here
- */
-internal fun <L, T> Navigation<L, T>.findTabHost(tabHostId: T): TabHost<L, T>? {
-    return when (this) {
-        is BackStack -> {
-            stack.firstNotNullOfOrNull {
-                it.findTabHost(tabHostId)
-            }
-        }
-
-        is EndNode -> null
-        is TabHost -> {
-            if (this.tabHostId == tabHostId) {
-                this
-            } else {
-                tabs.firstNotNullOfOrNull {
-                    it.findTabHost(tabHostId)
-                }
-            }
-        }
-    }
-}
+///**
+// * Find a TabHost match anywhere in the navigation graph. If no match is found null is returned
+// * Recursively works it's way down the navigation graph from exit to current
+// * @param navigation start by calling this from the top most navigation item
+// */
+//internal fun <L, T> Navigation<L, T>.findTabHost(tabHostId: T): TabHost<L, T>? {
+//    return when (this) {
+//        is BackStack -> {
+//            stack.firstNotNullOfOrNull {
+//                it.findTabHost(tabHostId)
+//            }
+//        }
+//
+//        is EndNode -> null
+//        is TabHost -> {
+//            if (this.tabHostId == tabHostId) {
+//                this
+//            } else {
+//                tabs.firstNotNullOfOrNull {
+//                    it.findTabHost(tabHostId)
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 /**
@@ -449,17 +505,130 @@ internal fun <L, T> Navigation<L, T>.findTabHost(tabHostId: T): TabHost<L, T>? {
  * @returns the complete new navigation graph after the back operation has been
  * performed or null if it was not possible to navigate further back in the graph
  */
-internal fun <L, T> Navigation<L, T>.calculateBackStep(): Navigation<L, T>? {
+internal fun <L : Any, T : Any> Navigation<L, T>.applyOneStepBackNavigation(): Navigation<L, T>? {
     Fore.d("calculateBackStep() type:${this::class.simpleName} navigation:${this}")
     return if (specificItemCanNavigateBack()) {
         Fore.d("calculateBackStep()... item CAN navigate back")
         mutateNavigation(
             oldItem = this,
-            newItem = this.createNavigatedBackCopy()
+            newItem = this.createItemNavigatedBackCopy()
         )
     } else { // try to move up the chain
         Fore.d("calculateBackStep()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
-        parent?.calculateBackStep()
+        parent?.applyOneStepBackNavigation()
     }
 }
 
+/**
+ * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
+ * this function as changing parent references is part of the reversal algorithm
+ *
+ * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+ * function initially (not required for subsequent recursive calls)
+ *
+ * @location location to be searched for
+ *
+ * @nav search will be conducted from the currentLocation of this nav graph, and up via
+ * parent relationships, and in the same manner as would a user continually
+ * navigating back from the current item until they exit the app
+ *
+ * @returns a mutated navigation graph containing the searched for location in current position
+ * or null if the location is not found
+ */
+internal fun <L : Any, T : Any> Navigation<L, T>.reverseToLocation(locationToFind: L): Navigation<L, T>? {
+    Fore.d("reverseToLocation() locationToFind:${locationToFind::class.simpleName} nav:$this")
+    return if (currentLocation()::class.simpleName == locationToFind::class.simpleName) {
+        Fore.d("reverseToLocation()... << MATCHED ${currentLocation()::class.simpleName} >>")
+        this
+    } else {
+        currentItem().applyOneStepBackNavigation()?.reverseToLocation(locationToFind)
+    }
+}
+
+///**
+// * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
+// * this function as changing parent references is part of the reversal algorithm
+// *
+// * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+// * function initially (not required for subsequent recursive calls)
+// *
+// * @location tabHostIdToFind to be searched for
+// *
+// * @nav search will be conducted from the currentLocation of this nav graph, and up via
+// * parent relationships, and in the same manner as would a user continually
+// * navigating back from the current item until they exit the app
+// *
+// * @returns a mutated navigation graph containing the searched for location in current position
+// * or null if the location is not found
+// */
+//internal fun <L : Any, T : Any> Navigation<L, T>.reverseToTabHost(tabHostIdToFind: T): TabHost<L, T>? {
+//    Fore.d("reverseToTabHost() tabHostIdToFind:${tabHostIdToFind::class.simpleName} nav:$this")
+//    val endNode = currentItem()
+//    val tabHost = endNode.parent?.parent
+//    return if (tabHost is TabHost && tabHost.tabHostId == tabHostIdToFind) {
+//        tabHost
+//    } else {
+//        endNode.applyOneStepBackNavigation()?.reverseToTabHost(tabHostIdToFind)
+//    }
+//}
+
+/**
+ * Finds a TabHost if it exists in the navigation graph, even if it is NOT on the back path
+ * of the user. No mutation happens here, a reference to the item is just returned if found, or
+ * null if not found
+ *
+ * NOTE: unlike most functions, this starts at the Home/Exit location and works
+ * downwards through the navigation graph, so this must be initially called on the Home Navigation
+ * item (which will always be a BackStack or a TabHost). If you don't call this function from the
+ * home location, it will throw an exception
+ *
+ * If a BackStack is encountered during a search, each item of that backStack will be checked for
+ * further processing starting at stack[0]
+ *
+ * If a TabHost is encountered during a search (assuming there is no TabHostId match) each tab of
+ * that TabHost is checked in turn for further processing, starting with tab 0
+ *
+ * If there is a TabHost match, that TabHost is returned
+ *
+ * If the search completes with no TabHostId match, null is returned
+ *
+ * @returns a reference to the TabHost as it sits within the navigation graph, or null if the
+ * TabHostId is not present anywhere in the navigation graph
+ */
+internal fun <L : Any, T : Any> Navigation<L, T>.tabHostFinder(
+    tabHostIdToFind: T,
+    skipParentCheck: Boolean = false
+): TabHost<L, T>? {
+
+    Fore.d("tabHostFinder() tabHostIdToFind:${tabHostIdToFind::class.simpleName} nav:$this")
+
+    if (!skipParentCheck) {
+        require(parent == null) {
+            "This function is intended to be called on the home / top level navigation item, for" +
+                    "which the parent will be null"
+        }
+    }
+
+    return when (val tabOrBackStack = notEndNode()) {
+        is RestrictedNavigation.NotEndNode.IsBackStack -> {
+            tabOrBackStack.value.stack.firstNotNullOfOrNull {
+                if (it is EndNode) {
+                    Fore.d("tabHostFinder() skip $this")
+                    null
+                } else {
+                    it.tabHostFinder(tabHostIdToFind, true)
+                }
+            }
+        }
+
+        is RestrictedNavigation.NotEndNode.IsTabHost -> {
+            if (tabOrBackStack.value.tabHostId == tabHostIdToFind) {
+                tabOrBackStack.value
+            } else {
+                tabOrBackStack.value.tabs.firstNotNullOfOrNull {
+                    it.tabHostFinder(tabHostIdToFind, true)
+                }
+            }
+        }
+    }
+}

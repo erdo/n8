@@ -9,39 +9,39 @@ import co.early.n8.RestrictedNavigation.NotEndNode
  * during library development, and that's what these classes are for
  */
 internal class RestrictedNavigation {
-    internal sealed class NotBackStack<L, T> {
-        internal data class IsEndNode<L, T>(val value: Navigation.EndNode<L, T>) : NotBackStack<L, T>()
-        internal data class IsTabHost<L, T>(val value: Navigation.TabHost<L, T>) : NotBackStack<L, T>()
+    internal sealed class NotBackStack<L: Any, T: Any> {
+        internal data class IsEndNode<L: Any, T: Any>(val value: Navigation.EndNode<L, T>) : NotBackStack<L, T>()
+        internal data class IsTabHost<L: Any, T: Any>(val value: Navigation.TabHost<L, T>) : NotBackStack<L, T>()
     }
 
-    internal sealed class NotEndNode<L, T> {
-        internal data class IsBackStack<L, T>(val value: Navigation.BackStack<L, T>) : NotEndNode<L, T>()
-        internal data class IsTabHost<L, T>(val value: Navigation.TabHost<L, T>) : NotEndNode<L, T>()
+    internal sealed class NotEndNode<L: Any, T: Any> {
+        internal data class IsBackStack<L: Any, T: Any>(val value: Navigation.BackStack<L, T>) : NotEndNode<L, T>()
+        internal data class IsTabHost<L: Any, T: Any>(val value: Navigation.TabHost<L, T>) : NotEndNode<L, T>()
     }
 }
 
-internal fun <L, T> Navigation<L, T>.isBackStack(): Navigation.BackStack<L, T> {
+internal fun <L: Any, T: Any> Navigation<L, T>.isBackStack(): Navigation.BackStack<L, T> {
     return when (this) {
         is Navigation.BackStack<L, T> -> this
         is Navigation.EndNode, is Navigation.TabHost -> throw RuntimeException(errorMsg)
     }
 }
 
-internal fun <L, T> Navigation<L, T>.isEndNode(): Navigation.EndNode<L, T> {
+internal fun <L: Any, T: Any> Navigation<L, T>.isEndNode(): Navigation.EndNode<L, T> {
     return when (this) {
         is Navigation.EndNode -> this
         is Navigation.BackStack, is Navigation.TabHost -> throw RuntimeException(errorMsg)
     }
 }
 
-internal fun <L, T> Navigation<L, T>.isTabHost(): Navigation.TabHost<L, T> {
+internal fun <L: Any, T: Any> Navigation<L, T>.isTabHost(): Navigation.TabHost<L, T> {
     return when (this) {
         is Navigation.TabHost<L, T> -> this
         is Navigation.EndNode, is Navigation.BackStack -> throw RuntimeException(errorMsg)
     }
 }
 
-internal fun <L, T> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
+internal fun <L: Any, T: Any> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
     return when (this) {
         is Navigation.BackStack<L, T> -> throw RuntimeException(errorMsg)
         is Navigation.EndNode -> NotBackStack.IsEndNode(this)
@@ -49,7 +49,7 @@ internal fun <L, T> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
     }
 }
 
-internal fun <L, T> Navigation<L, T>.notEndNode(): NotEndNode<L, T> {
+internal fun <L: Any, T: Any> Navigation<L, T>.notEndNode(): NotEndNode<L, T> {
     return when (this) {
         is Navigation.BackStack -> NotEndNode.IsBackStack(this)
         is Navigation.EndNode -> throw RuntimeException(errorMsg)
@@ -58,5 +58,6 @@ internal fun <L, T> Navigation<L, T>.notEndNode(): NotEndNode<L, T> {
 }
 
 private const val errorMsg =
-    "It should be impossible reach here, but if we do it's a bug. Please file " +
-            "an issue, indicating the function called and the output of toString(diagnostics=true)"
+    "It should be impossible reach here, but if we do it's a bug [1]. Please file an issue," +
+            "including the state of the navigation graph just before the crash: " +
+            "'navigationModel.toString(diagnostics = true)' and the operation performed"

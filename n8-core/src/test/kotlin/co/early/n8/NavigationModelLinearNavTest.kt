@@ -46,6 +46,7 @@ class NavigationModelLinearNavTest {
         // act
         navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(NewYork)
+
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert

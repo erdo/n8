@@ -75,6 +75,8 @@ class NavigationExtensionsTest {
                     "    tabsOf( [tabs=3 parent=BackStack(3) child=BackStack(4)]\n" +
                     "        selectedTabHistory = listOf(0),\n" +
                     "        tabHostId = TABS_01,\n" +
+                    "        backMode = Temporal,\n" +
+                    "        clearToTabRoot = false,\n" +
                     "        backStackOf( [stackSize=4 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=TabHost(TABS_02 tabs:2 hist:[0, 1])]\n" +
                     "            endNodeOf(X1) [parent=BackStack(4) child=null],\n" +
                     "            endNodeOf(C) [parent=BackStack(4) child=null],\n" +
@@ -82,19 +84,21 @@ class NavigationExtensionsTest {
                     "            tabsOf( [tabs=2 parent=BackStack(4) child=BackStack(1)]\n" +
                     "                selectedTabHistory = listOf(0,1),\n" +
                     "                tabHostId = TABS_02,\n" +
-                    "                backStackOf( [stackSize=2 parent=TabHost(TABS_02 tabs:2 hist:[0, 1]) child=EndNode]\n" +
+                    "                backMode = Temporal,\n" +
+                    "                clearToTabRoot = false,\n" +
+                    "                backStackOf( [stackSize=2 parent=TabHost(TABS_02 tabs:2 hist:[0, 1]) child=EndNode[E]]\n" +
                     "                    endNodeOf(Y1) [parent=BackStack(2) child=null],\n" +
                     "                    endNodeOf(E) [parent=BackStack(2) child=null]\n" +
                     "                ),\n" +
-                    "                backStackOf( [stackSize=1 parent=TabHost(TABS_02 tabs:2 hist:[0, 1]) child=EndNode]\n" +
+                    "                backStackOf( [stackSize=1 parent=TabHost(TABS_02 tabs:2 hist:[0, 1]) child=EndNode[Y2]]\n" +
                     "                    endNodeOf(Y2) [parent=BackStack(1) child=null]     <--- Current Item\n" +
                     "                )\n" +
                     "            )\n" +
                     "        ),\n" +
-                    "        backStackOf( [stackSize=1 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=EndNode]\n" +
+                    "        backStackOf( [stackSize=1 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=EndNode[X1]]\n" +
                     "            endNodeOf(X1) [parent=BackStack(1) child=null]\n" +
                     "        ),\n" +
-                    "        backStackOf( [stackSize=1 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=EndNode]\n" +
+                    "        backStackOf( [stackSize=1 parent=TabHost(TABS_01 tabs:3 hist:[0]) child=EndNode[X2]]\n" +
                     "            endNodeOf(X2) [parent=BackStack(1) child=null]\n" +
                     "        )\n" +
                     "    )\n" +
@@ -190,7 +194,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val result = nav.currentItem().parent?.createNavigatedBackCopy()!!
+        val result = nav.currentItem().parent?.createItemNavigatedBackCopy()!!
 
         Fore.i(result.toString(true))
 
@@ -222,7 +226,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val result = nav.currentItem().parent?.parent?.createNavigatedBackCopy()!!
+        val result = nav.currentItem().parent?.parent?.createItemNavigatedBackCopy()!!
 
         Fore.i(result.toString(true))
 
@@ -455,6 +459,31 @@ class NavigationExtensionsTest {
     }
 
     @Test
+    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes, when mutating to swap EndNode with ensureOnHistoryPath=true, correct item is swapped`() {
+
+        // arrange
+        val nav = backStackOf<NestedExample.Location, Unit>(
+            endNodeOf(A),
+            endNodeOf(A),
+            endNodeOf(A),
+        )
+        Fore.i(nav.toString(diagnostics = true))
+
+        // act
+        val mutatedNav = mutateNavigation(
+            oldItem = nav.stack[1],
+            newItem = endNodeOf(B),
+            ensureOnHistoryPath = true,
+        )
+        Fore.i(mutatedNav.toString(diagnostics = true))
+
+        // assert
+        assertEquals(A, mutatedNav.isBackStack().stack[0].isEndNode().location)
+        assertEquals(B, mutatedNav.isBackStack().stack[1].isEndNode().location)
+        assertEquals(2, mutatedNav.isBackStack().stack.size)
+    }
+
+    @Test
     fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks, when mutating to swap BackStack, correct item is swapped`() {
 
         // arrange
@@ -491,6 +520,48 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
+        assertEquals(A, mutatedNav.currentLocation())
+    }
+
+    @Test
+    fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks, when mutating to swap BackStack with ensureOnHistoryPath = true, correct item is swapped`() {
+
+        // arrange
+        val nav = tabsOf(
+            listOf(0),
+            "TestTab",
+            backStackOf(
+                Navigation.EndNode(A),
+            ),
+            backStackOf(
+                Navigation.EndNode(A),
+            ),
+            backStackOf(
+                Navigation.EndNode(A),
+            ),
+            backStackOf(
+                Navigation.EndNode(C),
+            ),
+        )
+        val replacementBackStack = backStackOf<NestedExample.Location, String>(
+            Navigation.EndNode(B),
+        )
+        Fore.i(nav.toString(diagnostics = true))
+
+        // act
+        val mutatedNav = mutateNavigation(
+            oldItem = nav.tabs[1],
+            newItem = replacementBackStack,
+            ensureOnHistoryPath = true,
+        )
+        Fore.i(mutatedNav.toString(diagnostics = true))
+
+        // assert
+        assertEquals(A, mutatedNav.isTabHost().tabs[0].isBackStack().stack[0].isEndNode().location)
+        assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
+        assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
+        assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
+        assertEquals(B, mutatedNav.currentLocation())
     }
 
     @Ignore

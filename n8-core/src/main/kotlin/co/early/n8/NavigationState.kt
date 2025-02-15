@@ -8,7 +8,7 @@ import kotlinx.serialization.Transient
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable
-data class NavigationState<L, T>(
+data class NavigationState<L: Any, T: Any>(
     @Serializable
     val navigation: Navigation<L, T>,
     /**
@@ -41,17 +41,13 @@ data class NavigationState<L, T>(
 }
 
 @Serializable(with = NavigationSerializer::class)
-sealed class Navigation<L, T> {
+sealed class Navigation<L: Any, T: Any> {
 
     abstract fun currentLocation(): L
     abstract val backsToExit: Int
     abstract fun toString(
         diagnostics: Boolean = false
     ): String
-
-
-    // TODO some of these recursive functions work up the tree, some work down, is it worth highlighting this
-    // or can we make it consistent?
 
     /**
      * Indicates which TabHosts this location is hosted in, or an empty list if there is no TabHost
@@ -100,14 +96,14 @@ sealed class Navigation<L, T> {
      *
      * 1. "Irrespective of parent" means: if this specific item CAN NOT to move back it will
      * indicate FALSE. Even if its parent may still be able to. (For example, if this item is
-     * an EndNode, it will reply false here as no EndNodes can themselves move back. But it might
-     * be the last item inside a backstack of size 3, meaning that the parent backstack could
-     * itself navigate back (and that parent's itemCanNavigateBack() would return true).
-     * Irrespective of that possibility, this item will still return false here)
+     * an EndNode, it will reply false here as no EndNodes can themselves move back. But this
+     * EndNode might also be the last item inside a backstack of size 3, meaning that the parent
+     * backstack could itself navigate back (and that parent's itemCanNavigateBack() would return
+     * true). Irrespective of that possibility, this item will still return false here)
      *
      * 2. "In deference to its children" means: Even if this item CAN to move back in theory, it's
      * child items may also have the ability to move back (and in practice, that would happen first)
-     * so that case, this item would return FALSE. For example, if this item is a BackStack with
+     * so in that case, this item would return FALSE. For example, if this item is a BackStack with
      * a stack size of 3, it will STILL reply false if its current item, at index 2, is a TabHost
      * which has room to move back due to the fact that it has a selectedTabHistory of size 2 say
      */
@@ -120,7 +116,7 @@ sealed class Navigation<L, T> {
     internal abstract fun aDescendantCanNavigateBack(): Boolean
 
     @Serializable
-    data class EndNode<L, T> internal constructor(
+    data class EndNode<L: Any, T: Any> internal constructor(
         @Serializable
         val location: L
     ) : Navigation<L, T>() {
@@ -135,7 +131,7 @@ sealed class Navigation<L, T> {
             get() = 0
 
         override fun toString(): String {
-            return this::class.simpleName ?: "null"
+            return "${this::class.simpleName}[${location::class.simpleName}]"
         }
 
         override fun hostedBy(): List<TabHostLocation<T>> {
@@ -168,13 +164,17 @@ sealed class Navigation<L, T> {
     }
 
     @Serializable
-    data class TabHost<L, T> internal constructor(
+    data class TabHost<L: Any, T: Any> internal constructor(
         @Serializable
         val selectedTabHistory: List<Int>,
         @Serializable
         val tabHostId: T,
         @Serializable
         val tabs: List<BackStack<L, T>>,
+        @Serializable
+        val clearToTabRootDefault: Boolean = false,
+        @Serializable
+        val tabBackModeDefault: TabBackMode = TabBackMode.Temporal
     ) : Navigation<L, T>() {
 
         @Transient
@@ -243,7 +243,7 @@ sealed class Navigation<L, T> {
     }
 
     @Serializable
-    data class BackStack<L, T> internal constructor(
+    data class BackStack<L: Any, T: Any> internal constructor(
         @Serializable
         val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
     ) : Navigation<L, T>() {
@@ -332,7 +332,7 @@ sealed class Navigation<L, T> {
  * if the object passed into the BreakTab function is not a known TabHost, log a warning and leave
  * the navigation state as it is // TODO review this behaviour
  */
-typealias BreakToTabHost<T> = (() -> T?)?
+typealias BreakToTabHost<L, T> = (() -> TabHostSpecification<L, T>?)?
 
 data class TabHostLocation<T>(
     val tabHostId: T,
@@ -342,6 +342,7 @@ data class TabHostLocation<T>(
 data class TabHostSpecification<L, T>(
     val tabHostId: T,
     val homeTabLocations: List<L>,
+    val clearToTabRoot: Boolean = false,
     val backMode: TabBackMode = TabBackMode.Temporal,
 ) {
     init {
