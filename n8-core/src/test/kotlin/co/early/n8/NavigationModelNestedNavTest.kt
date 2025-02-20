@@ -904,7 +904,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back to the same location, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false, when navigating back to the same location, location is not present`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -920,17 +920,20 @@ class NavigationModelNestedNavTest {
 
         // act
         navigationModel.navigateTo(A, addToHistory = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
         navigationModel.navigateBackTo(A)
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.loading)
-        assertEquals(7, navigationModel.state.backsToExit)
+        assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
     @Test

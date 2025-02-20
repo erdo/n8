@@ -8,7 +8,10 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 @OptIn(InternalSerializationApi::class)
-class NavigationSerializer<L: Any, T: Any>(locationValueSerializer: KSerializer<L>, tabHostValueSerializer: KSerializer<T>):
+class NavigationSerializer<L : Any, T : Any>(
+    locationValueSerializer: KSerializer<L>,
+    tabHostValueSerializer: KSerializer<T>
+) :
     KSerializer<Navigation<L, T>> {
     private val serializer = SealedClassSerializer(
         Navigation::class.simpleName!!,
@@ -26,7 +29,13 @@ class NavigationSerializer<L: Any, T: Any>(locationValueSerializer: KSerializer<
     )
 
     override val descriptor: SerialDescriptor = serializer.descriptor
+
     @Suppress("UNCHECKED_CAST")
-    override fun deserialize(decoder: Decoder): Navigation<L, T> { return serializer.deserialize(decoder) as Navigation<L, T> }
-    override fun serialize(encoder: Encoder, value: Navigation<L, T>) { serializer.serialize(encoder, value) }
+    override fun deserialize(decoder: Decoder): Navigation<L, T> {
+        return serializer.deserialize(decoder) as Navigation<L, T>
+    }
+
+    override fun serialize(encoder: Encoder, value: Navigation<L, T>) {
+        serializer.serialize(encoder, value)
+    }
 }

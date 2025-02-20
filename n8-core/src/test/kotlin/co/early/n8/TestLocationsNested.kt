@@ -128,10 +128,3 @@ fun test1() {
         )
     )
 }
-
-fun test2() {
-    val nav = backStackNoTabsOf(
-        endNodeOf(A),
-    )
-}
-

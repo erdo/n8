@@ -13,6 +13,10 @@ import co.early.n8.NestedExample.Location.X2
 import co.early.n8.NestedExample.Location.Y1
 import co.early.n8.NestedExample.Location.Y2
 import co.early.n8.NestedExample.Location.Z2
+import co.early.n8.lowlevel.createItemNavigatedBackCopy
+import co.early.n8.lowlevel.exportState
+import co.early.n8.lowlevel.importState
+import co.early.n8.lowlevel.mutateNavigation
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Ignore

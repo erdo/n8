@@ -1,18 +1,18 @@
 package co.early.n8
 
-import co.early.fore.kt.core.delegate.Fore
 import co.early.n8.RestrictedNavigation.NotBackStack.IsEndNode
 import co.early.n8.RestrictedNavigation.NotBackStack.IsTabHost
+import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable
-data class NavigationState<L: Any, T: Any>(
+data class NavigationState<L : Any, T : Any>(
     @Serializable
     val navigation: Navigation<L, T>,
     /**
-     * willBeAddedToHistory i.e. current Location "willBeAddedToHistory" on next forward navigation
+     * willBeAddedToHistory i.e. current Location Will Be Added To History on next forward navigation
      */
     @Serializable
     val willBeAddedToHistory: Boolean = true,
@@ -41,7 +41,7 @@ data class NavigationState<L: Any, T: Any>(
 }
 
 @Serializable(with = NavigationSerializer::class)
-sealed class Navigation<L: Any, T: Any> {
+sealed class Navigation<L : Any, T : Any> {
 
     abstract fun currentLocation(): L
     abstract val backsToExit: Int
@@ -116,7 +116,7 @@ sealed class Navigation<L: Any, T: Any> {
     internal abstract fun aDescendantCanNavigateBack(): Boolean
 
     @Serializable
-    data class EndNode<L: Any, T: Any> internal constructor(
+    data class EndNode<L : Any, T : Any> internal constructor(
         @Serializable
         val location: L
     ) : Navigation<L, T>() {
@@ -164,7 +164,7 @@ sealed class Navigation<L: Any, T: Any> {
     }
 
     @Serializable
-    data class TabHost<L: Any, T: Any> internal constructor(
+    data class TabHost<L : Any, T : Any> internal constructor(
         @Serializable
         val selectedTabHistory: List<Int>,
         @Serializable
@@ -194,18 +194,7 @@ sealed class Navigation<L: Any, T: Any> {
             get() = tabs[selectedTabHistory.last()]
 
         override val backsToExit: Int
-            get(): Int {
-                var backs = 0
-                selectedTabHistory.forEach {
-                    backs += tabs[it].backsToExit
-                }
-                return backs
-//TODO why does reduce not work
-//                return selectedTabHistory.reduce { backsToExitAccumulator, tabIndex ->
-//                    Fore.e("backsToExit for tabIndex $tabIndex: ${tabs[tabIndex].backsToExit}")
-//                    backsToExitAccumulator + tabs[tabIndex].backsToExit
-//                }
-            }
+            get() = selectedTabHistory.sumOf { tabs[it].backsToExit }
 
         override fun toString(): String {
             return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${selectedTabHistory})"
@@ -243,7 +232,7 @@ sealed class Navigation<L: Any, T: Any> {
     }
 
     @Serializable
-    data class BackStack<L: Any, T: Any> internal constructor(
+    data class BackStack<L : Any, T : Any> internal constructor(
         @Serializable
         val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
     ) : Navigation<L, T>() {
@@ -263,16 +252,15 @@ sealed class Navigation<L: Any, T: Any> {
         override val child: Navigation<L, T>
             get() = stack.last()
 
+
         override val backsToExit: Int
             get(): Int {
-                var backs = 0  // TODO why does reduce not work
-                stack.forEach {
-                    backs += when (val notBackStack = it.notBackStack()) {
+                return stack.sumOf {
+                    when (val notBackStack = it.notBackStack()) {
                         is IsEndNode -> 1
                         is IsTabHost -> notBackStack.value.backsToExit
                     }
                 }
-                return backs
             }
 
         override fun toString(): String {
@@ -322,15 +310,16 @@ sealed class Navigation<L: Any, T: Any> {
 }
 
 /**
- * if BreakTab itself is null, continue in current TabHost if any
+ * if BreakToTabHost itself is null, continue in current TabHost if any
  *
- * if the object passed into the BreakTab function is null, break out to the top level Navigation
- * item (which may be a BackStack or a TabHost)
+ * if the object returned from the BreakToTabHost function is null, break out to the top level
+ * Navigation item (which may be a BackStack or a TabHost)
  *
- * if the object passed into the BreakTab function is a known TabHost, break out to that TabHost
+ * if the object returned from the BreakToTabHost function is a TabHost which exists somewhere in the
+ * navigation graph, jump to that TabHost to continue
  *
- * if the object passed into the BreakTab function is not a known TabHost, log a warning and leave
- * the navigation state as it is // TODO review this behaviour
+ * if the object returned from the BreakToTabHost function is a TabHost which does not exist in the
+ * current navigation graph, log a warning and create the TabHost at the current location
  */
 typealias BreakToTabHost<L, T> = (() -> TabHostSpecification<L, T>?)?
 
@@ -344,10 +333,14 @@ data class TabHostSpecification<L, T>(
     val homeTabLocations: List<L>,
     val clearToTabRoot: Boolean = false,
     val backMode: TabBackMode = TabBackMode.Temporal,
+    val initialTab: Int = 0,
 ) {
     init {
         require(homeTabLocations.isNotEmpty()) {
             "homeTabLocations must contain at least one tab"
+        }
+        require(initialTab < homeTabLocations.size) {
+            "initialTab must be less than homeTabLocations.size"
         }
     }
 }
