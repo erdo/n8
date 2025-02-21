@@ -1,9 +1,8 @@
 [versions]
 gradle = "8.3.1"
-kotlinVersion = "1.9.22"
+kotlinVersion = "2.0.20"
 foreVersion = "1.6.4"
 foreComposeVersion = "1.5.10"
-composeCompilerVersion = "1.5.10"
 jvmToolchain = "8"
 androidCompileSdk = "34"
 androidTargetSdk = "34"
@@ -22,7 +21,7 @@ materialVersion = "1.11.0"
 [libraries]
 kotlinSerializationPlugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinVersion" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinVersion" }
-androidGradlePlugin = "com.android.tools.build:gradle:8.3.1"
+androidGradlePlugin = "com.android.tools.build:gradle:8.3.2"
 kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
 persista = "co.early.persista:persista:1.5.4"
 koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
@@ -38,3 +37,6 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 fore-core = { module = "co.early.fore:fore-kt-core", version.ref = "foreVersion" }
 fore-android = { module = "co.early.fore:fore-kt-android", version.ref = "foreVersion" }
 fore-compose = { module = "co.early.fore:fore-kt-android-compose", version.ref = "foreComposeVersion" }
+
+[plugins]
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }

@@ -9,73 +9,28 @@ import co.early.n8.NavigationModel
 import co.early.n8.RestrictedNavigation
 import co.early.n8.RestrictedNavigation.NotBackStack
 import co.early.n8.TabBackMode
-import co.early.n8.TabHostLocation
 import co.early.n8.endNodeOf
 import co.early.n8.isBackStack
 import co.early.n8.notBackStack
 import co.early.n8.notEndNode
 
 /**
- * The functions listed here are part of n8 library internals, some have been exposed publicly
- * because they can be useful for clients who want to develop their own custom behaviours. This is
- * advanced usage though which most clients aren't going to need.
+ * The functions listed here are part of n8 library internals, and have been exposed publicly
+ * because they can be useful for clients who want to develop their own custom behaviours
+ * (advanced usage which most clients aren't going to need.)
  *
- * Unlike the functions is the other packages (which are designed to be impossible to break), the
- * functions here are much more easy to misuse, please pay close attention to the warnings and
+ * Unlike the other core functions (which are designed to be impossible to break), these
+ * functions are much more easy to misuse, please pay close attention to the warnings and
  * explanations you'll find sprinkled about the source code.
  *
  * And remember: Fore.i(navigation.toString(diagnostics = true)) is your friend!
  */
 
-// TODO some of these recursive functions work up the tree, some work down, is it worth highlighting this
-// or can we make it consistent?
 
+@RequiresOptIn(message = "warning advanced usage only, please check source comments")
+annotation class LowLevelApi
 
 private const val padStep: Int = 4
-
-/**
- * For a newly created navigation (especially one which has been copied and altered from an
- * original) the children may not realise who their new parent is, this function corrects that
- * information
- */
-fun <L : Any, T : Any> Navigation<L, T>.populateChildParents(): Navigation<L, T> {
-    return when (this) {
-        is BackStack -> populateChildParents()
-        is EndNode -> this
-        is TabHost -> populateChildParents()
-    }
-}
-
-/**
- * For a new TabHost (including one copied from an old TabHost with minor changes), each of the Tabs
- * will contain a BackStack that does not realise who its new parent is, this function corrects that
- * information
- */
-internal fun <L : Any, T : Any> TabHost<L, T>.populateChildParents(): TabHost<L, T> {
-    for (backStack in tabs) {
-        backStack.parent = this
-        backStack.populateChildParents()
-    }
-    return this
-}
-
-/**
- * For a new BackStack (including one copied from an old BackStack with minor changes), none of the
- * items in the Stack will realise who their new parent is, this function corrects that
- * information
- */
-internal fun <L : Any, T : Any> BackStack<L, T>.populateChildParents(): BackStack<L, T> {
-    for (navigation in stack) {
-        when (val notBackStack = navigation.notBackStack()) {
-            is NotBackStack.IsEndNode -> notBackStack.value.parent = this
-            is NotBackStack.IsTabHost -> {
-                notBackStack.value.parent = this
-                notBackStack.value.populateChildParents()
-            }
-        }
-    }
-    return this
-}
 
 /**
  * Mutates the navigation graph by replacing the oldItem with the newItem, applying the change
@@ -113,16 +68,17 @@ internal fun <L : Any, T : Any> BackStack<L, T>.populateChildParents(): BackStac
  * @returns a new complete mutated navigation graph containing the newItem, with all parent and child
  * references updated
  */
-fun <L : Any, T : Any> mutateNavigation(
+@LowLevelApi
+fun <L : Any, T : Any> _mutateNavigation(
     oldItem: Navigation<L, T>,
     newItem: Navigation<L, T>,
     ensureOnHistoryPath: Boolean = false,
 ): Navigation<L, T> {
 
-    Fore.d("mutateNavigation() OLD:$oldItem NEW:$newItem ensureOnHistoryPath:$ensureOnHistoryPath")
+    Fore.d("_mutateNavigation() OLD:$oldItem NEW:$newItem ensureOnHistoryPath:$ensureOnHistoryPath")
 
     val result = oldItem.parent?.let { oldItemParent -> // only the top level item has no parent
-        mutateNavigation(
+        _mutateNavigation(
             oldItem = oldItemParent,
             newItem = when (val oldParent =
                 oldItemParent.notEndNode()) { // EndNodes are NOT valid parents
@@ -144,10 +100,10 @@ fun <L : Any, T : Any> mutateNavigation(
                                 } else it
                             }
                         }  // todo do we need a populatechildparents here?
-                    ).populateChildParents()
+                    )._populateChildParents()
                         .also { newParent ->  // all the entries in the parent stack need to reference their new parent
                             newParent.stack.map {
-                                updateParent(
+                                _updateParent(
                                     it,
                                     newParent
                                 )
@@ -199,7 +155,7 @@ fun <L : Any, T : Any> mutateNavigation(
                         // todo do we needa populatechildparents here?
                     ).also { newParent ->
                         newParent.tabs.toMutableList().map {
-                            updateParent(
+                            _updateParent(
                                 it,
                                 newParent
                             ) // all the entries in the parent tabs need to reference their new parent
@@ -209,15 +165,60 @@ fun <L : Any, T : Any> mutateNavigation(
             },
             ensureOnHistoryPath = ensureOnHistoryPath
         )
-    } ?: newItem.populateChildParents()
+    } ?: newItem._populateChildParents()
 
     return result
 }
 
-private fun <L : Any, T : Any> updateParent(
-    item: Navigation<L, T>,
-    newParent: Navigation<L, T>
-): Navigation<L, T> {
+/**
+ * For a newly created navigation (especially one which has been copied and altered from an
+ * original) the children may not realise who their new parent is, this function corrects that
+ * information
+ */
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._populateChildParents(): Navigation<L, T> {
+    return when (this) {
+        is BackStack -> _populateChildParents()
+        is EndNode -> this
+        is TabHost -> _populateChildParents()
+    }
+}
+
+/**
+ * For a new TabHost (including one copied from an old TabHost with minor changes), each of the Tabs
+ * will contain a BackStack that does not realise who its new parent is, this function corrects that
+ * information
+ */
+@LowLevelApi
+fun <L : Any, T : Any> TabHost<L, T>._populateChildParents(): TabHost<L, T> {
+    for (backStack in tabs) {
+        backStack.parent = this
+        backStack._populateChildParents()
+    }
+    return this
+}
+
+/**
+ * For a new BackStack (including one copied from an old BackStack with minor changes), none of the
+ * items in the Stack will realise who their new parent is, this function corrects that
+ * information
+ */
+@LowLevelApi
+fun <L : Any, T : Any> BackStack<L, T>._populateChildParents(): BackStack<L, T> {
+    for (navigation in stack) {
+        when (val notBackStack = navigation.notBackStack()) {
+            is NotBackStack.IsEndNode -> notBackStack.value.parent = this
+            is NotBackStack.IsTabHost -> {
+                notBackStack.value.parent = this
+                notBackStack.value._populateChildParents()
+            }
+        }
+    }
+    return this
+}
+
+@LowLevelApi
+fun <L : Any, T : Any> _updateParent(item: Navigation<L, T>, newParent: Navigation<L, T>): Navigation<L, T> {
     when (item) {
         is BackStack -> item.parent = newParent
         is EndNode -> item.parent = newParent
@@ -226,7 +227,8 @@ private fun <L : Any, T : Any> updateParent(
     return item
 }
 
-internal fun <L : Any, T : Any> Navigation<L, T>.requireParent(): Navigation<L, T> {
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._requireParent(): Navigation<L, T> {
     return parent ?: throw RuntimeException(
         "We were expecting a non null directParent " +
                 "here. Please file an issue, indicating the function called and the output of " +
@@ -234,37 +236,34 @@ internal fun <L : Any, T : Any> Navigation<L, T>.requireParent(): Navigation<L, 
     )
 }
 
-fun <L : Any, T : Any> BackStack<L, T>.addLocation(location: L): BackStack<L, T> {
+@LowLevelApi
+fun <L : Any, T : Any> BackStack<L, T>._addLocation(location: L): BackStack<L, T> {
     return copy(
         stack = stack.toMutableList().also { it.add(endNodeOf(location)) }
-    ).populateChildParents()
+    )._populateChildParents()
 }
 
-fun <L : Any, T : Any> TabHost<L, T>.addLocationToCurrentTab(location: L): TabHost<L, T> {
+@LowLevelApi
+fun <L : Any, T : Any> TabHost<L, T>._addLocationToCurrentTab(location: L): TabHost<L, T> {
     return copy(
         tabs = tabs.mapIndexed { index, backStack ->
             if (index == selectedTabHistory.last()) {
-                backStack.addLocation(location)
+                backStack._addLocation(location)
             } else {
                 backStack
             }
         }
-    ).populateChildParents()
+    )._populateChildParents()
 }
 
-fun <T> List<TabHostLocation<T>>.showSelected(
-    tabHostId: T,
-    index: Int
-): Boolean { //todo review this naming
-    return firstOrNull { it.tabHostId == tabHostId }?.tabIndex == index
-}
-
-suspend fun <L : Any, T : Any> NavigationModel<L, T>.exportState(): String {
+@LowLevelApi
+suspend fun <L : Any, T : Any> NavigationModel<L, T>._exportState(): String {
     Fore.d("exportState() ${this.state}")
     TODO()
 }
 
-suspend fun <L : Any, T : Any> NavigationModel<L, T>.importState(
+@LowLevelApi
+suspend fun <L : Any, T : Any> NavigationModel<L, T>._importState(
     serializedState: String,
     addToHistory: Boolean = true
 ) {
@@ -295,7 +294,7 @@ private fun <L : Any, T : Any> EndNode<L, T>.render(
 ): StringBuilder {
     with(builder) {
         repeat(padding) { append(" ") }
-        append("endNodeOf(${location!!::class.simpleName})")
+        append("endNodeOf(${location::class.simpleName})")
         if (incDiagnostics) {
             append(" [parent=${parent} child=${child}]")
             if (current) {
@@ -396,20 +395,21 @@ private fun <L : Any, T : Any> BackStack<L, T>.render(
  * end node, this will be the navigation item with no changes (a back operation is not
  * valid for this type of navigation item)
  */
-internal fun <L : Any, T : Any> Navigation<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return when (this) {
-        is BackStack -> createItemNavigatedBackCopy()
-        is EndNode -> createItemNavigatedBackCopy()
-        is TabHost -> createItemNavigatedBackCopy()
-    }.populateChildParents()
+        is BackStack -> _createItemNavigatedBackCopy()
+        is EndNode -> _createItemNavigatedBackCopy()
+        is TabHost -> _createItemNavigatedBackCopy()
+    }._populateChildParents()
 }
 
 
-private fun <L : Any, T : Any> EndNode<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> EndNode<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return this
 }
 
-private fun <L : Any, T : Any> TabHost<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
         copy(selectedTabHistory = selectedTabHistory.toMutableList().also { it.removeLast() })
     } else this
@@ -420,7 +420,7 @@ private fun <L : Any, T : Any> TabHost<L, T>.createItemNavigatedBackCopy(): Navi
  * once the complete nav graph has been recreated by calling populateParents()
  * on the top level navigation item
  */
-private fun <L : Any, T : Any> BackStack<L, T>.createItemNavigatedBackCopy(): Navigation<L, T> {
+private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
         copy(stack = stack.toMutableList().also { it.removeLast() })
     } else this
@@ -437,17 +437,18 @@ private fun <L : Any, T : Any> BackStack<L, T>.createItemNavigatedBackCopy(): Na
  * @returns the complete new navigation graph after the back operation has been
  * performed or null if it was not possible to navigate further back in the graph
  */
-fun <L : Any, T : Any> Navigation<L, T>.applyOneStepBackNavigation(): Navigation<L, T>? {
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigation<L, T>? {
     Fore.d("calculateBackStep() type:${this::class.simpleName} navigation:${this}")
     return if (specificItemCanNavigateBack()) {
         Fore.d("calculateBackStep()... item CAN navigate back")
-        mutateNavigation(
+        _mutateNavigation(
             oldItem = this,
-            newItem = this.createItemNavigatedBackCopy()
+            newItem = this._createItemNavigatedBackCopy()
         )
     } else { // try to move up the chain
         Fore.d("calculateBackStep()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
-        parent?.applyOneStepBackNavigation()
+        parent?._applyOneStepBackNavigation()
     }
 }
 
@@ -467,13 +468,14 @@ fun <L : Any, T : Any> Navigation<L, T>.applyOneStepBackNavigation(): Navigation
  * @returns a mutated navigation graph containing the searched for location in current position
  * or null if the location is not found
  */
-fun <L : Any, T : Any> Navigation<L, T>.reverseToLocation(locationToFind: L): Navigation<L, T>? {
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._reverseToLocation(locationToFind: L): Navigation<L, T>? {
     Fore.d("reverseToLocation() locationToFind:${locationToFind::class.simpleName} nav:$this")
-    return if (currentLocation()::class.simpleName == locationToFind::class.simpleName) {
-        Fore.d("reverseToLocation()... << MATCHED ${currentLocation()::class.simpleName} >>")
+    return if (_currentLocation()::class.simpleName == locationToFind::class.simpleName) {
+        Fore.d("reverseToLocation()... << MATCHED ${_currentLocation()::class.simpleName} >>")
         this
     } else {
-        currentItem().applyOneStepBackNavigation()?.reverseToLocation(locationToFind)
+        currentItem()._applyOneStepBackNavigation()?._reverseToLocation(locationToFind)
     }
 }
 
@@ -500,7 +502,8 @@ fun <L : Any, T : Any> Navigation<L, T>.reverseToLocation(locationToFind: L): Na
  * @returns a reference to the TabHost as it sits within the navigation graph, or null if the
  * TabHostId is not present anywhere in the navigation graph
  */
-fun <L : Any, T : Any> Navigation<L, T>.tabHostFinder(
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
     tabHostIdToFind: T,
     skipParentCheck: Boolean = false
 ): TabHost<L, T>? {
@@ -521,7 +524,7 @@ fun <L : Any, T : Any> Navigation<L, T>.tabHostFinder(
                     Fore.d("tabHostFinder() skip $this")
                     null
                 } else {
-                    it.tabHostFinder(tabHostIdToFind, true)
+                    it._tabHostFinder(tabHostIdToFind, true)
                 }
             }
         }
@@ -531,7 +534,7 @@ fun <L : Any, T : Any> Navigation<L, T>.tabHostFinder(
                 tabOrBackStack.value
             } else {
                 tabOrBackStack.value.tabs.firstNotNullOfOrNull {
-                    it.tabHostFinder(tabHostIdToFind, true)
+                    it._tabHostFinder(tabHostIdToFind, true)
                 }
             }
         }

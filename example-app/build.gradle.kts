@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.android.application")
+    alias(libs.plugins.compose)
 }
 
 val appId = "foo.bar.n8"
@@ -22,10 +23,6 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompilerVersion.get()
     }
 
     compileSdk = libs.versions.androidCompileSdk.get().toInt()

@@ -1,3 +1,5 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.fore.kt.core.coroutine.launchDefault
@@ -13,10 +15,11 @@ import co.early.n8.NestedExample.Location.X2
 import co.early.n8.NestedExample.Location.Y1
 import co.early.n8.NestedExample.Location.Y2
 import co.early.n8.NestedExample.Location.Z2
-import co.early.n8.lowlevel.createItemNavigatedBackCopy
-import co.early.n8.lowlevel.exportState
-import co.early.n8.lowlevel.importState
-import co.early.n8.lowlevel.mutateNavigation
+import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._createItemNavigatedBackCopy
+import co.early.n8.lowlevel._exportState
+import co.early.n8.lowlevel._importState
+import co.early.n8.lowlevel._mutateNavigation
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Ignore
@@ -198,7 +201,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val result = nav.currentItem().parent?.createItemNavigatedBackCopy()!!
+        val result = nav.currentItem().parent?._createItemNavigatedBackCopy()!!
 
         Fore.i(result.toString(true))
 
@@ -230,7 +233,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val result = nav.currentItem().parent?.parent?.createItemNavigatedBackCopy()!!
+        val result = nav.currentItem().parent?.parent?._createItemNavigatedBackCopy()!!
 
         Fore.i(result.toString(true))
 
@@ -288,7 +291,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val result = mutateNavigation(
+        val result = _mutateNavigation(
             oldItem = nav,
             newItem = nav.copy(
                 stack = nav.stack.toMutableList().also { it.removeAt(1) }
@@ -351,7 +354,7 @@ class NavigationExtensionsTest {
             } else backStack
         }
 
-        val result = mutateNavigation(
+        val result = _mutateNavigation(
             oldItem = tabHost,
             newItem = tabHost.copy(
                 tabs = newTabs
@@ -418,7 +421,7 @@ class NavigationExtensionsTest {
 
         // act
         val tabHost = nav.tabs[0].stack[3].isTabHost()
-        val result = mutateNavigation(
+        val result = _mutateNavigation(
             oldItem = tabHost,
             newItem = tabHost.copy(
                 selectedTabHistory = tabHost.selectedTabHistory.toMutableList()
@@ -435,7 +438,7 @@ class NavigationExtensionsTest {
             Y2,
             result.isTabHost().tabs[0].isBackStack().stack[3].isTabHost().tabs[1].stack[0].isEndNode().location
         )
-        assertEquals(Y2, result.currentLocation())
+        assertEquals(Y2, result._currentLocation())
     }
 
     @Test
@@ -450,7 +453,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(diagnostics = true))
 
         // act
-        val mutatedNav = mutateNavigation(
+        val mutatedNav = _mutateNavigation(
             oldItem = nav.stack[1],
             newItem = endNodeOf(B)
         )
@@ -474,7 +477,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(diagnostics = true))
 
         // act
-        val mutatedNav = mutateNavigation(
+        val mutatedNav = _mutateNavigation(
             oldItem = nav.stack[1],
             newItem = endNodeOf(B),
             ensureOnHistoryPath = true,
@@ -513,7 +516,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(diagnostics = true))
 
         // act
-        val mutatedNav = mutateNavigation(
+        val mutatedNav = _mutateNavigation(
             oldItem = nav.tabs[1],
             newItem = replacementBackStack,
         )
@@ -524,7 +527,7 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
-        assertEquals(A, mutatedNav.currentLocation())
+        assertEquals(A, mutatedNav._currentLocation())
     }
 
     @Test
@@ -553,7 +556,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(diagnostics = true))
 
         // act
-        val mutatedNav = mutateNavigation(
+        val mutatedNav = _mutateNavigation(
             oldItem = nav.tabs[1],
             newItem = replacementBackStack,
             ensureOnHistoryPath = true,
@@ -565,7 +568,7 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav.currentLocation())
+        assertEquals(B, mutatedNav._currentLocation())
     }
 
     @Ignore
@@ -612,7 +615,7 @@ class NavigationExtensionsTest {
         // act
         navigationModel.reWriteNavigation(navigation = nav)
         val serialized = launchDefault {
-            navigationModel.exportState()
+            navigationModel._exportState()
         }
 
         Fore.e(navigationModel.toString(diagnostics = true))
@@ -697,7 +700,7 @@ class NavigationExtensionsTest {
 
         // act
         launchDefault {
-            navigationModel.importState(serializedState)
+            navigationModel._importState(serializedState)
         }
 
         Fore.e(navigationModel.toString(diagnostics = true))

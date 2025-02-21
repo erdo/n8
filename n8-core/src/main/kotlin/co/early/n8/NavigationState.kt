@@ -1,7 +1,10 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.n8.RestrictedNavigation.NotBackStack.IsEndNode
 import co.early.n8.RestrictedNavigation.NotBackStack.IsTabHost
+import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -27,13 +30,13 @@ data class NavigationState<L : Any, T : Any>(
     }
 
     val currentLocation: L by lazy {
-        navigation.currentLocation()
+        navigation._currentLocation()
     }
     val canNavigateBack: Boolean by lazy {
         navigation.aDescendantCanNavigateBack() || navigation.specificItemCanNavigateBack()
     }
     val backsToExit: Int by lazy {
-        navigation.backsToExit
+        navigation._backsToExit
     }
     val hostedBy: List<TabHostLocation<T>> by lazy {
         navigation.currentItem().hostedBy()
@@ -43,8 +46,10 @@ data class NavigationState<L : Any, T : Any>(
 @Serializable(with = NavigationSerializer::class)
 sealed class Navigation<L : Any, T : Any> {
 
-    abstract fun currentLocation(): L
-    abstract val backsToExit: Int
+    @LowLevelApi
+    abstract fun _currentLocation(): L
+    @LowLevelApi
+    abstract val _backsToExit: Int
     abstract fun toString(
         diagnostics: Boolean = false
     ): String
@@ -115,7 +120,7 @@ sealed class Navigation<L : Any, T : Any> {
      */
     internal abstract fun aDescendantCanNavigateBack(): Boolean
 
-    @Serializable
+    @Serializable @ConsistentCopyVisibility
     data class EndNode<L : Any, T : Any> internal constructor(
         @Serializable
         val location: L
@@ -127,7 +132,7 @@ sealed class Navigation<L : Any, T : Any> {
         override val child: Navigation<L, T>?
             get() = null
 
-        override val backsToExit: Int
+        override val _backsToExit: Int
             get() = 0
 
         override fun toString(): String {
@@ -146,7 +151,7 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun currentLocation(): L {
+        override fun _currentLocation(): L {
             return location
         }
 
@@ -163,7 +168,7 @@ sealed class Navigation<L : Any, T : Any> {
         }
     }
 
-    @Serializable
+    @Serializable @ConsistentCopyVisibility
     data class TabHost<L : Any, T : Any> internal constructor(
         @Serializable
         val selectedTabHistory: List<Int>,
@@ -193,8 +198,8 @@ sealed class Navigation<L : Any, T : Any> {
         override val child: Navigation<L, T>
             get() = tabs[selectedTabHistory.last()]
 
-        override val backsToExit: Int
-            get() = selectedTabHistory.sumOf { tabs[it].backsToExit }
+        override val _backsToExit: Int
+            get() = selectedTabHistory.sumOf { tabs[it]._backsToExit }
 
         override fun toString(): String {
             return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${selectedTabHistory})"
@@ -212,8 +217,8 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun currentLocation(): L {
-            return currentItem().currentLocation()
+        override fun _currentLocation(): L {
+            return currentItem()._currentLocation()
         }
 
         override fun currentItem(): EndNode<L, T> {
@@ -231,7 +236,7 @@ sealed class Navigation<L : Any, T : Any> {
         }
     }
 
-    @Serializable
+    @Serializable @ConsistentCopyVisibility
     data class BackStack<L : Any, T : Any> internal constructor(
         @Serializable
         val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
@@ -253,12 +258,12 @@ sealed class Navigation<L : Any, T : Any> {
             get() = stack.last()
 
 
-        override val backsToExit: Int
+        override val _backsToExit: Int
             get(): Int {
                 return stack.sumOf {
                     when (val notBackStack = it.notBackStack()) {
                         is IsEndNode -> 1
-                        is IsTabHost -> notBackStack.value.backsToExit
+                        is IsTabHost -> notBackStack.value._backsToExit
                     }
                 }
             }
@@ -289,8 +294,8 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun currentLocation(): L {
-            return currentItem().currentLocation()
+        override fun _currentLocation(): L {
+            return currentItem()._currentLocation()
         }
 
         override fun currentItem(): EndNode<L, T> {
@@ -341,6 +346,9 @@ data class TabHostSpecification<L, T>(
         }
         require(initialTab < homeTabLocations.size) {
             "initialTab must be less than homeTabLocations.size"
+        }
+        require(initialTab > -1) {
+            "initialTab must be 0 or greater"
         }
     }
 }
