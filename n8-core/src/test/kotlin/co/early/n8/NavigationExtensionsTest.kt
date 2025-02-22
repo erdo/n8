@@ -5,16 +5,16 @@ package co.early.n8
 import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
-import co.early.n8.NestedExample.Location.A
-import co.early.n8.NestedExample.Location.B
-import co.early.n8.NestedExample.Location.C
-import co.early.n8.NestedExample.Location.D
-import co.early.n8.NestedExample.Location.E
-import co.early.n8.NestedExample.Location.X1
-import co.early.n8.NestedExample.Location.X2
-import co.early.n8.NestedExample.Location.Y1
-import co.early.n8.NestedExample.Location.Y2
-import co.early.n8.NestedExample.Location.Z2
+import co.early.n8.NestedTestData.Location.A
+import co.early.n8.NestedTestData.Location.B
+import co.early.n8.NestedTestData.Location.C
+import co.early.n8.NestedTestData.Location.D
+import co.early.n8.NestedTestData.Location.E
+import co.early.n8.NestedTestData.Location.X1
+import co.early.n8.NestedTestData.Location.X2
+import co.early.n8.NestedTestData.Location.Y1
+import co.early.n8.NestedTestData.Location.Y2
+import co.early.n8.NestedTestData.Location.Z2
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._createItemNavigatedBackCopy
 import co.early.n8.lowlevel._exportState
@@ -445,7 +445,7 @@ class NavigationExtensionsTest {
     fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes, when mutating to swap EndNode, correct item is swapped`() {
 
         // arrange
-        val nav = backStackOf<NestedExample.Location, Unit>(
+        val nav = backStackOf<NestedTestData.Location, Unit>(
             endNodeOf(A),
             endNodeOf(A),
             endNodeOf(A),
@@ -469,7 +469,7 @@ class NavigationExtensionsTest {
     fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes, when mutating to swap EndNode with ensureOnHistoryPath=true, correct item is swapped`() {
 
         // arrange
-        val nav = backStackOf<NestedExample.Location, Unit>(
+        val nav = backStackOf<NestedTestData.Location, Unit>(
             endNodeOf(A),
             endNodeOf(A),
             endNodeOf(A),
@@ -510,7 +510,7 @@ class NavigationExtensionsTest {
                 Navigation.EndNode(C),
             ),
         )
-        val replacementBackStack = backStackOf<NestedExample.Location, String>(
+        val replacementBackStack = backStackOf<NestedTestData.Location, String>(
             Navigation.EndNode(B),
         )
         Fore.i(nav.toString(diagnostics = true))
@@ -550,7 +550,7 @@ class NavigationExtensionsTest {
                 Navigation.EndNode(C),
             ),
         )
-        val replacementBackStack = backStackOf<NestedExample.Location, String>(
+        val replacementBackStack = backStackOf<NestedTestData.Location, String>(
             Navigation.EndNode(B),
         )
         Fore.i(nav.toString(diagnostics = true))
@@ -576,9 +576,9 @@ class NavigationExtensionsTest {
     fun `when exporting state, serialized representation is correct`() {
 
         // arrange
-        val navigationModel = NavigationModel<NestedExample.Location, String>(
-            homeLocation = NestedExample.Location.Home,
-            stateKType = typeOf<NavigationState<NestedExample.Location, String>>(),
+        val navigationModel = NavigationModel<NestedTestData.Location, String>(
+            homeLocation = NestedTestData.Location.Home,
+            stateKType = typeOf<NavigationState<NestedTestData.Location, String>>(),
             dataDirectory = dataDirectory
         )
         val nav = backStackOf(
@@ -662,9 +662,9 @@ class NavigationExtensionsTest {
     fun `when importing serialized state, state is rewritten correctly`() {
 
         // arrange
-        val navigationModel = NavigationModel<NestedExample.Location, String>(
-            homeLocation = NestedExample.Location.Home,
-            stateKType = typeOf<NavigationState<NestedExample.Location, String>>(),
+        val navigationModel = NavigationModel<NestedTestData.Location, String>(
+            homeLocation = NestedTestData.Location.Home,
+            stateKType = typeOf<NavigationState<NestedTestData.Location, String>>(),
             dataDirectory = dataDirectory
         )
         val serializedState = "backStackOf( \n" +  // TODO needs to be the json representation
@@ -740,5 +740,35 @@ class NavigationExtensionsTest {
             navigationModel.state
         )
 
+    }
+
+
+    @Ignore
+    @Test
+    fun `some custom navigation operations`() {
+        // TODO these tests come from NavigationModelLinearNavTest,
+        // we just need to check the same thing when the navigation graph is a nested one
+//
+//        // arrange
+//        val navigationModel = NavigationModel<Location>(
+//            homeLocation = London,
+//            stateKType = typeOf<NavigationState<Location>>(),
+//            dataDirectory = dataDirectory
+//        )
+//
+//        // act
+//        navigationModel.navigateTo(NewYork)
+//        navigationModel.navigateTo(Tokyo)
+//        navigationModel.navigateTo(Paris)
+//        navigationModel.navigateBack()
+//        navigationModel.navigateBack()
+//        Fore.i(navigationModel.toString(diagnostics = true))
+//
+//        // assert
+//        assertEquals(false, navigationModel.state.loading)
+//        assertEquals(2, navigationModel.state.backsToExit)
+//        assertEquals(NewYork, navigationModel.state.currentLocation)
+//        assertEquals(true, navigationModel.state.canNavigateBack)
+        assert(false)
     }
 }

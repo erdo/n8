@@ -376,7 +376,7 @@ class NavigationModel<L : Any, T : Any>(
                         e.toString()
             )
         }
-        if (clearPreviousNavGraph){
+        if (clearPreviousNavGraph) {
             updateState(state)
         } else {
             load()
@@ -533,18 +533,20 @@ class NavigationModel<L : Any, T : Any>(
 
             tabHost?.let { // tabHost already exists in navigation graph
 
-                logger.d("[${tabHostSpec.tabHostId}] Found")
+                logger.d("[${tabHostSpec.tabHostId}] Found, tabIndex specified: $tabIndex")
 
-                val newSelectedHistory = when (tabHostSpec.backMode) {
-                    TabBackMode.Structural -> listOf(tabIndex ?: tabHostSpec.initialTab)
-                    TabBackMode.Temporal -> {
-                        tabHost.selectedTabHistory.filter { tab ->
-                            tab != (tabIndex ?: tabHostSpec.initialTab)
-                        }.toMutableList().also { list ->
-                            list.add(tabIndex ?: tabHostSpec.initialTab)
+                val newSelectedHistory = tabIndex?.let {
+                    when (tabHostSpec.backMode) {
+                        TabBackMode.Structural -> listOf(tabIndex)
+                        TabBackMode.Temporal -> {
+                            tabHost.selectedTabHistory.filter { tab ->
+                                tab != (tabIndex)
+                            }.toMutableList().also { list ->
+                                list.add(tabIndex)
+                            }
                         }
                     }
-                }
+                } ?: tabHost.selectedTabHistory
 
                 val newTabs = tabHost.tabs.mapIndexed { index, backStack ->
                     if (index == (tabIndex ?: tabHostSpec.initialTab) && (clearToTabRootOverride == true)

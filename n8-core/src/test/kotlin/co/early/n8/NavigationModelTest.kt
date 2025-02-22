@@ -3,11 +3,11 @@ package co.early.n8
 import co.early.fore.core.observer.Observer
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
-import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations.London
-import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
-import co.early.n8.LinearExample.Location.NewYork
-import co.early.n8.LinearExample.Location.Tokyo
+import co.early.n8.LinearTestData.Location
+import co.early.n8.LinearTestData.Location.EuropeanLocations.London
+import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
+import co.early.n8.LinearTestData.Location.NewYork
+import co.early.n8.LinearTestData.Location.Tokyo
 import co.early.persista.PerSista
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK

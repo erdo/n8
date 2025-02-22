@@ -2,7 +2,7 @@ package co.early.n8
 
 import kotlinx.serialization.Serializable
 
-class LinearExample {
+class LinearTestData {
 
     @Serializable
     sealed class Location {

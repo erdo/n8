@@ -4,13 +4,13 @@ package co.early.n8
 
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
-import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations.London
-import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
-import co.early.n8.LinearExample.Location.NewYork
-import co.early.n8.LinearExample.Location.SunCreamSelector
-import co.early.n8.LinearExample.Location.Sydney
-import co.early.n8.LinearExample.Location.Tokyo
+import co.early.n8.LinearTestData.Location
+import co.early.n8.LinearTestData.Location.EuropeanLocations.London
+import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
+import co.early.n8.LinearTestData.Location.NewYork
+import co.early.n8.LinearTestData.Location.SunCreamSelector
+import co.early.n8.LinearTestData.Location.Sydney
+import co.early.n8.LinearTestData.Location.Tokyo
 import co.early.n8.lowlevel.LowLevelApi
 import io.mockk.MockKAnnotations
 import org.junit.Assert.assertEquals
@@ -404,7 +404,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location is the current page, when navigating back to it, history status is updated`() {
+    fun `given location is the Paris addToHistory = true, when navigating back to Paris with addToHist = false, history status is updated`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -425,14 +425,37 @@ class NavigationModelLinearNavTest {
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(
-            false,
-            navigationModel.state.willBeAddedToHistory
-        )
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
-    fun `given location has NOT been previously visited, when navigating BACK to it, navigate to the location as normal`() {
+    fun `given current location is the Paris addToHistory = false, when navigating back to Paris, location not found`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris, addToHistory = false)
+        navigationModel.navigateBackTo(Paris)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+    }
+
+    @Test
+    fun `given location has NOT been previously visited, when navigating BACK to it, navigate forward to the location as normal`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -491,7 +514,7 @@ class NavigationModelLinearNavTest {
 
         // act
         navigationModel.navigateTo(NewYork)
-        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(Sydney(50))
         Fore.i(navigationModel.toString(diagnostics = true))
@@ -611,7 +634,7 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.navigateBack(
+        val success = navigationModel.navigateBack(
             times = 2,
             setData = {
                 when (it) {
@@ -631,6 +654,43 @@ class NavigationModelLinearNavTest {
         assertNotEquals(Sydney(), navigationModel.state.currentLocation)
         assertEquals(Sydney(50), navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(true, success)
+    }
+
+    @Test
+    fun `when navigateBack is called with times = 3 and setData, but only room for 2 backs, final location receives data`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = Sydney(),
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Sydney())
+        navigationModel.navigateTo(SunCreamSelector)
+        val success = navigationModel.navigateBack(
+            times = 3,
+            setData = {
+                when (it) {
+                    is Sydney -> {
+                        it.copy(withSunCreamFactor = 50)
+                    }
+
+                    else -> it
+                }
+            }
+        )
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(false, success)
     }
 
     @Test
