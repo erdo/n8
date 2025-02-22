@@ -279,7 +279,8 @@ class NavigationModel<L : Any, T : Any>(
     private val initialNavigation: Navigation<L, T>,
     private val initialAddHomeLocationToHistory: Boolean = true,
     private val perSista: PerSista,
-    private val logger: Logger = Fore.getLogger()
+    clearPreviousNavGraph: Boolean = false,
+    private val logger: Logger = Fore.getLogger(),
 ) : Observable by ObservableImp() {
 
     constructor(
@@ -287,12 +288,14 @@ class NavigationModel<L : Any, T : Any>(
         homeLocation: L,
         initialAddHomeLocationToHistory: Boolean = true,
         perSista: PerSista,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
         initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         perSista = perSista,
+        clearPreviousNavGraph = clearPreviousNavGraph,
         logger = logger,
     )
 
@@ -301,16 +304,18 @@ class NavigationModel<L : Any, T : Any>(
         homeLocation: L,
         initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
         initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
-        logger = logger,
         perSista = PerSista(
             dataDirectory = dataDirectory,
             logger = logger,
         ),
+        clearPreviousNavGraph = clearPreviousNavGraph,
+        logger = logger,
     )
 
     constructor(
@@ -318,16 +323,18 @@ class NavigationModel<L : Any, T : Any>(
         initialNavigation: Navigation<L, T>,
         initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = initialNavigation,
         initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
-        logger = logger,
         perSista = PerSista(
             dataDirectory = dataDirectory,
             logger = logger,
         ),
+        clearPreviousNavGraph = clearPreviousNavGraph,
+        logger = logger,
     )
 
     var state = NavigationState(
@@ -369,7 +376,11 @@ class NavigationModel<L : Any, T : Any>(
                         e.toString()
             )
         }
-        load()
+        if (clearPreviousNavGraph){
+            updateState(state)
+        } else {
+            load()
+        }
     }
 
     //TODO allow for clearing the navigation memory via this model, and maybe a flag via constructor too

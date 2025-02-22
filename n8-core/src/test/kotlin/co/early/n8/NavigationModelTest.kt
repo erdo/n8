@@ -15,13 +15,11 @@ import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import kotlin.reflect.typeOf
 
-//tidy and uncomment the tests, update docs, publish
 class NavigationModelTest {
 
     private lateinit var dataDirectory: File
@@ -334,10 +332,39 @@ class NavigationModelTest {
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(
-            false,
-            navigationModel.state.willBeAddedToHistory
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
+    }
+
+    @Test
+    fun `navigation state is not persisted between instantiations when clear flag is set in constructor`() {
+
+        // arrange
+        var navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
         )
+
+        // act
+        navigationModel.navigateTo(Tokyo, addToHistory = false)
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        navigationModel = NavigationModel(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory,
+            clearPreviousNavGraph = true,
+        )
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
