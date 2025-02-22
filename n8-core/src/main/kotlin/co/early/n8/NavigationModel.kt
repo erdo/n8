@@ -795,4 +795,17 @@ class NavigationModel<L : Any, T : Any>(
         notifyObservers()
         perSista.write(state, stateKType) {}
     }
+
+    suspend fun serializeState(): String {
+        return Json.encodeToString(serializer(stateKType), state)
+    }
+
+    suspend fun deSerializeState(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
+        @Suppress("UNCHECKED_CAST")
+        val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
+        if (setAsState) {
+            updateState(newState)
+        }
+        return newState
+    }
 }

@@ -13,7 +13,7 @@ import kotlinx.serialization.Transient
 @Serializable
 data class NavigationState<L : Any, T : Any>(
     @Serializable
-    val navigation: Navigation<L, T>,
+    val navigation: Navigation<L, T>,  // TODO should we verify and enforce that each tabHost is unique? if not things will not go well
     /**
      * willBeAddedToHistory i.e. current Location Will Be Added To History on next forward navigation
      */
@@ -48,6 +48,7 @@ sealed class Navigation<L : Any, T : Any> {
 
     @LowLevelApi
     abstract fun _currentLocation(): L
+
     @LowLevelApi
     abstract val _backsToExit: Int
     abstract fun toString(
@@ -120,8 +121,11 @@ sealed class Navigation<L : Any, T : Any> {
      */
     internal abstract fun aDescendantCanNavigateBack(): Boolean
 
-    @Serializable @ConsistentCopyVisibility
-    data class EndNode<L : Any, T : Any> internal constructor(
+    // Note @ExposedCopyVisibility is deliberate, we want clients to use endNodeOf() or copy()
+    // to create these, because it's easier and cleaner. We could instead leave the constructor
+    // public, but that would just provide another less pretty way to do the same thing
+    @Serializable @ExposedCopyVisibility
+    data class EndNode<L : Any, T : Any> internal constructor (
         @Serializable
         val location: L
     ) : Navigation<L, T>() {
@@ -135,12 +139,12 @@ sealed class Navigation<L : Any, T : Any> {
         override val _backsToExit: Int
             get() = 0
 
-        override fun toString(): String {
-            return "${this::class.simpleName}[${location::class.simpleName}]"
-        }
-
         override fun hostedBy(): List<TabHostLocation<T>> {
             return parent?.hostedBy() ?: emptyList()
+        }
+
+        override fun toString(): String {
+            return "${this::class.simpleName}[${location::class.simpleName}]"
         }
 
         override fun toString(diagnostics: Boolean): String {
@@ -168,8 +172,11 @@ sealed class Navigation<L : Any, T : Any> {
         }
     }
 
-    @Serializable @ConsistentCopyVisibility
-    data class TabHost<L : Any, T : Any> internal constructor(
+    // Note @ExposedCopyVisibility is deliberate, we want clients to use tabsOf() or copy()
+    // to create these, because it's easier and cleaner. We could instead leave the constructor
+    // public, but that would just provide another less pretty way to do the same thing
+    @Serializable @ExposedCopyVisibility
+    data class TabHost<L : Any, T : Any> internal constructor (
         @Serializable
         val selectedTabHistory: List<Int>,
         @Serializable
@@ -201,12 +208,12 @@ sealed class Navigation<L : Any, T : Any> {
         override val _backsToExit: Int
             get() = selectedTabHistory.sumOf { tabs[it]._backsToExit }
 
-        override fun toString(): String {
-            return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${selectedTabHistory})"
-        }
-
         override fun hostedBy(): List<TabHostLocation<T>> {
             return parent?.hostedBy() ?: emptyList()
+        }
+
+        override fun toString(): String {
+            return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${selectedTabHistory})"
         }
 
         override fun toString(diagnostics: Boolean): String {
@@ -236,7 +243,10 @@ sealed class Navigation<L : Any, T : Any> {
         }
     }
 
-    @Serializable @ConsistentCopyVisibility
+    // Note @ExposedCopyVisibility is deliberate, we want clients to use backStackOf() or copy()
+    // to create these, because it's easier and cleaner. We could instead leave the constructor
+    // public, but that would just provide another less pretty way to do the same thing
+    @Serializable @ExposedCopyVisibility
     data class BackStack<L : Any, T : Any> internal constructor(
         @Serializable
         val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
@@ -268,10 +278,6 @@ sealed class Navigation<L : Any, T : Any> {
                 }
             }
 
-        override fun toString(): String {
-            return "${this::class.simpleName}(${stack.size})"
-        }
-
         override fun hostedBy(): List<TabHostLocation<T>> {
             return when (val tabHost = parent) {
                 is TabHost<L, T> -> {
@@ -284,6 +290,10 @@ sealed class Navigation<L : Any, T : Any> {
 
                 else -> emptyList() // no parent i.e. we are at the top level BackStack
             }
+        }
+
+        override fun toString(): String {
+            return "${this::class.simpleName}(${stack.size})"
         }
 
         override fun toString(diagnostics: Boolean): String {

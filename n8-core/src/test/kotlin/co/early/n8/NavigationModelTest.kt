@@ -1,6 +1,8 @@
 package co.early.n8
 
 import co.early.fore.core.observer.Observer
+import co.early.fore.kt.core.coroutine.awaitDefault
+import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.LinearTestData.Location
@@ -371,7 +373,7 @@ class NavigationModelTest {
     fun `clearing navigation state functions correctly`() {
 
         // arrange
-        var navigationModel = NavigationModel<Location, Unit>(
+        val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
             dataDirectory = dataDirectory

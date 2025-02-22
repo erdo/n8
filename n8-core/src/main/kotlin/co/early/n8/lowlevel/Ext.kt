@@ -5,7 +5,6 @@ import co.early.n8.Navigation
 import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
 import co.early.n8.Navigation.TabHost
-import co.early.n8.NavigationModel
 import co.early.n8.RestrictedNavigation
 import co.early.n8.RestrictedNavigation.NotBackStack
 import co.early.n8.TabBackMode
@@ -254,23 +253,6 @@ fun <L : Any, T : Any> TabHost<L, T>._addLocationToCurrentTab(location: L): TabH
             }
         }
     )._populateChildParents()
-}
-
-@LowLevelApi
-suspend fun <L : Any, T : Any> NavigationModel<L, T>._exportState(): String {
-    Fore.d("exportState() ${this.state}")
-    TODO()
-}
-
-@LowLevelApi
-suspend fun <L : Any, T : Any> NavigationModel<L, T>._importState(
-    serializedState: String,
-    addToHistory: Boolean = true
-) {
-    Fore.d("importState() addToHistory:$addToHistory")
-    TODO()
-//    val state = serializedState
-//    this.reWriteNavigation(state, addToHistory = addToHistory)
 }
 
 internal fun <L : Any, T : Any> Navigation<L, T>.render(
