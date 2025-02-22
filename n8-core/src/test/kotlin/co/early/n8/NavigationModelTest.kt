@@ -21,6 +21,7 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 import kotlin.reflect.typeOf
 
+//tidy and uncomment the tests, update docs, publish
 class NavigationModelTest {
 
     private lateinit var dataDirectory: File
@@ -339,40 +340,27 @@ class NavigationModelTest {
         )
     }
 
-    @Ignore
     @Test
-    fun `clearing previously saved navigation state functions correctly`() {
+    fun `clearing navigation state functions correctly`() {
 
-//        // arrange
-//        var navigationModel = NavigationModel<Location, Unit>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo, addToHistory = false)
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        navigationModel = NavigationModel(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location, Unit>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        Fore.e(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(Tokyo, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
+        // arrange
+        var navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(NewYork)
 
-        assert(false)
+        // act
+        navigationModel.clearNavigationGraph()
+
+        Fore.e(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.loading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
     }
 }

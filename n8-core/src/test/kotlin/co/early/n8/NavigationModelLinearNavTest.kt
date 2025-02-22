@@ -113,7 +113,7 @@ class NavigationModelLinearNavTest {
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
             dataDirectory = dataDirectory,
-            addHomeLocationToHistory = false,
+            initialAddHomeLocationToHistory = false,
         )
 
         // act

@@ -276,8 +276,8 @@ import kotlin.reflect.KType
  */
 class NavigationModel<L : Any, T : Any>(
     private val stateKType: KType,
-    initialNavigation: Navigation<L, T>,
-    addHomeLocationToHistory: Boolean = true,
+    private val initialNavigation: Navigation<L, T>,
+    private val initialAddHomeLocationToHistory: Boolean = true,
     private val perSista: PerSista,
     private val logger: Logger = Fore.getLogger()
 ) : Observable by ObservableImp() {
@@ -285,13 +285,13 @@ class NavigationModel<L : Any, T : Any>(
     constructor(
         stateKType: KType,
         homeLocation: L,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         perSista: PerSista,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        addHomeLocationToHistory = addHomeLocationToHistory,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         perSista = perSista,
         logger = logger,
     )
@@ -299,13 +299,13 @@ class NavigationModel<L : Any, T : Any>(
     constructor(
         stateKType: KType,
         homeLocation: L,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        addHomeLocationToHistory = addHomeLocationToHistory,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         logger = logger,
         perSista = PerSista(
             dataDirectory = dataDirectory,
@@ -316,13 +316,13 @@ class NavigationModel<L : Any, T : Any>(
     constructor(
         stateKType: KType,
         initialNavigation: Navigation<L, T>,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = initialNavigation,
-        addHomeLocationToHistory = addHomeLocationToHistory,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         logger = logger,
         perSista = PerSista(
             dataDirectory = dataDirectory,
@@ -332,7 +332,7 @@ class NavigationModel<L : Any, T : Any>(
 
     var state = NavigationState(
         navigation = initialNavigation,
-        willBeAddedToHistory = addHomeLocationToHistory,
+        willBeAddedToHistory = initialAddHomeLocationToHistory,
     )
         private set
 
@@ -746,6 +746,13 @@ class NavigationModel<L : Any, T : Any>(
         return _mutateNavigation(
             oldItem = currentItem,
             newItem = EndNode(setData(currentItem.location))
+        )
+    }
+
+    fun clearNavigationGraph() {
+        reWriteNavigation(
+            navigation = initialNavigation,
+            addToHistory = initialAddHomeLocationToHistory,
         )
     }
 

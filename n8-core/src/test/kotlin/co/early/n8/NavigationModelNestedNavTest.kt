@@ -52,7 +52,7 @@ class NavigationModelNestedNavTest {
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
-            addHomeLocationToHistory = false,
+            initialAddHomeLocationToHistory = false,
         )
 
         // act
@@ -478,7 +478,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
-            addHomeLocationToHistory = false,
+            initialAddHomeLocationToHistory = false,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory
         )
