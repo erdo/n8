@@ -58,6 +58,10 @@ internal fun <L : Any, T : Any> Navigation<L, T>.notEndNode(): NotEndNode<L, T> 
 }
 
 private const val errorMsg =
-    "It should be impossible reach here, but if we do it's a bug [1]. Please file an issue," +
-            "including the state of the navigation graph just before the crash: " +
-            "'navigationModel.toString(diagnostics = true)' and the operation performed"
+    "It should be impossible reach here, but if we do it's a bug [1]. If you are NOT directly" +
+            "using @LowLevelApi please file an issue, including the state of the navigation " +
+            "graph just before the crash: 'navigationModel.toString(diagnostics = true)' and " +
+            "the operation performed. If on the other hand you ARE using @LowLevelApi to perform " +
+            "some custom navigation mutations, there is probably an incorrect assumption being " +
+            "made about the structure of the navigation graph, please check carefully the source " +
+            "code comments for the @LowLevelApi functions"

@@ -30,13 +30,13 @@ data class NavigationState<L : Any, T : Any>(
     }
 
     val currentLocation: L by lazy {
-        navigation._currentLocation()
+        navigation.currentLocation()
     }
     val canNavigateBack: Boolean by lazy {
         navigation.aDescendantCanNavigateBack() || navigation.specificItemCanNavigateBack()
     }
     val backsToExit: Int by lazy {
-        navigation._backsToExit
+        navigation.backsToExit
     }
     val hostedBy: List<TabHostLocation<T>> by lazy {
         navigation.currentItem().hostedBy()
@@ -46,11 +46,9 @@ data class NavigationState<L : Any, T : Any>(
 @Serializable(with = NavigationSerializer::class)
 sealed class Navigation<L : Any, T : Any> {
 
-    @LowLevelApi
-    abstract fun _currentLocation(): L
+    abstract fun currentLocation(): L
 
-    @LowLevelApi
-    abstract val _backsToExit: Int
+    abstract val backsToExit: Int
     abstract fun toString(
         diagnostics: Boolean = false
     ): String
@@ -60,39 +58,42 @@ sealed class Navigation<L : Any, T : Any> {
      * parent in any of the navigation graph as the user would navigate back. If the location is
      * hosted in multiple nested TabHosts, the tabHost closest to the exit as the user navigates
      * back is listed first, inner tabHosts are listed after
+     * NB: this typically is called on the currentItem: navigation.currentItem().hostedBy()
      */
-    internal abstract fun hostedBy(): List<TabHostLocation<T>>
+    abstract fun hostedBy(): List<TabHostLocation<T>>
 
     /**
      * All the items contained in the stack of a BackStack have that BackStack as their parent.
      *
      * All the Tabs (BackStacks) of a TabHost have that TabHost as their parent.
      *
+     * The Only navigation item with a null parent is the top level item
+     *
      * Note, this is a _structural_ parent, the parent is NOT the item the user will navigate to
      * when pressing back.
      */
-    internal abstract val parent: Navigation<L, T>?
+     abstract val parent: Navigation<L, T>?
 
     /**
-     * The child of a BackStack is the last item in the stack (often but not always, this is also
-     * the currentItem)
+     * The child of a BackStack is the last item in the stack
      *
-     * The child of a TabHost is the last item in the stack (often but not always, this is also
-     * the currentItem)
+     * The child of a TabHost is the BackStack indexed by the last item in the selectedTabHistory
+     *
+     * The child of an EndNode is always null
      */
-    internal abstract val child: Navigation<L, T>?
+    abstract val child: Navigation<L, T>?
 
     /**
-     * currentItem is the item at the bottom of the navigation graph, and represents the current location
+     * currentItem is the item at the bottom of the navigation graph, and contains the current location
      * of the user
      */
-    internal abstract fun currentItem(): EndNode<L, T>
+    abstract fun currentItem(): EndNode<L, T>
 
     /**
      * This obviously depends on all the parents having already been set correctly
      */
-    internal fun topParent(): Navigation<L, T> {
-        return parent?.topParent() ?: this
+    fun topItem(): Navigation<L, T> {
+        return parent?.topItem() ?: this
     }
 
     /**
@@ -113,13 +114,13 @@ sealed class Navigation<L : Any, T : Any> {
      * a stack size of 3, it will STILL reply false if its current item, at index 2, is a TabHost
      * which has room to move back due to the fact that it has a selectedTabHistory of size 2 say
      */
-    internal abstract fun specificItemCanNavigateBack(): Boolean
+     abstract fun specificItemCanNavigateBack(): Boolean
 
     /**
      * True if any children between this item and the currentLocation return true for
      * specificItemCanNavigateBack()
      */
-    internal abstract fun aDescendantCanNavigateBack(): Boolean
+    abstract fun aDescendantCanNavigateBack(): Boolean
 
     // Note @ExposedCopyVisibility is deliberate, we want clients to use endNodeOf() or copy()
     // to create these, because it's easier and cleaner. We could instead leave the constructor
@@ -130,13 +131,18 @@ sealed class Navigation<L : Any, T : Any> {
         val location: L
     ) : Navigation<L, T>() {
 
-        @Transient
-        override var parent: Navigation<L, T>? = null
+
+        @Transient @LowLevelApi
+        var _parent: Navigation<L, T>? = null
+
+        override val parent: Navigation<L, T>?
+            get() = _parent
+
 
         override val child: Navigation<L, T>?
             get() = null
 
-        override val _backsToExit: Int
+        override val backsToExit: Int
             get() = 0
 
         override fun hostedBy(): List<TabHostLocation<T>> {
@@ -155,7 +161,7 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun _currentLocation(): L {
+        override fun currentLocation(): L {
             return location
         }
 
@@ -189,9 +195,6 @@ sealed class Navigation<L : Any, T : Any> {
         val tabBackModeDefault: TabBackMode = TabBackMode.Temporal
     ) : Navigation<L, T>() {
 
-        @Transient
-        override var parent: Navigation<L, T>? = null
-
         init {
             require(tabs.isNotEmpty()) { "require at least 1 tab" }
             require(selectedTabHistory.size >= 0) { "there must be at least one index in selectedTabs" }
@@ -202,11 +205,17 @@ sealed class Navigation<L : Any, T : Any> {
             ) { "one or more selectedTab indexes are out of range for ${tabs.size} tabs" }
         }
 
+        @Transient @LowLevelApi
+        var _parent: Navigation<L, T>? = null
+
+        override val parent: Navigation<L, T>?
+            get() = _parent
+
         override val child: Navigation<L, T>
             get() = tabs[selectedTabHistory.last()]
 
-        override val _backsToExit: Int
-            get() = selectedTabHistory.sumOf { tabs[it]._backsToExit }
+        override val backsToExit: Int
+            get() = selectedTabHistory.sumOf { tabs[it].backsToExit }
 
         override fun hostedBy(): List<TabHostLocation<T>> {
             return parent?.hostedBy() ?: emptyList()
@@ -224,8 +233,8 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun _currentLocation(): L {
-            return currentItem()._currentLocation()
+        override fun currentLocation(): L {
+            return currentItem().currentLocation()
         }
 
         override fun currentItem(): EndNode<L, T> {
@@ -252,9 +261,6 @@ sealed class Navigation<L : Any, T : Any> {
         val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
     ) : Navigation<L, T>() {
 
-        @Transient
-        override var parent: Navigation<L, T>? = null
-
         init {
             require(stack.isNotEmpty()) { "stack cannot be empty" }
             require(
@@ -264,16 +270,21 @@ sealed class Navigation<L : Any, T : Any> {
             ) { "BackStacks can NOT have direct children which are also BackStacks" }
         }
 
+        @Transient @LowLevelApi
+        var _parent: Navigation<L, T>? = null
+
+        override val parent: Navigation<L, T>?
+            get() = _parent
+
         override val child: Navigation<L, T>
             get() = stack.last()
 
-
-        override val _backsToExit: Int
+        override val backsToExit: Int
             get(): Int {
                 return stack.sumOf {
                     when (val notBackStack = it.notBackStack()) {
                         is IsEndNode -> 1
-                        is IsTabHost -> notBackStack.value._backsToExit
+                        is IsTabHost -> notBackStack.value.backsToExit
                     }
                 }
             }
@@ -304,8 +315,8 @@ sealed class Navigation<L : Any, T : Any> {
             ).toString()
         }
 
-        override fun _currentLocation(): L {
-            return currentItem()._currentLocation()
+        override fun currentLocation(): L {
+            return currentItem().currentLocation()
         }
 
         override fun currentItem(): EndNode<L, T> {

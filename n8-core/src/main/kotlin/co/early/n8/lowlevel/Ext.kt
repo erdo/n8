@@ -98,7 +98,7 @@ fun <L : Any, T : Any> _mutateNavigation(
                                     newItem
                                 } else it
                             }
-                        }  // todo do we need a populatechildparents here?
+                        }
                     )._populateChildParents()
                         .also { newParent ->  // all the entries in the parent stack need to reference their new parent
                             newParent.stack.map {
@@ -125,9 +125,13 @@ fun <L : Any, T : Any> _mutateNavigation(
                     }
 
                     require(tabIndex > -1) {
-                        "It should be impossible reach here, but if we do it's a bug [2]. Please file an issue, including the state of " +
-                                "the navigation graph just before the crash: " +
-                                "'navigationModel.toString(diagnostics = true)' and the operation performed"
+                        "It should be impossible reach here, but if we do it's a bug [2]. If you are NOT directly" +
+                                "using @LowLevelApi please file an issue, including the state of the navigation " +
+                                "graph just before the crash: 'navigationModel.toString(diagnostics = true)' and " +
+                                "the operation performed. If on the other hand you ARE using @LowLevelApi to perform " +
+                                "some custom navigation mutations, there is probably an incorrect assumption being " +
+                                "made about the structure of the navigation graph, please check carefully the source " +
+                                "code comments for the @LowLevelApi functions"
                     }
 
                     val newHistory = if (ensureOnHistoryPath) {
@@ -191,7 +195,7 @@ fun <L : Any, T : Any> Navigation<L, T>._populateChildParents(): Navigation<L, T
 @LowLevelApi
 fun <L : Any, T : Any> TabHost<L, T>._populateChildParents(): TabHost<L, T> {
     for (backStack in tabs) {
-        backStack.parent = this
+        backStack._parent = this
         backStack._populateChildParents()
     }
     return this
@@ -206,9 +210,9 @@ fun <L : Any, T : Any> TabHost<L, T>._populateChildParents(): TabHost<L, T> {
 fun <L : Any, T : Any> BackStack<L, T>._populateChildParents(): BackStack<L, T> {
     for (navigation in stack) {
         when (val notBackStack = navigation.notBackStack()) {
-            is NotBackStack.IsEndNode -> notBackStack.value.parent = this
+            is NotBackStack.IsEndNode -> notBackStack.value._parent = this
             is NotBackStack.IsTabHost -> {
-                notBackStack.value.parent = this
+                notBackStack.value._parent = this
                 notBackStack.value._populateChildParents()
             }
         }
@@ -219,9 +223,9 @@ fun <L : Any, T : Any> BackStack<L, T>._populateChildParents(): BackStack<L, T> 
 @LowLevelApi
 fun <L : Any, T : Any> _updateParent(item: Navigation<L, T>, newParent: Navigation<L, T>): Navigation<L, T> {
     when (item) {
-        is BackStack -> item.parent = newParent
-        is EndNode -> item.parent = newParent
-        is TabHost -> item.parent = newParent
+        is BackStack -> item._parent = newParent
+        is EndNode -> item._parent = newParent
+        is TabHost -> item._parent = newParent
     }
     return item
 }
@@ -229,9 +233,13 @@ fun <L : Any, T : Any> _updateParent(item: Navigation<L, T>, newParent: Navigati
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._requireParent(): Navigation<L, T> {
     return parent ?: throw RuntimeException(
-        "We were expecting a non null directParent " +
-                "here. Please file an issue, indicating the function called and the output of " +
-                "toString(diagnostics=true)"
+        "It should be impossible reach here, but if we do it's a bug [3]. If you are NOT directly" +
+                "using @LowLevelApi please file an issue, including the state of the navigation " +
+                "graph just before the crash: 'navigationModel.toString(diagnostics = true)' and " +
+                "the operation performed. If on the other hand you ARE using @LowLevelApi to perform " +
+                "some custom navigation mutations, there is probably an incorrect assumption being " +
+                "made about the structure of the navigation graph, please check carefully the source " +
+                "code comments for the @LowLevelApi functions"
     )
 }
 
@@ -453,8 +461,8 @@ fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigatio
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._reverseToLocation(locationToFind: L): Navigation<L, T>? {
     Fore.d("reverseToLocation() locationToFind:${locationToFind::class.simpleName} nav:$this")
-    return if (_currentLocation()::class.simpleName == locationToFind::class.simpleName) {
-        Fore.d("reverseToLocation()... << MATCHED ${_currentLocation()::class.simpleName} >>")
+    return if (currentLocation()::class.simpleName == locationToFind::class.simpleName) {
+        Fore.d("reverseToLocation()... << MATCHED ${currentLocation()::class.simpleName} >>")
         this
     } else {
         currentItem()._applyOneStepBackNavigation()?._reverseToLocation(locationToFind)

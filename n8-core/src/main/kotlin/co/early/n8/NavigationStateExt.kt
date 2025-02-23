@@ -61,6 +61,12 @@ fun <L : Any, T : Any> endNodeOf(
     return EndNode(location)
 }
 
-fun <T> List<TabHostLocation<T>>.showSelected(tabHostId: T, index: Int): Boolean { //todo review this naming
+/**
+ * With the given list of TabHostLocations, this function identifies the specified
+ * TabHost and checks whether the specified index matches the currently selected
+ * tab index for that TabHost. If it does this function returns true (which signals
+ * to the client that this tab should be drawn as "selected" when rendered on the UI)
+ */
+fun <T> List<TabHostLocation<T>>.isIndexOnPath(index: Int, tabHostId: T): Boolean {
     return firstOrNull { it.tabHostId == tabHostId }?.tabIndex == index
 }

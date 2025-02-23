@@ -172,7 +172,7 @@ class NavigationModelLinearNavTest {
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1]._currentLocation())
+        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1].currentLocation())
     }
 
     @Test
@@ -197,7 +197,7 @@ class NavigationModelLinearNavTest {
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1]._currentLocation())
+        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1].currentLocation())
     }
 
     @Test
@@ -222,7 +222,7 @@ class NavigationModelLinearNavTest {
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Sydney(50), navigationModel.state.navigation.isBackStack().stack[2]._currentLocation())
+        assertEquals(Sydney(50), navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
     }
 
     @Test
@@ -349,8 +349,8 @@ class NavigationModelLinearNavTest {
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2]._currentLocation())
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[3]._currentLocation())
+        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
+        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[3].currentLocation())
     }
 
     @Test
@@ -400,7 +400,7 @@ class NavigationModelLinearNavTest {
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2]._currentLocation())
+        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
     }
 
     @Test

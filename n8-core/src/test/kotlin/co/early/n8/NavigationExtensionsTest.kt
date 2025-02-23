@@ -432,7 +432,7 @@ class NavigationExtensionsTest {
             Y2,
             result.isTabHost().tabs[0].isBackStack().stack[3].isTabHost().tabs[1].stack[0].isEndNode().location
         )
-        assertEquals(Y2, result._currentLocation())
+        assertEquals(Y2, result.currentLocation())
     }
 
     @Test
@@ -521,7 +521,7 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
-        assertEquals(A, mutatedNav._currentLocation())
+        assertEquals(A, mutatedNav.currentLocation())
     }
 
     @Test
@@ -562,19 +562,65 @@ class NavigationExtensionsTest {
         assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
         assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
         assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav._currentLocation())
+        assertEquals(B, mutatedNav.currentLocation())
     }
 
-    @Ignore
     @Test
     fun `when hosted inside multiple tabHosts, showSelected is correct`() {
-        assert(false)
+
+        // arrange
+        val nav = tabsOf(
+            selectedTabHistory = listOf(1),
+            tabHostId = "TABS_01",
+            backStackOf(
+                endNodeOf(A)
+            ),
+            backStackOf(
+                endNodeOf(E),
+                tabsOf(
+                    selectedTabHistory = listOf(0, 1, 2),
+                    tabHostId = "TABS_02",
+                    backStackOf(
+                        endNodeOf(Y1),
+                        endNodeOf(E)
+                    ),
+                    backStackOf(
+                        endNodeOf(Y2)
+                    ),
+                    backStackOf(
+                        endNodeOf(Z2)
+                    )
+                )
+            ),
+            backStackOf(
+                endNodeOf(C)
+            ),
+            backStackOf(
+                endNodeOf(D)
+            )
+        )
+
+        // act
+        val hostedBy = nav.currentItem().hostedBy()
+
+        // assert
+        assertEquals(false, hostedBy.isIndexOnPath(0, "TABS_01")) // not on path
+        assertEquals(true, hostedBy.isIndexOnPath(1, "TABS_01")) // on path
+        assertEquals(false, hostedBy.isIndexOnPath(2, "TABS_01")) // not on path
+        assertEquals(false, hostedBy.isIndexOnPath(0, "TABS_0X")) // tabHost not present
+        assertEquals(false, hostedBy.isIndexOnPath(0, "TABS_02")) // not on path
+        assertEquals(true, hostedBy.isIndexOnPath(2, "TABS_02")) // on path
+        assertEquals(false, hostedBy.isIndexOnPath(9, "TABS_02")) // out of bounds
     }
 
     @Ignore
     @Test
     fun `some custom navigation operations`() {
         // TODO these tests come from NavigationModelLinearNavTest,
+
+        //  also look at listener interface where the client can get the change to change the mutations (can use for logging stats or actual mutations)
+
+
         // we just need to check the same thing when the navigation graph is a nested one
 //
 //        // arrange

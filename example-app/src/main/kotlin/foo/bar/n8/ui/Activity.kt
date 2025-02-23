@@ -30,8 +30,12 @@ import androidx.compose.ui.unit.dp
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
+import co.early.n8.Navigation
 import co.early.n8.NavigationModel
-import co.early.n8.showSelected
+import co.early.n8.backStackOf
+import co.early.n8.endNodeOf
+import co.early.n8.isIndexOnPath
+import co.early.n8.lowlevel._requireParent
 import foo.bar.n8.ui.common.StateWrapperView
 import foo.bar.n8.ui.navigation.Location
 import foo.bar.n8.ui.navigation.NavHost
@@ -96,9 +100,9 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 0",
                                         image = Default.AddCircle,
-                                        enabled = !navigationState.hostedBy.showSelected(
-                                            tabHostId = tabHostSpecMain.tabHostId,
-                                            index = 0
+                                        enabled = !navigationState.hostedBy.isIndexOnPath(
+                                            index = 0,
+                                            tabHostId = tabHostSpecMain.tabHostId
                                         )
                                     ) {
                                         n8.switchTab(tabHostSpecMain, 0)
@@ -106,9 +110,9 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 1",
                                         image = Default.Favorite,
-                                        enabled = !navigationState.hostedBy.showSelected(
-                                            tabHostId = tabHostSpecMain.tabHostId,
-                                            index = 1
+                                        enabled = !navigationState.hostedBy.isIndexOnPath(
+                                            index = 1,
+                                            tabHostId = tabHostSpecMain.tabHostId
                                         )
                                     ) {
                                         n8.switchTab(tabHostSpecMain, 1)
@@ -116,9 +120,9 @@ class Activity : ComponentActivity() {
                                     TabUi(
                                         text = "Tab 2",
                                         image = Default.Settings,
-                                        enabled = !navigationState.hostedBy.showSelected(
-                                            tabHostId = tabHostSpecMain.tabHostId,
-                                            index = 2
+                                        enabled = !navigationState.hostedBy.isIndexOnPath(
+                                            index = 2,
+                                            tabHostId = tabHostSpecMain.tabHostId
                                         )
                                     ) {
                                         n8.switchTab(tabHostSpecMain, 2)

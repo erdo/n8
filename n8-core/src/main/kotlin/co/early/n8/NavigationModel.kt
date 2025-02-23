@@ -477,7 +477,7 @@ class NavigationModel<L : Any, T : Any>(
                 }
 
                 TopLevel -> {
-                    when (val parentWrapper = trimmedNav.topParent().notEndNode()) {
+                    when (val parentWrapper = trimmedNav.topItem().notEndNode()) {
                         is RestrictedNavigation.NotEndNode.IsBackStack -> {
                             val parent = parentWrapper.value
                             val newParent = parent._addLocation(location)
@@ -669,7 +669,7 @@ class NavigationModel<L : Any, T : Any>(
             it._reverseToLocation(location)?.let { foundLocationNav ->
 
                 //replace location as it might have different data
-                logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav._currentLocation()::class.simpleName}")
+                logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
                 val newNavigation = _mutateNavigation(
                     oldItem = foundLocationNav.currentItem(),
                     newItem = endNodeOf(location)
@@ -773,7 +773,7 @@ class NavigationModel<L : Any, T : Any>(
         navigation: Navigation<L, T>,
         addToHistory: Boolean = true //applies to the "current" location of the new navigation graph only
     ) {
-        logger.d("reWriteNavigation() currentLocation: ${navigation._currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
+        logger.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
         updateState(
             NavigationState(
                 navigation = navigation,
