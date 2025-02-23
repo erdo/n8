@@ -77,7 +77,7 @@ sealed class Navigation<L : Any, T : Any> {
     /**
      * The child of a BackStack is the last item in the stack
      *
-     * The child of a TabHost is the BackStack indexed by the last item in the selectedTabHistory
+     * The child of a TabHost is the BackStack indexed by the last item in the tabHistory
      *
      * The child of an EndNode is always null
      */
@@ -112,7 +112,7 @@ sealed class Navigation<L : Any, T : Any> {
      * child items may also have the ability to move back (and in practice, that would happen first)
      * so in that case, this item would return FALSE. For example, if this item is a BackStack with
      * a stack size of 3, it will STILL reply false if its current item, at index 2, is a TabHost
-     * which has room to move back due to the fact that it has a selectedTabHistory of size 2 say
+     * which has room to move back due to the fact that it has a tabHistory of size 2 say
      */
      abstract fun specificItemCanNavigateBack(): Boolean
 
@@ -184,7 +184,7 @@ sealed class Navigation<L : Any, T : Any> {
     @Serializable @ExposedCopyVisibility
     data class TabHost<L : Any, T : Any> internal constructor (
         @Serializable
-        val selectedTabHistory: List<Int>,
+        val tabHistory: List<Int>,
         @Serializable
         val tabHostId: T,
         @Serializable
@@ -197,9 +197,9 @@ sealed class Navigation<L : Any, T : Any> {
 
         init {
             require(tabs.isNotEmpty()) { "require at least 1 tab" }
-            require(selectedTabHistory.size >= 0) { "there must be at least one index in selectedTabs" }
+            require(tabHistory.size >= 0) { "there must be at least one index in selectedTabs" }
             require(
-                selectedTabHistory.firstOrNull { tabIndex ->
+                tabHistory.firstOrNull { tabIndex ->
                     tabIndex > tabs.size - 1 || tabIndex < 0
                 } == null
             ) { "one or more selectedTab indexes are out of range for ${tabs.size} tabs" }
@@ -212,17 +212,17 @@ sealed class Navigation<L : Any, T : Any> {
             get() = _parent
 
         override val child: Navigation<L, T>
-            get() = tabs[selectedTabHistory.last()]
+            get() = tabs[tabHistory.last()]
 
         override val backsToExit: Int
-            get() = selectedTabHistory.sumOf { tabs[it].backsToExit }
+            get() = tabHistory.sumOf { tabs[it].backsToExit }
 
         override fun hostedBy(): List<TabHostLocation<T>> {
             return parent?.hostedBy() ?: emptyList()
         }
 
         override fun toString(): String {
-            return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${selectedTabHistory})"
+            return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${tabHistory})"
         }
 
         override fun toString(diagnostics: Boolean): String {
@@ -242,7 +242,7 @@ sealed class Navigation<L : Any, T : Any> {
         }
 
         override fun specificItemCanNavigateBack(): Boolean {
-            return aDescendantCanNavigateBack().not() && (selectedTabHistory.size > 1)
+            return aDescendantCanNavigateBack().not() && (tabHistory.size > 1)
         }
 
         override fun aDescendantCanNavigateBack(): Boolean {
@@ -294,7 +294,7 @@ sealed class Navigation<L : Any, T : Any> {
                 is TabHost<L, T> -> {
                     tabHost.hostedBy().toMutableList().also {
                         it.add(
-                            TabHostLocation(tabHost.tabHostId, tabHost.selectedTabHistory.last())
+                            TabHostLocation(tabHost.tabHostId, tabHost.tabHistory.last())
                         )
                     }
                 }

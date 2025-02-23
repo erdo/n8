@@ -268,11 +268,11 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(
             1, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.selectedTabHistory?.size
+                .parent?.parent?.isTabHost()?.tabHistory?.size
         )
         assertEquals(
             0, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.selectedTabHistory?.get(0)
+                .parent?.parent?.isTabHost()?.tabHistory?.get(0)
         )
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(
@@ -321,7 +321,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(A),
@@ -364,7 +364,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(A),
@@ -407,14 +407,14 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(A),
                         endNodeOf(B),
                         endNodeOf(B),
                         tabsOf(
-                            selectedTabHistory = listOf(1,0,2),
+                            tabHistory = listOf(1,0,2),
                             tabHostId = tabHostSpecX123.tabHostId,
                             backStackOf(
                                 endNodeOf(X1)
@@ -563,7 +563,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(
             listOf(0, 2, 1), navigationModel.state.navigation.currentItem().parent
-                ?.isBackStack()?.parent?.isTabHost()!!.selectedTabHistory
+                ?.isBackStack()?.parent?.isTabHost()!!.tabHistory
         )
     }
 
@@ -622,7 +622,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -658,7 +658,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -723,7 +723,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -823,7 +823,7 @@ class NavigationModelNestedNavTest {
     fun `given target exists on back path inside tab, backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -860,7 +860,7 @@ class NavigationModelNestedNavTest {
     fun `given target exists in another tab index, and is on back path, backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -897,7 +897,7 @@ class NavigationModelNestedNavTest {
     fun `given target exists in another tab, but is not on back path, using backTo target behaves as if target is not present`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -962,7 +962,7 @@ class NavigationModelNestedNavTest {
     fun `given current location is at ROOT of tabHost, and backTo target does not exist, target is navigated to in current tab index`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -1097,14 +1097,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1151,14 +1151,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1204,14 +1204,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1254,7 +1254,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(1, 0, 3),
+                    tabHistory = listOf(1, 0, 3),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(A)
@@ -1304,7 +1304,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(0, 1, 2),
+                    tabHistory = listOf(0, 1, 2),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(A)
@@ -1314,7 +1314,7 @@ class NavigationModelNestedNavTest {
                     ),
                     backStackOf(
                         tabsOf(
-                            selectedTabHistory = listOf(0),
+                            tabHistory = listOf(0),
                             tabHostId = tabHostSpecXyz.tabHostId,
                             backStackOf(
                                 endNodeOf(C)
@@ -1355,7 +1355,7 @@ class NavigationModelNestedNavTest {
     fun `given target exists on back path inside tab, back times=3 navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -1392,7 +1392,7 @@ class NavigationModelNestedNavTest {
     fun `given target exists in another tab index, and is on back path, back times=3 navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -1460,7 +1460,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
                 tabsOf(
-                    selectedTabHistory = listOf(0, 1, 2),
+                    tabHistory = listOf(0, 1, 2),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(Z3(999))
@@ -1470,7 +1470,7 @@ class NavigationModelNestedNavTest {
                     ),
                     backStackOf(
                         tabsOf(
-                            selectedTabHistory = listOf(0),
+                            tabHistory = listOf(0),
                             tabHostId = tabHostSpecXyz.tabHostId,
                             backStackOf(
                                 endNodeOf(C)

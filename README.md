@@ -227,7 +227,7 @@ Here's a more complicated nested navigation graph:
 backStackOf(
     endNodeOf(Welcome),     <--- home location
     tabsOf(
-        selectedTabHistory = listOf(0,2),
+        tabHistory = listOf(0,2),
         tabHostId = "TABHOST_MAIN",
         backStackOf(
             endNodeOf(MyFeed),
@@ -240,7 +240,7 @@ backStackOf(
             endNodeOf(MyAccount),
             endNodeOf(Settings),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABHOST_SETTINGS",
                 backStackOf(
                     endNodeOf(Audio),
@@ -256,7 +256,7 @@ backStackOf(
 ```
 
 To exit the app in this case, the user would have to press back 7 times, can you work out why? it's
-related to the selectedTabHistory list
+related to the tabHistory list
 
 Each node of the navigation graph is a Navigation item, and as you've probably noticed from the
 examples, a Navigation item can be one of 3 types:
@@ -345,7 +345,7 @@ The navigation graph might look like this:
 
 ``` kotlin
 tabsOf(
-    selectedTabHistory = listOf(2),
+    tabHistory = listOf(2),
     tabHostId = "TABHOST_MAIN",
     backStackOf(
         endNodeOf(Houston),
@@ -372,7 +372,7 @@ temporal version might look like this:
 
 ``` kotlin
 tabsOf(
-    selectedTabHistory = listOf(1,0,2),
+    tabHistory = listOf(1,0,2),
     tabHostId = "TABHOST_MAIN",
     backStackOf(
         endNodeOf(Houston),
@@ -397,7 +397,7 @@ visited while on ```tabIndex = 2```, and then do the same for ```tabIndex = 0```
 So in our example, that would take 7 clicks back to exit:
 Shanghai -> Mumbai -> London -> Tokyo -> Houston -> Sydney -> Paris -> [exit]
 
-Note that N8 implements those two modes using only the **selectedTabHistory** field.
+Note that N8 implements those two modes using only the **tabHistory** field.
 
 You can set the TabBackMode via the ```switchTab()``` function. The default
 is ```TabBackMode.Temporal```

@@ -27,12 +27,12 @@ fun <L : Any> backStackNoTabsOf(
 }
 
 fun <L : Any, T : Any> tabsOf(
-    selectedTabHistory: List<Int> = listOf(0),
+    tabHistory: List<Int> = listOf(0),
     tabHostId: T,
     vararg tabs: BackStack<L, T>,
 ): TabHost<L, T> {
     return TabHost(
-        selectedTabHistory = selectedTabHistory,
+        tabHistory = tabHistory,
         tabHostId = tabHostId,
         tabs = tabs.toList(),
     )._populateChildParents()
@@ -43,7 +43,7 @@ internal fun <L : Any, T : Any> tabsOf(
     initialTabOverride: Int? = null,
 ): TabHost<L, T> {
     return TabHost(
-        selectedTabHistory = listOf(
+        tabHistory = listOf(
             initialTabOverride ?: tabHostSpec.initialTab
         ),
         tabHostId = tabHostSpec.tabHostId,

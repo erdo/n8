@@ -21,7 +21,6 @@ import co.early.n8.lowlevel._requireParent
 import co.early.n8.lowlevel._reverseToLocation
 import co.early.n8.lowlevel._tabHostFinder
 import co.early.persista.PerSista
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import java.io.File
@@ -70,7 +69,7 @@ import kotlin.reflect.KType
  *     endNodeOf(NewYork), <--- home location
  *     endNodeOf(Tokyo),
  *     tabsOf(
- *         selectedTabHistory = listOf(0),
+ *         tabHistory = listOf(0),
  *         tabHostId = "European Cities",
  *         backStackOf(
  *             endNodeOf(London)
@@ -540,18 +539,18 @@ class NavigationModel<L : Any, T : Any>(
 
                 logger.d("[${tabHostSpec.tabHostId}] Found, tabIndex specified: $tabIndex")
 
-                val newSelectedHistory = tabIndex?.let {
+                val newTabHistory = tabIndex?.let {
                     when (tabHostSpec.backMode) {
                         TabBackMode.Structural -> listOf(tabIndex)
                         TabBackMode.Temporal -> {
-                            tabHost.selectedTabHistory.filter { tab ->
+                            tabHost.tabHistory.filter { tab ->
                                 tab != (tabIndex)
                             }.toMutableList().also { list ->
                                 list.add(tabIndex)
                             }
                         }
                     }
-                } ?: tabHost.selectedTabHistory
+                } ?: tabHost.tabHistory
 
                 val newTabs = tabHost.tabs.mapIndexed { index, backStack ->
                     if (index == (tabIndex ?: tabHostSpec.initialTab) && (clearToTabRootOverride == true)
@@ -566,7 +565,7 @@ class NavigationModel<L : Any, T : Any>(
                 _mutateNavigation(
                     oldItem = tabHost,
                     newItem = tabHost.copy(
-                        selectedTabHistory = newSelectedHistory,
+                        tabHistory = newTabHistory,
                         tabs = newTabs
                     ),
                     ensureOnHistoryPath = true,

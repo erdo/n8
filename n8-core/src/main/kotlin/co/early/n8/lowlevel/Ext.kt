@@ -24,8 +24,6 @@ import co.early.n8.notEndNode
  *
  * And remember: Fore.i(navigation.toString(diagnostics = true)) is your friend!
  */
-
-
 @RequiresOptIn(message = "warning advanced usage only, please check source comments")
 annotation class LowLevelApi
 
@@ -64,8 +62,8 @@ private const val padStep: Int = 4
  * intended). ensureOnHistoryPath = true ensures that once the mutation is complete, the newItem is
  * accessible by the user on the back stack (or is the actual currentItem)
  *
- * @returns a new complete mutated navigation graph containing the newItem, with all parent and child
- * references updated
+ * @returns the top item of a new complete mutated navigation graph containing the newItem, with all
+ * parent and child references updated
  */
 @LowLevelApi
 fun <L : Any, T : Any> _mutateNavigation(
@@ -141,7 +139,7 @@ fun <L : Any, T : Any> _mutateNavigation(
                             }
 
                             TabBackMode.Temporal -> {
-                                oldTabHostParent.selectedTabHistory.filter { tab ->
+                                oldTabHostParent.tabHistory.filter { tab ->
                                     tab != tabIndex
                                 }.toMutableList().also { list ->
                                     list.add(tabIndex)
@@ -149,12 +147,12 @@ fun <L : Any, T : Any> _mutateNavigation(
                             }
                         }
                     } else {
-                        oldTabHostParent.selectedTabHistory
+                        oldTabHostParent.tabHistory
                     }
 
                     oldParent.value.copy(
                         tabs = newTabs,
-                        selectedTabHistory = newHistory,
+                        tabHistory = newHistory,
                         // todo do we needa populatechildparents here?
                     ).also { newParent ->
                         newParent.tabs.toMutableList().map {
@@ -254,7 +252,7 @@ fun <L : Any, T : Any> BackStack<L, T>._addLocation(location: L): BackStack<L, T
 fun <L : Any, T : Any> TabHost<L, T>._addLocationToCurrentTab(location: L): TabHost<L, T> {
     return copy(
         tabs = tabs.mapIndexed { index, backStack ->
-            if (index == selectedTabHistory.last()) {
+            if (index == tabHistory.last()) {
                 backStack._addLocation(location)
             } else {
                 backStack
@@ -315,8 +313,8 @@ private fun <L : Any, T : Any> TabHost<L, T>.render(
         }
         append("\n")
         repeat(pad) { append(" ") }
-        append("selectedTabHistory = listOf(")
-        for (index in selectedTabHistory) {
+        append("tabHistory = listOf(")
+        for (index in tabHistory) {
             append("$index,")
         }
         setLength(length - 1)
@@ -331,7 +329,7 @@ private fun <L : Any, T : Any> TabHost<L, T>.render(
             append("clearToTabRoot = $clearToTabRootDefault,\n")
         }
         tabs.forEachIndexed { index, tab ->
-            if (index == selectedTabHistory.last()) {
+            if (index == tabHistory.last()) {
                 tab.render(pad, builder, incDiagnostics, current)
             } else {
                 tab.render(pad, builder, incDiagnostics, false)
@@ -401,7 +399,7 @@ private fun <L : Any, T : Any> EndNode<L, T>._createItemNavigatedBackCopy(): Nav
 
 private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
-        copy(selectedTabHistory = selectedTabHistory.toMutableList().also { it.removeLast() })
+        copy(tabHistory = tabHistory.toMutableList().also { it.removeLast() })
     } else this
 }
 

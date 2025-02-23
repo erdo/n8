@@ -35,14 +35,14 @@ class NavigationImportExportTest {
                 endNodeOf(NestedTestData.Location.A),
                 endNodeOf(NestedTestData.Location.B),
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(NestedTestData.Location.X1),
                         endNodeOf(NestedTestData.Location.C),
                         endNodeOf(NestedTestData.Location.D),
                         tabsOf(
-                            selectedTabHistory = listOf(0, 1),
+                            tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
                                 endNodeOf(NestedTestData.Location.Y1),
@@ -84,7 +84,7 @@ class NavigationImportExportTest {
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.A"}}],
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.B"}}],
                     ["co.early.n8.Navigation.TabHost", {
-                      "selectedTabHistory": [0],
+                      "tabHistory": [0],
                       "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
                       "tabs": [
                         {
@@ -93,7 +93,7 @@ class NavigationImportExportTest {
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}],
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.D"}}],
                             ["co.early.n8.Navigation.TabHost", {
-                              "selectedTabHistory": [0, 1],
+                              "tabHistory": [0, 1],
                               "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabX12"},
                               "tabs": [
                                 {
@@ -153,7 +153,7 @@ class NavigationImportExportTest {
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.A"}}],
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.B"}}],
                     ["co.early.n8.Navigation.TabHost", {
-                      "selectedTabHistory": [0],
+                      "tabHistory": [0],
                       "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
                       "tabs": [
                         {
@@ -162,7 +162,7 @@ class NavigationImportExportTest {
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}],
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.D"}}],
                             ["co.early.n8.Navigation.TabHost", {
-                              "selectedTabHistory": [0, 1],
+                              "tabHistory": [0, 1],
                               "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabX12"},
                               "tabs": [
                                 {
@@ -205,14 +205,14 @@ class NavigationImportExportTest {
                 endNodeOf(NestedTestData.Location.A),
                 endNodeOf(NestedTestData.Location.B),
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(NestedTestData.Location.X1),
                         endNodeOf(NestedTestData.Location.C),
                         endNodeOf(NestedTestData.Location.D),
                         tabsOf(
-                            selectedTabHistory = listOf(0, 1),
+                            tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
                                 endNodeOf(NestedTestData.Location.Y1),
@@ -268,7 +268,7 @@ class NavigationImportExportTest {
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.A"}}],
                     ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.B"}}],
                     ["co.early.n8.Navigation.TabHost", {
-                      "selectedTabHistory": [0],
+                      "tabHistory": [0],
                       "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
                       "tabs": [
                         {
@@ -277,7 +277,7 @@ class NavigationImportExportTest {
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}],
                             ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.D"}}],
                             ["co.early.n8.Navigation.TabHost", {
-                              "selectedTabHistory": [0, 1],
+                              "tabHistory": [0, 1],
                               "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabX12"},
                               "tabs": [
                                 {
@@ -355,7 +355,7 @@ class NavigationImportExportTest {
         "co.early.n8.NestedTestData.TabHost.TabX12" to "TX12",
         "navigation" to "n",
         "willBeAddedToHistory" to "w",
-        "selectedTabHistory" to "h",
+        "tabHistory" to "h",
         "location" to "l",
         "tabs" to "t",
         "type" to "p",
@@ -385,14 +385,14 @@ class NavigationImportExportTest {
                 endNodeOf(NestedTestData.Location.A),
                 endNodeOf(NestedTestData.Location.B),
                 tabsOf(
-                    selectedTabHistory = listOf(0),
+                    tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
                         endNodeOf(NestedTestData.Location.X1),
                         endNodeOf(NestedTestData.Location.C),
                         endNodeOf(NestedTestData.Location.D),
                         tabsOf(
-                            selectedTabHistory = listOf(0, 1),
+                            tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
                                 endNodeOf(NestedTestData.Location.Y1),

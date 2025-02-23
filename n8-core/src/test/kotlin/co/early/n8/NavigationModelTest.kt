@@ -1,8 +1,6 @@
 package co.early.n8
 
 import co.early.fore.core.observer.Observer
-import co.early.fore.kt.core.coroutine.awaitDefault
-import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
 import co.early.n8.LinearTestData.Location
@@ -130,7 +128,7 @@ class NavigationModelTest {
         // arrange
         val navigationModel = NavigationModel(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = "MyTabs",
                 backStackOf(endNodeOf(Tokyo), endNodeOf(NewYork)),
                 backStackOf(endNodeOf(London), endNodeOf(Paris)),

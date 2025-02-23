@@ -38,14 +38,14 @@ class NavigationExtensionsTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -74,7 +74,7 @@ class NavigationExtensionsTest {
                     "    endNodeOf(A) [parent=BackStack(3) child=null],\n" +
                     "    endNodeOf(B) [parent=BackStack(3) child=null],\n" +
                     "    tabsOf( [tabs=3 parent=BackStack(3) child=BackStack(4)]\n" +
-                    "        selectedTabHistory = listOf(0),\n" +
+                    "        tabHistory = listOf(0),\n" +
                     "        tabHostId = TABS_01,\n" +
                     "        backMode = Temporal,\n" +
                     "        clearToTabRoot = false,\n" +
@@ -83,7 +83,7 @@ class NavigationExtensionsTest {
                     "            endNodeOf(C) [parent=BackStack(4) child=null],\n" +
                     "            endNodeOf(D) [parent=BackStack(4) child=null],\n" +
                     "            tabsOf( [tabs=2 parent=BackStack(4) child=BackStack(1)]\n" +
-                    "                selectedTabHistory = listOf(0,1),\n" +
+                    "                tabHistory = listOf(0,1),\n" +
                     "                tabHostId = TABS_02,\n" +
                     "                backMode = Temporal,\n" +
                     "                clearToTabRoot = false,\n" +
@@ -116,14 +116,14 @@ class NavigationExtensionsTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -152,14 +152,14 @@ class NavigationExtensionsTest {
                     "    endNodeOf(A),\n" +
                     "    endNodeOf(B),\n" +
                     "    tabsOf( \n" +
-                    "        selectedTabHistory = listOf(0),\n" +
+                    "        tabHistory = listOf(0),\n" +
                     "        tabHostId = TABS_01,\n" +
                     "        backStackOf( \n" +
                     "            endNodeOf(X1),\n" +
                     "            endNodeOf(C),\n" +
                     "            endNodeOf(D),\n" +
                     "            tabsOf( \n" +
-                    "                selectedTabHistory = listOf(0,1),\n" +
+                    "                tabHistory = listOf(0,1),\n" +
                     "                tabHostId = TABS_02,\n" +
                     "                backStackOf( \n" +
                     "                    endNodeOf(Y1),\n" +
@@ -214,7 +214,7 @@ class NavigationExtensionsTest {
 
         // arrange
         val nav = tabsOf(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = "TAB_01",
             backStackOf(
                 endNodeOf(A),
@@ -234,7 +234,7 @@ class NavigationExtensionsTest {
         // assert
         assertEquals(
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TAB_01",
                 backStackOf(
                     endNodeOf(A),
@@ -255,14 +255,14 @@ class NavigationExtensionsTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -308,14 +308,14 @@ class NavigationExtensionsTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -382,14 +382,14 @@ class NavigationExtensionsTest {
 
         // arrange
         val nav = tabsOf(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = "TABS_01",
             backStackOf(
                 endNodeOf(X1),
                 endNodeOf(C),
                 endNodeOf(D),
                 tabsOf(
-                    selectedTabHistory = listOf(0, 1, 2),
+                    tabHistory = listOf(0, 1, 2),
                     tabHostId = "TABS_02",
                     backStackOf(
                         endNodeOf(Y1),
@@ -418,7 +418,7 @@ class NavigationExtensionsTest {
         val result = _mutateNavigation(
             oldItem = tabHost,
             newItem = tabHost.copy(
-                selectedTabHistory = tabHost.selectedTabHistory.toMutableList()
+                tabHistory = tabHost.tabHistory.toMutableList()
                     .also { it.removeLast() },
                 tabs = tabHost.tabs.toMutableList().also { it.removeLast() }
             )
@@ -570,7 +570,7 @@ class NavigationExtensionsTest {
 
         // arrange
         val nav = tabsOf(
-            selectedTabHistory = listOf(1),
+            tabHistory = listOf(1),
             tabHostId = "TABS_01",
             backStackOf(
                 endNodeOf(A)
@@ -578,7 +578,7 @@ class NavigationExtensionsTest {
             backStackOf(
                 endNodeOf(E),
                 tabsOf(
-                    selectedTabHistory = listOf(0, 1, 2),
+                    tabHistory = listOf(0, 1, 2),
                     tabHostId = "TABS_02",
                     backStackOf(
                         endNodeOf(Y1),

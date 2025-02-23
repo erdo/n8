@@ -56,7 +56,7 @@ fun <L : Any, T : Any> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.notEndNode(): NotEndNode<L, T> {
+fun <L : Any, T : Any> Navigation<L, T>.notEndNode(): NotEndNode<L, T> { // todo possibly start these with an underscore too
     return when (this) {
         is Navigation.BackStack -> NotEndNode.IsBackStack(this)
         is Navigation.EndNode -> throw RuntimeException(errorMsg)
