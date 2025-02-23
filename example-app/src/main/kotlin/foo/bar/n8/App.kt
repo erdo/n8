@@ -6,17 +6,13 @@ import android.app.Application
 import co.early.fore.kt.core.delegate.DebugDelegateDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.n8.N8
-import co.early.n8.Navigation
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
-import co.early.n8.RestrictedNavigation
 import co.early.n8.lowlevel.LowLevelApi
-import co.early.n8.lowlevel._mutateNavigation
-import co.early.n8.notEndNode
 import foo.bar.n8.feature.ViewStateFlagModel
 import foo.bar.n8.ui.navigation.Location
 import foo.bar.n8.ui.navigation.TabHostId
-import java.util.HashMap
+import foo.bar.n8.ui.navigation.limitBackPath
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 
@@ -32,33 +28,17 @@ class App : Application() {
             Fore.setDelegate(DebugDelegateDefault("N8_"))
         }
 
-
         val n8 = NavigationModel<Location, TabHostId>(
             homeLocation = Location.Home,
             stateKType = typeOf<NavigationState<Location, TabHostId>>(),
-            dataDirectory = filesDir
+            dataDirectory = filesDir,
+            // clearPreviousNavGraph = true
         )
-        // example custom mutation
-        n8.installInterceptor("limitNavGraphSizeTo5Backs") { _, new ->
-            if (new.backsToExit > 5) {
-                when (new.navigation.topItem().child!!) { // top item is never an EndNode, so the child of the top item is never nul
-                    is RestrictedNavigation.NotEndNode.IsBackStack -> {
-                        _mutateNavigation(
-                            oldItem =,
-                            newItem =
-                        )
-                    }
-here
-                    is RestrictedNavigation.NotEndNode.IsTabHost -> {
-                        _mutateNavigation(
-                            oldItem =,
-                            newItem =
-                        )
-                    }
-                }
-            } else {
-                new
-            }
+        // example custom mutation: we should never be more than 5 back steps away from quitting the app
+        n8.installInterceptor("limitNavGraphTo5BacksToExit") { _, new ->
+            new.copy(
+                navigation = limitBackPath(5, new.navigation),
+            )
         }.installInterceptor("logger") { old, new ->
             Fore.getLogger().i(
                 tag = "N8-INTERCEPT",
@@ -68,7 +48,6 @@ here
         }
 
         N8.setNavigationModel(n8)
-
 
         val viewStateFlagModel = ViewStateFlagModel()
         // or use your DI of choice

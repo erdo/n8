@@ -90,4 +90,6 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
+    // test
+    testImplementation(libs.kotlin.test)
 }
