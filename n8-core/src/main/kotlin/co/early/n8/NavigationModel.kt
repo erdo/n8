@@ -21,12 +21,11 @@ import co.early.n8.lowlevel._requireParent
 import co.early.n8.lowlevel._reverseToLocation
 import co.early.n8.lowlevel._tabHostFinder
 import co.early.persista.PerSista
+import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import java.io.File
 import kotlin.reflect.KType
-
-//TODO serialise to json for import amd export. maybe different class
 
 /**
  * # Navigation
@@ -350,6 +349,12 @@ class NavigationModel<L : Any, T : Any>(
         data object TopLevel : TabHostTarget()
         data class ChangeTabHostTo<L : Any, T : Any>(val target: TabHostSpecification<L, T>) : TabHostTarget()
     }
+
+    fun interface NavigationInterceptor<L: Any, T: Any> {
+        fun intercept(old: NavigationState<L, T>, new: NavigationState<L, T>): NavigationState<L, T>
+    }
+
+    private val navigationInterceptors = mutableListOf<Pair<String, NavigationInterceptor<L, T>>>()
 
     init {
         try {
@@ -791,9 +796,27 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     private fun updateState(newState: NavigationState<L, T>) {
-        state = newState
+        state = checkInterceptors(newState)
         notifyObservers()
         perSista.write(state, stateKType) {}
+    }
+
+    private fun checkInterceptors(newState: NavigationState<L, T>): NavigationState<L, T> {
+        var modifiedState = newState
+        for ((_, interceptor) in navigationInterceptors) {
+            modifiedState = interceptor.intercept(state, modifiedState)
+        }
+        return modifiedState
+    }
+
+    fun installInterceptor(name: String, interceptor: NavigationInterceptor<L, T>): NavigationModel<L, T> {
+        uninstallInterceptor(name)
+        navigationInterceptors.add(name to interceptor)
+        return this
+    }
+
+    fun uninstallInterceptor(name: String) {
+        navigationInterceptors.removeAll { it.first == name }
     }
 
     suspend fun serializeState(): String {
