@@ -1,3 +1,5 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.fore.kt.core.delegate.Fore
@@ -19,6 +21,7 @@ import co.early.n8.NestedTestData.Location.Y3
 import co.early.n8.NestedTestData.Location.Z1
 import co.early.n8.NestedTestData.Location.Z3
 import co.early.n8.NestedTestData.TabHost
+import co.early.n8.lowlevel.LowLevelApi
 import io.mockk.MockKAnnotations
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -268,11 +271,11 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(
             1, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.tabHistory?.size
+                .parent?.parent?._isTabHost()?.tabHistory?.size
         )
         assertEquals(
             0, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.tabHistory?.get(0)
+                .parent?.parent?._isTabHost()?.tabHistory?.get(0)
         )
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(
@@ -563,7 +566,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(
             listOf(0, 2, 1), navigationModel.state.navigation.currentItem().parent
-                ?.isBackStack()?.parent?.isTabHost()!!.tabHistory
+                ?._isBackStack()?.parent?._isTabHost()!!.tabHistory
         )
     }
 

@@ -9,9 +9,9 @@ import co.early.n8.RestrictedNavigation
 import co.early.n8.RestrictedNavigation.NotBackStack
 import co.early.n8.TabBackMode
 import co.early.n8.endNodeOf
-import co.early.n8.isBackStack
-import co.early.n8.notBackStack
-import co.early.n8.notEndNode
+import co.early.n8._isBackStack
+import co.early.n8._notBackStack
+import co.early.n8._notEndNode
 
 /**
  * The functions listed here are part of n8 library internals, and have been exposed publicly
@@ -78,7 +78,7 @@ fun <L : Any, T : Any> _mutateNavigation(
         _mutateNavigation(
             oldItem = oldItemParent,
             newItem = when (val oldParent =
-                oldItemParent.notEndNode()) { // EndNodes are NOT valid parents
+                oldItemParent._notEndNode()) { // EndNodes are NOT valid parents
 
                 is RestrictedNavigation.NotEndNode.IsBackStack -> {
 
@@ -118,7 +118,7 @@ fun <L : Any, T : Any> _mutateNavigation(
                     val newTabs = oldTabHostParent.tabs.mapIndexed { index, tab ->
                         if (tab === oldItem) {
                             tabIndex = index
-                            newItem.isBackStack()
+                            newItem._isBackStack()
                         } else tab
                     }
 
@@ -207,7 +207,7 @@ fun <L : Any, T : Any> TabHost<L, T>._populateChildParents(): TabHost<L, T> {
 @LowLevelApi
 fun <L : Any, T : Any> BackStack<L, T>._populateChildParents(): BackStack<L, T> {
     for (navigation in stack) {
-        when (val notBackStack = navigation.notBackStack()) {
+        when (val notBackStack = navigation._notBackStack()) {
             is NotBackStack.IsEndNode -> notBackStack.value._parent = this
             is NotBackStack.IsTabHost -> {
                 notBackStack.value._parent = this
@@ -505,7 +505,7 @@ fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
         }
     }
 
-    return when (val tabOrBackStack = notEndNode()) {
+    return when (val tabOrBackStack = _notEndNode()) {
         is RestrictedNavigation.NotEndNode.IsBackStack -> {
             tabOrBackStack.value.stack.firstNotNullOfOrNull {
                 if (it is EndNode) {

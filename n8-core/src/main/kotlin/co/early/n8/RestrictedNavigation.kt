@@ -23,7 +23,7 @@ class RestrictedNavigation {
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.isBackStack(): Navigation.BackStack<L, T> {
+fun <L : Any, T : Any> Navigation<L, T>._isBackStack(): Navigation.BackStack<L, T> {
     return when (this) {
         is Navigation.BackStack<L, T> -> this
         is Navigation.EndNode, is Navigation.TabHost -> throw RuntimeException(errorMsg)
@@ -31,7 +31,7 @@ fun <L : Any, T : Any> Navigation<L, T>.isBackStack(): Navigation.BackStack<L, T
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.isEndNode(): Navigation.EndNode<L, T> {
+fun <L : Any, T : Any> Navigation<L, T>._isEndNode(): Navigation.EndNode<L, T> {
     return when (this) {
         is Navigation.EndNode -> this
         is Navigation.BackStack, is Navigation.TabHost -> throw RuntimeException(errorMsg)
@@ -39,7 +39,7 @@ fun <L : Any, T : Any> Navigation<L, T>.isEndNode(): Navigation.EndNode<L, T> {
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.isTabHost(): Navigation.TabHost<L, T> {
+fun <L : Any, T : Any> Navigation<L, T>._isTabHost(): Navigation.TabHost<L, T> {
     return when (this) {
         is Navigation.TabHost<L, T> -> this
         is Navigation.EndNode, is Navigation.BackStack -> throw RuntimeException(errorMsg)
@@ -47,7 +47,7 @@ fun <L : Any, T : Any> Navigation<L, T>.isTabHost(): Navigation.TabHost<L, T> {
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
+fun <L : Any, T : Any> Navigation<L, T>._notBackStack(): NotBackStack<L, T> {
     return when (this) {
         is Navigation.BackStack<L, T> -> throw RuntimeException(errorMsg)
         is Navigation.EndNode -> NotBackStack.IsEndNode(this)
@@ -56,7 +56,7 @@ fun <L : Any, T : Any> Navigation<L, T>.notBackStack(): NotBackStack<L, T> {
 }
 
 @LowLevelApi
-fun <L : Any, T : Any> Navigation<L, T>.notEndNode(): NotEndNode<L, T> { // todo possibly start these with an underscore too
+fun <L : Any, T : Any> Navigation<L, T>._notEndNode(): NotEndNode<L, T> {
     return when (this) {
         is Navigation.BackStack -> NotEndNode.IsBackStack(this)
         is Navigation.EndNode -> throw RuntimeException(errorMsg)

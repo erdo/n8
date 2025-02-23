@@ -282,7 +282,7 @@ sealed class Navigation<L : Any, T : Any> {
         override val backsToExit: Int
             get(): Int {
                 return stack.sumOf {
-                    when (val notBackStack = it.notBackStack()) {
+                    when (val notBackStack = it._notBackStack()) {
                         is IsEndNode -> 1
                         is IsTabHost -> notBackStack.value.backsToExit
                     }

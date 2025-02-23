@@ -464,7 +464,7 @@ class NavigationModel<L : Any, T : Any>(
 
                         logger.w("[${tabHostSpec.tabHostId}] Not Found, adding in place")
 
-                        trimmed.currentItem()._requireParent().isBackStack().let { parent ->
+                        trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
                             parent to parent.copy(
                                 stack = parent.stack.toMutableList().also {
                                     it.add(tabsOf(tabHostSpec)._addLocationToCurrentTab(location))
@@ -475,13 +475,13 @@ class NavigationModel<L : Any, T : Any>(
                 }
 
                 NoChange -> {
-                    val parent = trimmedNav.currentItem()._requireParent().isBackStack()
+                    val parent = trimmedNav.currentItem()._requireParent()._isBackStack()
                     val newParent = parent._addLocation(location)
                     parent to newParent
                 }
 
                 TopLevel -> {
-                    when (val parentWrapper = trimmedNav.topItem().notEndNode()) {
+                    when (val parentWrapper = trimmedNav.topItem()._notEndNode()) {
                         is RestrictedNavigation.NotEndNode.IsBackStack -> {
                             val parent = parentWrapper.value
                             val newParent = parent._addLocation(location)
@@ -531,7 +531,7 @@ class NavigationModel<L : Any, T : Any>(
             state.navigation.currentItem()._applyOneStepBackNavigation()
         } else state.navigation
 
-        val navigated = trimmed?.currentItem()?._requireParent()?.isBackStack()?.let { parent ->
+        val navigated = trimmed?.currentItem()?._requireParent()?._isBackStack()?.let { parent ->
 
             val tabHost = trimmed._tabHostFinder(tabHostSpec.tabHostId)
 
@@ -729,7 +729,7 @@ class NavigationModel<L : Any, T : Any>(
             } ?: run { // didn't find tabHost so just navigate forward
                 logger.d("navigateBackTo()... tabHost NOT FOUND in history, navigating forward instead")
 
-                trimmed.currentItem()._requireParent().isBackStack().let { parent ->
+                trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
 
                     val newParent = parent.copy(
                         stack = parent.stack.toMutableList().also {

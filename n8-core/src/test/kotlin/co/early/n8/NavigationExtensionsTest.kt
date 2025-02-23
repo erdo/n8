@@ -295,9 +295,9 @@ class NavigationExtensionsTest {
         Fore.i(result.toString(true))
 
         // assert
-        assertEquals(2, result.isBackStack().stack.size)
-        assertEquals(2, result.isBackStack().stack[0].parent?.isBackStack()?.stack?.size)
-        assertEquals(2, result.isBackStack().stack[1].parent?.isBackStack()?.stack?.size)
+        assertEquals(2, result._isBackStack().stack.size)
+        assertEquals(2, result._isBackStack().stack[0].parent?._isBackStack()?.stack?.size)
+        assertEquals(2, result._isBackStack().stack[1].parent?._isBackStack()?.stack?.size)
     }
 
     @Test
@@ -338,7 +338,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val tabHost = nav.isBackStack().stack[2].isTabHost()
+        val tabHost = nav._isBackStack().stack[2]._isTabHost()
         val tabs = tabHost.tabs
         val tab = tabs[0]
         val newTab = tab.copy(stack = tab.stack.toMutableList().also { it.removeAt(1) })
@@ -358,22 +358,22 @@ class NavigationExtensionsTest {
         Fore.i(result.toString(true))
 
         // assert
-        assertEquals(3, result.isBackStack().stack[2].isTabHost().tabs[0].stack.size)
+        assertEquals(3, result._isBackStack().stack[2]._isTabHost().tabs[0].stack.size)
         assertEquals(
             3,
-            result.isBackStack().stack[2].isTabHost().tabs[0].stack[0].parent?.isBackStack()?.stack?.size
+            result._isBackStack().stack[2]._isTabHost().tabs[0].stack[0].parent?._isBackStack()?.stack?.size
         )
         assertEquals(
             3,
-            result.isBackStack().stack[2].isTabHost().tabs[0].stack[2].parent?.isBackStack()?.stack?.size
+            result._isBackStack().stack[2]._isTabHost().tabs[0].stack[2].parent?._isBackStack()?.stack?.size
         )
         assertEquals(
             X1,
-            result.isBackStack().stack[2].isTabHost().tabs[0].stack[0].isEndNode().location
+            result._isBackStack().stack[2]._isTabHost().tabs[0].stack[0]._isEndNode().location
         )
         assertEquals(
             D,
-            result.isBackStack().stack[2].isTabHost().tabs[0].stack[1].isEndNode().location
+            result._isBackStack().stack[2]._isTabHost().tabs[0].stack[1]._isEndNode().location
         )
     }
 
@@ -414,7 +414,7 @@ class NavigationExtensionsTest {
         Fore.i(nav.toString(true))
 
         // act
-        val tabHost = nav.tabs[0].stack[3].isTabHost()
+        val tabHost = nav.tabs[0].stack[3]._isTabHost()
         val result = _mutateNavigation(
             oldItem = tabHost,
             newItem = tabHost.copy(
@@ -427,10 +427,10 @@ class NavigationExtensionsTest {
         Fore.i(result.toString(true))
 
         // assert
-        assertEquals(2, result.isTabHost().tabs[0].isBackStack().stack[3].isTabHost().tabs.size)
+        assertEquals(2, result._isTabHost().tabs[0]._isBackStack().stack[3]._isTabHost().tabs.size)
         assertEquals(
             Y2,
-            result.isTabHost().tabs[0].isBackStack().stack[3].isTabHost().tabs[1].stack[0].isEndNode().location
+            result._isTabHost().tabs[0]._isBackStack().stack[3]._isTabHost().tabs[1].stack[0]._isEndNode().location
         )
         assertEquals(Y2, result.currentLocation())
     }
@@ -454,9 +454,9 @@ class NavigationExtensionsTest {
         Fore.i(mutatedNav.toString(diagnostics = true))
 
         // assert
-        assertEquals(A, mutatedNav.isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav.isBackStack().stack[1].isEndNode().location)
-        assertEquals(A, mutatedNav.isBackStack().stack[2].isEndNode().location)
+        assertEquals(A, mutatedNav._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(B, mutatedNav._isBackStack().stack[1]._isEndNode().location)
+        assertEquals(A, mutatedNav._isBackStack().stack[2]._isEndNode().location)
     }
 
     @Test
@@ -479,9 +479,9 @@ class NavigationExtensionsTest {
         Fore.i(mutatedNav.toString(diagnostics = true))
 
         // assert
-        assertEquals(A, mutatedNav.isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav.isBackStack().stack[1].isEndNode().location)
-        assertEquals(2, mutatedNav.isBackStack().stack.size)
+        assertEquals(A, mutatedNav._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(B, mutatedNav._isBackStack().stack[1]._isEndNode().location)
+        assertEquals(2, mutatedNav._isBackStack().stack.size)
     }
 
     @Test
@@ -517,10 +517,10 @@ class NavigationExtensionsTest {
         Fore.i(mutatedNav.toString(diagnostics = true))
 
         // assert
-        assertEquals(A, mutatedNav.isTabHost().tabs[0].isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
-        assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
-        assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
+        assertEquals(A, mutatedNav._isTabHost().tabs[0]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(B, mutatedNav._isTabHost().tabs[1]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(A, mutatedNav._isTabHost().tabs[2]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(C, mutatedNav._isTabHost().tabs[3]._isBackStack().stack[0]._isEndNode().location)
         assertEquals(A, mutatedNav.currentLocation())
     }
 
@@ -558,10 +558,10 @@ class NavigationExtensionsTest {
         Fore.i(mutatedNav.toString(diagnostics = true))
 
         // assert
-        assertEquals(A, mutatedNav.isTabHost().tabs[0].isBackStack().stack[0].isEndNode().location)
-        assertEquals(B, mutatedNav.isTabHost().tabs[1].isBackStack().stack[0].isEndNode().location)
-        assertEquals(A, mutatedNav.isTabHost().tabs[2].isBackStack().stack[0].isEndNode().location)
-        assertEquals(C, mutatedNav.isTabHost().tabs[3].isBackStack().stack[0].isEndNode().location)
+        assertEquals(A, mutatedNav._isTabHost().tabs[0]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(B, mutatedNav._isTabHost().tabs[1]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(A, mutatedNav._isTabHost().tabs[2]._isBackStack().stack[0]._isEndNode().location)
+        assertEquals(C, mutatedNav._isTabHost().tabs[3]._isBackStack().stack[0]._isEndNode().location)
         assertEquals(B, mutatedNav.currentLocation())
     }
 
@@ -611,38 +611,5 @@ class NavigationExtensionsTest {
         assertEquals(false, hostedBy.isIndexOnPath(0, "TABS_02")) // not on path
         assertEquals(true, hostedBy.isIndexOnPath(2, "TABS_02")) // on path
         assertEquals(false, hostedBy.isIndexOnPath(9, "TABS_02")) // out of bounds
-    }
-
-    @Ignore
-    @Test
-    fun `some custom navigation operations`() {
-        // TODO these tests come from NavigationModelLinearNavTest,
-
-        //  also look at listener interface where the client can get the change to change the mutations (can use for logging stats or actual mutations)
-
-
-        // we just need to check the same thing when the navigation graph is a nested one
-//
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Paris)
-//        navigationModel.navigateBack()
-//        navigationModel.navigateBack()
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(NewYork, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
     }
 }

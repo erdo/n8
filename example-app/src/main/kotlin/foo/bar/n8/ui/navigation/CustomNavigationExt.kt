@@ -3,7 +3,6 @@
 package foo.bar.n8.ui.navigation
 
 import co.early.n8.Navigation
-import co.early.n8.isBackStack
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._mutateNavigation
 
