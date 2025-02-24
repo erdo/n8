@@ -28,5 +28,4 @@ plugins {
     alias(libs.plugins.kotlinSerializationPlugin) apply false
     alias(libs.plugins.composePlugin) apply false
     // alias(libs.plugins.kotlinMultiPlatformPlugin)
-    alias(libs.plugins.ktLintPlugin)
 }
