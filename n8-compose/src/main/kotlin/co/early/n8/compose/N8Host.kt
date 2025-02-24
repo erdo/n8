@@ -11,14 +11,16 @@ import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 
-val LocalN8Host =
-    compositionLocalOf<NavigationState<*, *>> { error("To access LocalN8Host, your compose code must be wrapped in a N8Host<L, T>{} block, we'd suggest somewhere high up in the UI tree/hierarchy, just inside setContent{}") }
+val LocalN8Host = compositionLocalOf<NavigationState<*, *>> {
+        error("To access LocalN8Host, your compose code must be wrapped in a N8Host<L, T>{} " +
+                "block, we'd suggest somewhere high up in the UI tree/hierarchy, just inside " +
+                "setContent{}") }
 
 /**
  * Top level navigation container for the app, anything wrapped inside this element will receive the
  * current page for rendering
  */
-@Composable
+@Composable @Suppress("FunctionNaming")
 fun <L : Any, T : Any> Activity.N8Host(
     navigationModel: NavigationModel<L, T> = N8.n8(),
     content: @Composable (NavigationState<L, T>) -> Unit,

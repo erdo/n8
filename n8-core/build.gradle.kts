@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinJvmPlugin)
     alias(libs.plugins.kotlinSerializationPlugin)
+    alias(libs.plugins.ktLintPlugin)
 }
 
 val LIB_ARTIFACT_ID by extra("n8-core")

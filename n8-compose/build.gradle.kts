@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidLibraryPlugin)
     alias(libs.plugins.kotlinAndroidPlugin)
     alias(libs.plugins.composePlugin)
+    alias(libs.plugins.ktLintPlugin)
 }
 
 ext.apply {

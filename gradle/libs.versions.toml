@@ -4,6 +4,7 @@ androidPluginVersion = "8.3.2"
 kotlinVersion = "2.0.20"
 foreVersion = "1.6.4"
 foreComposeVersion = "1.5.10"
+ktLintVersion = "12.1.2"
 jvmToolchain = "8"
 androidCompileSdk = "34"
 androidTargetSdk = "34"
@@ -46,4 +47,5 @@ kotlinMultiPlatformPlugin = { id = "org.jetbrains.kotlin.multiplatform", version
 kotlinKaptPlugin = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
 kotlinSerializationPlugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinVersion" }
 composePlugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }
+ktLintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLintVersion" }
 

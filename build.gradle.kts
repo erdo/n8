@@ -5,6 +5,9 @@
  * ./gradlew testDebugUnitTest
  * ./gradlew connectedAndroidTest
  *
+ * ./gradlew ktlintFormat
+ * ./gradlew ktlintCheck
+ *
  * ./gradlew clean
  * ./gradlew publishToMavenLocal
  * ./gradlew publishReleasePublicationToMavenCentralRepository --no-daemon --no-parallel
@@ -17,7 +20,6 @@
  * git push origin --tags
  */
 plugins {
-    //alias(libs.plugins.kotlinMultiPlatformPlugin)
     alias(libs.plugins.androidAppPlugin) apply false
     alias(libs.plugins.androidLibraryPlugin) apply false
     alias(libs.plugins.kotlinAndroidPlugin) apply false
@@ -25,4 +27,6 @@ plugins {
     alias(libs.plugins.kotlinKaptPlugin) apply false
     alias(libs.plugins.kotlinSerializationPlugin) apply false
     alias(libs.plugins.composePlugin) apply false
+    // alias(libs.plugins.kotlinMultiPlatformPlugin)
+    alias(libs.plugins.ktLintPlugin)
 }
