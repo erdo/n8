@@ -12,10 +12,13 @@ import co.early.n8.NavigationModel.TabHostTarget.ChangeTabHostTo
 import co.early.n8.NavigationModel.TabHostTarget.NoChange
 import co.early.n8.NavigationModel.TabHostTarget.TopLevel
 import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel.RestrictedNavigation
 import co.early.n8.lowlevel._addLocation
 import co.early.n8.lowlevel._addLocationToCurrentTab
 import co.early.n8.lowlevel._applyOneStepBackNavigation
+import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._mutateNavigation
+import co.early.n8.lowlevel._notEndNode
 import co.early.n8.lowlevel._populateChildParents
 import co.early.n8.lowlevel._requireParent
 import co.early.n8.lowlevel._reverseToLocation

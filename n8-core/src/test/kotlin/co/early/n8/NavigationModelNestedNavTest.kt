@@ -22,6 +22,8 @@ import co.early.n8.NestedTestData.Location.Z1
 import co.early.n8.NestedTestData.Location.Z3
 import co.early.n8.NestedTestData.TabHost
 import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._isBackStack
+import co.early.n8.lowlevel._isTabHost
 import io.mockk.MockKAnnotations
 import org.junit.Assert
 import org.junit.Assert.assertEquals

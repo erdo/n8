@@ -17,10 +17,12 @@ import co.early.n8.NestedTestData.Location.Y2
 import co.early.n8.NestedTestData.Location.Z2
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._createItemNavigatedBackCopy
+import co.early.n8.lowlevel._isBackStack
+import co.early.n8.lowlevel._isEndNode
+import co.early.n8.lowlevel._isTabHost
 import co.early.n8.lowlevel._mutateNavigation
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 
 class NavigationExtensionsTest {

@@ -12,6 +12,7 @@ import co.early.n8.LinearTestData.Location.SunCreamSelector
 import co.early.n8.LinearTestData.Location.Sydney
 import co.early.n8.LinearTestData.Location.Tokyo
 import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._isBackStack
 import io.mockk.MockKAnnotations
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals

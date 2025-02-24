@@ -5,13 +5,11 @@ import co.early.n8.Navigation
 import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
 import co.early.n8.Navigation.TabHost
-import co.early.n8.RestrictedNavigation
-import co.early.n8.RestrictedNavigation.NotBackStack
+import co.early.n8.lowlevel.RestrictedNavigation.NotBackStack
 import co.early.n8.TabBackMode
 import co.early.n8.endNodeOf
-import co.early.n8._isBackStack
-import co.early.n8._notBackStack
-import co.early.n8._notEndNode
+
+@Suppress("ktlint:standard:function-naming")
 
 /**
  * The functions listed here are part of n8 library internals, and have been exposed publicly
