@@ -71,3 +71,7 @@ secret_key_ring.gpg
 
 # passwords
 secrets.properties
+
+# Ignore Kotlin/Native metadata and build artifacts
+.kotlin/
+

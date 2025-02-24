@@ -1,7 +1,7 @@
 plugins {
-    id("kotlin-android")
-    id("com.android.library")
-    alias(libs.plugins.compose)
+    alias(libs.plugins.androidLibraryPlugin)
+    alias(libs.plugins.kotlinAndroidPlugin)
+    alias(libs.plugins.composePlugin)
 }
 
 ext.apply {

@@ -1,11 +1,11 @@
 import co.early.n8.Shared
 
 plugins {
-    id("kotlin-kapt")
-    id("kotlin-android")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.android.application")
-    alias(libs.plugins.compose)
+    alias(libs.plugins.kotlinAndroidPlugin)
+    alias(libs.plugins.androidAppPlugin)
+    alias(libs.plugins.kotlinKaptPlugin)
+    alias(libs.plugins.kotlinSerializationPlugin)
+    alias(libs.plugins.composePlugin)
 }
 
 val appId = "foo.bar.n8"
