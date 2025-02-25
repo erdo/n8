@@ -14,7 +14,7 @@ import kotlinx.serialization.Transient
 @Serializable
 data class NavigationState<L : Any, T : Any>(
     @Serializable
-    val navigation: Navigation<L, T>,  // TODO should we verify and enforce that each tabHost is unique? if not things will not go well
+    val navigation: Navigation<L, T>,
     /**
      * willBeAddedToHistory i.e. current Location Will Be Added To History on next forward navigation
      */
@@ -266,7 +266,7 @@ sealed class Navigation<L : Any, T : Any> {
     @Serializable @ExposedCopyVisibility
     data class BackStack<L : Any, T : Any> internal constructor(
         @Serializable
-        val stack: List<Navigation<L, T>>, // TODO should we define this as NotBackStack?
+        val stack: List<Navigation<L, T>>,
     ) : Navigation<L, T>() {
 
         init {

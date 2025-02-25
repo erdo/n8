@@ -4,6 +4,7 @@ import co.early.fore.kt.core.coroutine.awaitDefault
 import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -563,4 +564,137 @@ class NavigationImportExportTest {
             assertEquals(9, navigationModel.state.backsToExit)
         }
     }
+
+    @Test
+    fun `when deserializing a navigation graph with duplicate tabHostIds, exception is thrown`() {
+
+        // arrange
+        var exception: Exception? = null
+        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
+            homeLocation = NestedTestData.Location.A,
+            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+            dataDirectory = dataDirectory,
+        )
+        val serialized = """
+            {
+              "navigation": [
+                "co.early.n8.Navigation.BackStack",
+                {
+                  "stack": [
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.A"}}],
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.B"}}],
+                    ["co.early.n8.Navigation.TabHost", {
+                      "tabHistory": [0],
+                      "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
+                      "tabs": [
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X1"}}],
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}],
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.D"}}],
+                            ["co.early.n8.Navigation.TabHost", {
+                              "tabHistory": [0, 1],
+                              "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
+                              "tabs": [
+                                {
+                                  "stack": [
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.Y1"}}],
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.E"}}]
+                                  ]
+                                },
+                                {
+                                  "stack": [
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.Y2"}}]
+                                  ]
+                                }
+                              ]
+                            }]
+                          ]
+                        },
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X1"}}]
+                          ]
+                        },
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X2"}}]
+                          ]
+                        }
+                      ]
+                    }],
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}]
+                  ]
+                }
+              ],
+              "willBeAddedToHistory": false
+            }
+        """.trimIndent()
+
+        launchDefault {
+            awaitDefault {
+                try {
+                    // act
+                    navigationModel.deSerializeState(serialized, setAsState = true)
+                } catch (e: Exception) {
+                    Fore.e(e.message ?: "exception with no message")
+                    exception = e
+                }
+            }
+
+            // assert
+            Assert.assertNotEquals(null, exception)
+        }
+    }
+
+    @Test
+    fun `when rewriting with a navigation graph with duplicate tabHostIds, exception is thrown`() {
+
+        // arrange
+        var exception: Exception? = null
+        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
+            homeLocation = NestedTestData.Location.A,
+            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+            dataDirectory = dataDirectory,
+        )
+
+        // act
+        try {
+            navigationModel.reWriteNavigation(
+                Navigation.BackStack(
+                    stack = listOf(
+                        Navigation.TabHost(
+                            tabHistory = listOf(0),
+                            tabHostId = NestedTestData.TabHost.TabAbc,
+                            tabs = listOf(
+                                Navigation.BackStack(
+                                    stack = listOf(
+                                        Navigation.EndNode(NestedTestData.Location.A)
+                                    )
+                                )
+                            )
+                        ),
+                        Navigation.TabHost(
+                            tabHistory = listOf(0),
+                            tabHostId = NestedTestData.TabHost.TabAbc,
+                            tabs = listOf(
+                                Navigation.BackStack(
+                                    stack = listOf(
+                                        Navigation.EndNode(NestedTestData.Location.A)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Fore.e(e.message ?: "exception with no message")
+            exception = e
+        }
+
+        // assert
+        Assert.assertNotEquals(null, exception)
+    }
+
 }

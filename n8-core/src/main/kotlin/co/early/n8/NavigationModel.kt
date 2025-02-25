@@ -16,6 +16,7 @@ import co.early.n8.lowlevel.RestrictedNavigation
 import co.early.n8.lowlevel._addLocation
 import co.early.n8.lowlevel._addLocationToCurrentTab
 import co.early.n8.lowlevel._applyOneStepBackNavigation
+import co.early.n8.lowlevel._ensureUniqueTabHosts
 import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._mutateNavigation
 import co.early.n8.lowlevel._notEndNode
@@ -795,6 +796,9 @@ class NavigationModel<L : Any, T : Any>(
         addToHistory: Boolean = true, //applies to the "current" location of the new navigation graph only
     ) {
         logger.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
+
+        navigation._ensureUniqueTabHosts()
+
         updateState(
             NavigationState(
                 navigation = navigation,
@@ -843,6 +847,7 @@ class NavigationModel<L : Any, T : Any>(
     suspend fun deSerializeState(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
         @Suppress("UNCHECKED_CAST")
         val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
+        newState.navigation._ensureUniqueTabHosts()
         if (setAsState) {
             updateState(newState.copy(comingFrom = state.currentLocation))
         }

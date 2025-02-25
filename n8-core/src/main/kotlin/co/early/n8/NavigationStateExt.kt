@@ -6,6 +6,7 @@ import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
 import co.early.n8.Navigation.TabHost
 import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._ensureUniqueTabHosts
 import co.early.n8.lowlevel._populateChildParents
 
 fun <L : Any, T : Any> backStackOf(
@@ -13,7 +14,7 @@ fun <L : Any, T : Any> backStackOf(
 ): BackStack<L, T> {
     return BackStack(
         stack = items.toList(),
-    )._populateChildParents()
+    )._populateChildParents()._ensureUniqueTabHosts()
 }
 
 /**
@@ -35,7 +36,7 @@ fun <L : Any, T : Any> tabsOf(
         tabHistory = tabHistory,
         tabHostId = tabHostId,
         tabs = tabs.toList(),
-    )._populateChildParents()
+    )._populateChildParents()._ensureUniqueTabHosts()
 }
 
 internal fun <L : Any, T : Any> tabsOf(
@@ -52,7 +53,7 @@ internal fun <L : Any, T : Any> tabsOf(
         },
         clearToTabRootDefault = tabHostSpec.clearToTabRoot,
         tabBackModeDefault = tabHostSpec.backMode,
-    )._populateChildParents()
+    )._populateChildParents()._ensureUniqueTabHosts()
 }
 
 fun <L : Any, T : Any> endNodeOf(

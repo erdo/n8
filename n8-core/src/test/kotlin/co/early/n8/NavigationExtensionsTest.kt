@@ -21,6 +21,7 @@ import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._isEndNode
 import co.early.n8.lowlevel._isTabHost
 import co.early.n8.lowlevel._mutateNavigation
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -613,5 +614,134 @@ class NavigationExtensionsTest {
         assertEquals(false, hostedBy.isIndexOnPath(0, "TABS_02")) // not on path
         assertEquals(true, hostedBy.isIndexOnPath(2, "TABS_02")) // on path
         assertEquals(false, hostedBy.isIndexOnPath(9, "TABS_02")) // out of bounds
+    }
+
+    @Test
+    fun `when creating a navigation graph with duplicate String tabHostIds, exception is thrown`() {
+
+        // arrange
+        var exception: Exception? = null
+
+        // act
+        try {
+            val nav = tabsOf(
+                tabHistory = listOf(1),
+                tabHostId = "TABS_01",
+                backStackOf(
+                    endNodeOf(A)
+                ),
+                backStackOf(
+                    endNodeOf(E),
+                    tabsOf(
+                        tabHistory = listOf(0, 1, 2),
+                        tabHostId = "TABS_01",
+                        backStackOf(
+                            endNodeOf(Y1),
+                            endNodeOf(E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Y2)
+                        ),
+                        backStackOf(
+                            endNodeOf(Z2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(C)
+                ),
+                backStackOf(
+                    endNodeOf(D)
+                )
+            )
+        } catch (e: Exception) {
+            Fore.e(e.message ?: "exception with no message")
+            exception = e
+        }
+
+        // assert
+        Assert.assertNotEquals(null, exception)
+    }
+
+    @Test
+    fun `when creating a navigation graph with duplicate tabHostIds, exception is thrown`() {
+
+        // arrange
+        var exception: Exception? = null
+
+        // act
+        try {
+            val nav = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(1),
+                    tabHostId = NestedTestData.TabHost.TabAbc,
+                    backStackOf(
+                        endNodeOf(A)
+                    ),
+                    backStackOf(
+                        endNodeOf(E),
+                        tabsOf(
+                            tabHistory = listOf(0, 1, 2),
+                            tabHostId = NestedTestData.TabHost.TabAbc,
+                            backStackOf(
+                                endNodeOf(Y1),
+                                endNodeOf(E)
+                            ),
+                            backStackOf(
+                                endNodeOf(Y2)
+                            ),
+                            backStackOf(
+                                endNodeOf(Z2)
+                            )
+                        )
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Fore.e(e.message ?: "exception with no message")
+            exception = e
+        }
+
+        // assert
+        Assert.assertNotEquals(null, exception)
+    }
+
+    @Test
+    fun `when creating a navigation graph with duplicate tabHostIds in the same BackStack, exception is thrown`() {
+
+        // arrange
+        var exception: Exception? = null
+
+        // act
+        try {
+            val nav = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = NestedTestData.TabHost.TabAbc,
+                    backStackOf(
+                        endNodeOf(A)
+                    ),
+                ),
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = NestedTestData.TabHost.TabAbc,
+                    backStackOf(
+                        endNodeOf(A)
+                    ),
+                )
+            )
+        } catch (e: Exception) {
+            Fore.e(e.message ?: "exception with no message")
+            exception = e
+        }
+
+        // assert
+        Assert.assertNotEquals(null, exception)
     }
 }

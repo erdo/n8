@@ -1,4 +1,5 @@
 @file:Suppress("FunctionName")
+
 package co.early.n8.lowlevel
 
 import co.early.fore.kt.core.delegate.Fore
@@ -213,6 +214,57 @@ fun <L : Any, T : Any> BackStack<L, T>._populateChildParents(): BackStack<L, T> 
     }
     return this
 }
+
+
+/**
+ * Any navigation graph can only contain unique TabHostIds, no duplicates are allowed
+ */
+@LowLevelApi
+fun <L : Any, T : Any> Navigation<L, T>._ensureUniqueTabHosts(tabHostIds: MutableSet<T> = mutableSetOf()): Navigation<L, T> {
+    return when (this) {
+        is BackStack -> _ensureUniqueTabHosts(tabHostIds)
+        is EndNode -> this
+        is TabHost -> _ensureUniqueTabHosts(tabHostIds)
+    }
+}
+
+/**
+ * Any navigation graph can only contain unique TabHostIds, no duplicates are allowed
+ */
+@LowLevelApi
+fun <L : Any, T : Any> TabHost<L, T>._ensureUniqueTabHosts(tabHostIds: MutableSet<T> = mutableSetOf()): TabHost<L, T> {
+
+    if (tabHostIds.contains(tabHostId)) {
+        throw RuntimeException(
+            "A navigation graph cannot have duplicate tabHostIds, found at least 2 instances of $tabHostId"
+        )
+    } else {
+        for (backStack in tabs) {
+            backStack._parent = this
+            backStack._ensureUniqueTabHosts(tabHostIds.also { it.add(tabHostId) })
+        }
+    }
+    return this
+}
+
+/**
+ * Any navigation graph can only contain unique TabHostIds, no duplicates are allowed
+ */
+@LowLevelApi
+fun <L : Any, T : Any> BackStack<L, T>._ensureUniqueTabHosts(tabHostIds: MutableSet<T> = mutableSetOf()): BackStack<L, T> {
+    for (navigation in stack) {
+        when (val notBackStack = navigation._notBackStack()) {
+            is NotBackStack.IsEndNode -> { /* do nothing */
+            }
+
+            is NotBackStack.IsTabHost -> {
+                notBackStack.value._ensureUniqueTabHosts(tabHostIds)
+            }
+        }
+    }
+    return this
+}
+
 
 @LowLevelApi
 fun <L : Any, T : Any> _updateParent(item: Navigation<L, T>, newParent: Navigation<L, T>): Navigation<L, T> {

@@ -42,7 +42,7 @@ class App : Application() {
         }.installInterceptor("logger") { old, new ->
             Fore.getLogger().i(
                 tag = "N8-INTERCEPT",
-                message = "old backsToExit:${old.backsToExit} new backsToExit:${new.backsToExit}"
+                message = "old backsToExit:${old.backsToExit} new backsToExit:${new.backsToExit} comingFrom:${new.comingFrom} current:${new.currentLocation}"
             )
             new
         }
