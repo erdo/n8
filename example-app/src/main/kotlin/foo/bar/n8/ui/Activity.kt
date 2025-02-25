@@ -34,6 +34,7 @@ import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
 import co.early.n8.NavigationModel
+import co.early.n8.compose.LocalN8HostState
 import co.early.n8.compose.N8Host
 import co.early.n8.isIndexOnPath
 import foo.bar.n8.ui.common.StateWrapperView
@@ -74,12 +75,16 @@ class Activity : ComponentActivity() {
                 N8Host { navigationState ->
 
                     val location = navigationState.currentLocation
-                    Fore.i("Location is:$location")
+                    Fore.i("Latest Location is:$location")
+                    Fore.i("Previous Location was:${navigationState.comingFrom}")
 
                     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
                     // access N8 via the delegate or pass the instance around using DI
                     val n8: NavigationModel<Location, TabHostId> = N8.n8()
+
+                    // from within the N8Host{} scope you can also access LocalN8HostState
+                    // val navigationState = LocalN8HostState
 
                     if (navigationState.initialLoading){
                         Box(

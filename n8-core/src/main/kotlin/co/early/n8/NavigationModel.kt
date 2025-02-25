@@ -390,8 +390,6 @@ class NavigationModel<L : Any, T : Any>(
         }
     }
 
-    //TODO allow for clearing the navigation memory via this model, and maybe a flag via constructor too
-
     private fun load() {
 
         logger.i("load()")
@@ -510,7 +508,8 @@ class NavigationModel<L : Any, T : Any>(
         updateState(
             state.copy(
                 navigation = navigated,
-                willBeAddedToHistory = addToHistory
+                willBeAddedToHistory = addToHistory,
+                comingFrom = state.currentLocation,
             )
         )
     }
@@ -593,7 +592,8 @@ class NavigationModel<L : Any, T : Any>(
         updateState(
             state.copy(
                 navigation = navigated,
-                willBeAddedToHistory = true
+                willBeAddedToHistory = true,
+                comingFrom = state.currentLocation,
             )
         )
     }
@@ -642,6 +642,10 @@ class NavigationModel<L : Any, T : Any>(
     fun navigateBack(times: Int = 1, setData: (L) -> L = { it }): Boolean {
         logger.d("navigateBack() times:$times")
 
+        require(times > 0){
+            "times must be larger than 0"
+        }
+
         var backUpSuccessful = true
         var newNavigation = state.navigation.currentItem()
         for (i in 1..times) {
@@ -655,12 +659,15 @@ class NavigationModel<L : Any, T : Any>(
             }
         }
 
-        updateState(
-            state.copy(
-                navigation = setDataOnCurrentLocation(newNavigation, setData),
-                willBeAddedToHistory = true
+        if (backUpSuccessful || times > 1) {
+            updateState(
+                state.copy(
+                    navigation = setDataOnCurrentLocation(newNavigation, setData),
+                    willBeAddedToHistory = true,
+                    comingFrom = state.currentLocation,
+                )
             )
-        )
+        }
 
         return backUpSuccessful
     }
@@ -685,6 +692,7 @@ class NavigationModel<L : Any, T : Any>(
                     state.copy(
                         navigation = newNavigation,
                         willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
                     )
                 )
             } ?: run { // didn't find location so just navigate forward
@@ -699,6 +707,7 @@ class NavigationModel<L : Any, T : Any>(
                 NavigationState(
                     navigation = backStackOf(endNodeOf(location)),
                     willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
                 )
             )
         }
@@ -727,6 +736,7 @@ class NavigationModel<L : Any, T : Any>(
                     state.copy(
                         navigation = newNavigation,
                         willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
                     )
                 )
             } ?: run { // didn't find tabHost so just navigate forward
@@ -754,6 +764,7 @@ class NavigationModel<L : Any, T : Any>(
                 NavigationState(
                     navigation = tabsOf(tabHostSpec),
                     willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
                 )
             )
         }
@@ -770,21 +781,25 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     fun clearNavigationGraph() {
-        reWriteNavigation(
-            navigation = initialNavigation,
-            addToHistory = initialAddHomeLocationToHistory,
+        updateState(
+            NavigationState(
+                navigation = initialNavigation,
+                willBeAddedToHistory = initialAddHomeLocationToHistory,
+                comingFrom = null,
+            )
         )
     }
 
     fun reWriteNavigation(
         navigation: Navigation<L, T>,
-        addToHistory: Boolean = true //applies to the "current" location of the new navigation graph only
+        addToHistory: Boolean = true, //applies to the "current" location of the new navigation graph only
     ) {
         logger.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
         updateState(
             NavigationState(
                 navigation = navigation,
                 willBeAddedToHistory = addToHistory,
+                comingFrom = state.currentLocation,
             )
         )
     }
@@ -829,7 +844,7 @@ class NavigationModel<L : Any, T : Any>(
         @Suppress("UNCHECKED_CAST")
         val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
         if (setAsState) {
-            updateState(newState)
+            updateState(newState.copy(comingFrom = state.currentLocation))
         }
         return newState
     }

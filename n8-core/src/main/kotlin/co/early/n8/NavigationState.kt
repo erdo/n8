@@ -20,6 +20,13 @@ data class NavigationState<L : Any, T : Any>(
      */
     @Serializable
     val willBeAddedToHistory: Boolean = true,
+    /**
+     * Note: comingFrom simply means the last location of the user, it's useful for navigating transitions. It says
+     * nothing about the availability of that location in the history (it may no longer exist in the navigation graph
+     * at all)
+     */
+    @Transient
+    val comingFrom: L? = null,
     @Transient
     val initialLoading: Boolean = false,
 ) {

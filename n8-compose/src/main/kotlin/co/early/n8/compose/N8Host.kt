@@ -11,7 +11,7 @@ import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 
-val LocalN8Host = compositionLocalOf<NavigationState<*, *>> {
+val LocalN8HostState = compositionLocalOf<NavigationState<*, *>> {
         error("To access LocalN8Host, your compose code must be wrapped in a N8Host<L, T>{} " +
                 "block, we'd suggest somewhere high up in the UI tree/hierarchy, just inside " +
                 "setContent{}") }
@@ -32,7 +32,7 @@ fun <L : Any, T : Any> Activity.N8Host(
         navigationModel.navigateBack()
     }
 
-    CompositionLocalProvider(LocalN8Host provides navigationState) {
+    CompositionLocalProvider(LocalN8HostState provides navigationState) {
         content(navigationState)
     }
 }

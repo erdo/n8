@@ -150,7 +150,6 @@ fun <L : Any, T : Any> _mutateNavigation(
                     oldParent.value.copy(
                         tabs = newTabs,
                         tabHistory = newHistory,
-                        // todo do we needa populatechildparents here?
                     ).also { newParent ->
                         newParent.tabs.toMutableList().map {
                             _updateParent(
