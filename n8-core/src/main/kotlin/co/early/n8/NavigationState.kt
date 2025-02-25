@@ -21,7 +21,7 @@ data class NavigationState<L : Any, T : Any>(
     @Serializable
     val willBeAddedToHistory: Boolean = true,
     @Transient
-    val loading: Boolean = false,
+    val initialLoading: Boolean = false,
 ) {
 
     init {

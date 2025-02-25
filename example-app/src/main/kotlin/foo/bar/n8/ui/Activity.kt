@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons.Default
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -21,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,15 +33,11 @@ import androidx.compose.ui.unit.dp
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
-import co.early.n8.Navigation
 import co.early.n8.NavigationModel
-import co.early.n8.backStackOf
-import co.early.n8.endNodeOf
+import co.early.n8.compose.N8Host
 import co.early.n8.isIndexOnPath
-import co.early.n8.lowlevel._requireParent
 import foo.bar.n8.ui.common.StateWrapperView
 import foo.bar.n8.ui.navigation.Location
-import foo.bar.n8.ui.navigation.NavHost
 import foo.bar.n8.ui.navigation.TabHostId
 import foo.bar.n8.ui.navigation.tabHostSpecMain
 import foo.bar.n8.ui.screens.BangkokScreen
@@ -72,7 +71,7 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                NavHost { navigationState ->
+                N8Host { navigationState ->
 
                     val location = navigationState.currentLocation
                     Fore.i("Location is:$location")
@@ -82,55 +81,65 @@ class Activity : ComponentActivity() {
                     // access N8 via the delegate or pass the instance around using DI
                     val n8: NavigationModel<Location, TabHostId> = N8.n8()
 
-                    Scaffold(
-                        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                        topBar = {},
-                        content = { scaffoldPadding ->
-                            val paddingValues = PaddingValues(
-                                end = scaffoldPadding.calculateEndPadding(LocalLayoutDirection.current) + 16.dp, // https://stackoverflow.com/a/76029778
-                                start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
-                                top = scaffoldPadding.calculateTopPadding() + 8.dp,
-                                bottom = scaffoldPadding.calculateBottomPadding()
-                            )
-                            MainContent(location, paddingValues)
-                        },
-                        bottomBar = {
-                            if (location != Location.Home) {
-                                NavigationBar {
-                                    TabUi(
-                                        text = "Tab 0",
-                                        image = Default.AddCircle,
-                                        enabled = !navigationState.hostedBy.isIndexOnPath(
-                                            index = 0,
-                                            tabHostId = tabHostSpecMain.tabHostId
-                                        )
-                                    ) {
-                                        n8.switchTab(tabHostSpecMain, 0)
-                                    }
-                                    TabUi(
-                                        text = "Tab 1",
-                                        image = Default.Favorite,
-                                        enabled = !navigationState.hostedBy.isIndexOnPath(
-                                            index = 1,
-                                            tabHostId = tabHostSpecMain.tabHostId
-                                        )
-                                    ) {
-                                        n8.switchTab(tabHostSpecMain, 1)
-                                    }
-                                    TabUi(
-                                        text = "Tab 2",
-                                        image = Default.Settings,
-                                        enabled = !navigationState.hostedBy.isIndexOnPath(
-                                            index = 2,
-                                            tabHostId = tabHostSpecMain.tabHostId
-                                        )
-                                    ) {
-                                        n8.switchTab(tabHostSpecMain, 2)
+                    if (navigationState.initialLoading){
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+
+                        Scaffold(
+                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                            topBar = {},
+                            content = { scaffoldPadding ->
+                                val paddingValues = PaddingValues(
+                                    end = scaffoldPadding.calculateEndPadding(LocalLayoutDirection.current) + 16.dp, // https://stackoverflow.com/a/76029778
+                                    start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
+                                    top = scaffoldPadding.calculateTopPadding() + 8.dp,
+                                    bottom = scaffoldPadding.calculateBottomPadding()
+                                )
+                                MainContent(location, paddingValues)
+                            },
+                            bottomBar = {
+                                if (location != Location.Home) {
+                                    NavigationBar {
+                                        TabUi(
+                                            text = "Tab 0",
+                                            image = Default.AddCircle,
+                                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                                index = 0,
+                                                tabHostId = tabHostSpecMain.tabHostId
+                                            )
+                                        ) {
+                                            n8.switchTab(tabHostSpecMain, 0)
+                                        }
+                                        TabUi(
+                                            text = "Tab 1",
+                                            image = Default.Favorite,
+                                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                                index = 1,
+                                                tabHostId = tabHostSpecMain.tabHostId
+                                            )
+                                        ) {
+                                            n8.switchTab(tabHostSpecMain, 1)
+                                        }
+                                        TabUi(
+                                            text = "Tab 2",
+                                            image = Default.Settings,
+                                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                                index = 2,
+                                                tabHostId = tabHostSpecMain.tabHostId
+                                            )
+                                        ) {
+                                            n8.switchTab(tabHostSpecMain, 2)
+                                        }
                                     }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

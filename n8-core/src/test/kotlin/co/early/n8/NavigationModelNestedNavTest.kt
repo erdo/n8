@@ -66,7 +66,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -91,7 +91,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString())
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -119,7 +119,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -148,7 +148,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -180,7 +180,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(Home, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -207,7 +207,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -237,7 +237,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -267,7 +267,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -312,7 +312,7 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateBack()
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(Home, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -351,7 +351,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -394,7 +394,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -452,7 +452,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -488,7 +488,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -522,7 +522,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -559,7 +559,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(10, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -646,7 +646,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -689,7 +689,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -715,7 +715,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -748,7 +748,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -778,7 +778,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(F, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -814,7 +814,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(10, navigationModel.state.backsToExit)
         assertEquals(F, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -852,7 +852,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -889,7 +889,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -926,7 +926,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -956,7 +956,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -988,7 +988,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(C, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1019,7 +1019,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1051,7 +1051,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(A, navigationModel.state.currentLocation)
@@ -1081,7 +1081,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(D, navigationModel.state.currentLocation)
@@ -1136,7 +1136,7 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1190,7 +1190,7 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1244,7 +1244,7 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Z1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1292,7 +1292,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString())
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(D, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1348,7 +1348,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(F, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1384,7 +1384,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -1421,7 +1421,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1451,7 +1451,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -1508,7 +1508,7 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertNotEquals(Z3(999), navigationModel.state.currentLocation)
         assertEquals(Z3(123), navigationModel.state.currentLocation)

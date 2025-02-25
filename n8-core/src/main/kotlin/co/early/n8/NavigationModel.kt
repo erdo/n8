@@ -396,17 +396,17 @@ class NavigationModel<L : Any, T : Any>(
 
         logger.i("load()")
 
-        if (state.loading) {
+        if (state.initialLoading) {
             return
         }
 
-        state = state.copy(loading = true)
+        state = state.copy(initialLoading = true)
         notifyObservers()
 
         launchIO {
             perSista.read(state, stateKType) {
                 state = it.copy(
-                    loading = false,
+                    initialLoading = false,
                     navigation = it.navigation._populateChildParents()
                 )
                 notifyObservers()

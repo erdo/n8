@@ -52,7 +52,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -74,7 +74,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -94,7 +94,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -116,7 +116,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -143,7 +143,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -328,7 +328,7 @@ class NavigationModelTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
@@ -360,7 +360,7 @@ class NavigationModelTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
@@ -385,7 +385,7 @@ class NavigationModelTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
