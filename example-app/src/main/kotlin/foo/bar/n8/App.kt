@@ -1,5 +1,3 @@
-@file:OptIn(LowLevelApi::class)
-
 package foo.bar.n8
 
 import android.app.Application

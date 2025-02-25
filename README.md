@@ -1,18 +1,21 @@
 ## N8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
-⚠️WIP (~75% feature complete) & help wanted 🙏(check the issues) ⚠️
+⚠️help welcomed 🙏(check the issues) ⚠️
+
+Now we're at 1.0.0 the API should be stable, the next piece of work is to move this to a KMP lib for
+version 2
 
 ![example app screenshot landscape view](example-app/screenshot-land.png)
 
-Clone the repo and run the sample app... (that's the quickest way to understand what's going on here)
+Clone the repo and run the sample app... (that's the quickest way to understand what's going on here). Check App.kt, Activity.kt, CustomNavigationExt.kt files
 
 ### Quick Start
 
 The second quickest way to grok this is to see the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe)
 
 ``` kotlin
-implementation("co.early.n8:n8-core:0.0.5")
-implementation("co.early.n8:n8-compose:0.0.5")
+implementation("co.early.n8:n8-core:1.0.0")
+implementation("co.early.n8:n8-compose:1.0.0")
 ```
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
@@ -159,6 +162,12 @@ Pass the N8 instance around the app using your choice of DI, or access it direct
 
 ``` kotlin
 N8.n8()
+```
+
+In Compose style, you can also access the current navigation state from within N8Host scope:
+
+``` kotlin
+val navigationState = LocalN8HostState
 ```
 
 Call the navigation functions from within ClickListeners / ViewModels / ActionHandlers etc as
@@ -404,8 +413,21 @@ is ```TabBackMode.Temporal```
 
 ### Passing data
 
-// TODO (check functionality and add tests for nested nav graphs, linear nav graphs already support this)
+see the unit tests for how to do this:
+``` kotlin
+navigationModel.navigateBack(
+    setData = {
+        when (it) {
+            is Sydney -> {
+                it.copy(withSunCreamFactor = 50)
+            }
 
+            else -> it
+        }
+    }
+)
+``` 
+        
 ### Persistence
 
 Whichever classes you chose to use to represent your Locations and TabHosts, make sure they are
@@ -424,8 +446,6 @@ wrong though, either at construction, or the first time you try to add a TabHost
 added during construction).
 
 ### DeepLinking
-
-// TODO (add functionality and tests)
 
 The current state of the navigation is always exportable/importable. In fact the whole state is
 serialized and persisted to local storage at each navigation step. You can take this serialized
@@ -452,7 +472,12 @@ Review%28productId%3D7898%29%29%2C%0A%29
 ```
 
 So you might want to encode/decode as you wish before sending it to your users, but that's outside
-the scope of a navigation library
+the scope of a navigation library.
+
+Anything more than a very small navigation graph can be quite verbose and I've found that tokenizing
+the serialised data before trying compression techniques like Zstd or Brotli makes a big difference.
+There's a basic example of using a tokens map for this in NavigationImportExportTest.kt Having said
+that most deep links have a shallow navigation hierarchy so it might be a non issue for you
 
 ### Custom Navigation behaviour
 
@@ -466,41 +491,20 @@ available for client use too which should make life easier.
 
 ### Example custom mutation
 
-//TODO
+N8's API is intended to be flexible enough that no customisation is needed unless you have some very
+unique navigation requirements. But customisation is absolutely supported via the LowLevelApis.
+Writing custom navigation mutations is not for the faint hearted and requires a fairly good understanding
+about how the data structure works under the hood. There is an example in the sample app in
+CustomNavigationExt.kt
 
-### Some ideas for what to do next
+The example custom navigation is hooked in using N8's interceptor API (which works a bit like Ktor's
+so you can add or remove multiple interceptors for things like custom navigation mutations, logging,
+or analytics)
 
-- improve / simplify code comments & docs
-
-- finish implementing code functions
-
-- review API - can it do everything a reasonable client will need it to?
-- review API - can it be further simplified
-- review API - what can be made internal?
-- review API - what should be made public?
-
-- finish a simple example app
-
-- setup circle CI to run unit tests
-
-- look for / fix bugs
-
-- settle on solution for transition animations (before and after state - possibly keep this in the
-  compose lib)
-
-- kmp example app + lib changes if needed
-
-- formalise code formatter / linter
-
-- code coverage for tests
-
-- write an article + sample app
-
-- release v1.0.0
 
 ## License
 
-    Copyright 2015-2024 early.co
+    Copyright 2015-2025 early.co
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
