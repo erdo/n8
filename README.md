@@ -412,9 +412,27 @@ You can set the TabBackMode via the ```switchTab()``` function. The default
 is ```TabBackMode.Temporal```
 
 ### Passing data
-
-see the unit tests for how to do this:
+What data which locations accept, is defined by you. Here the location Sydney takes an optional
+withSunCreamFactor parameter
 ``` kotlin
+@Serializable
+data class Sydney(val withSunCreamFactor: Int? = null) : Location()
+```
+So if you want to navigate to the Sydney location, with factor 30 sun cream, you can just do this:
+``` kotlin
+navigationModel.navigateTo(Sydney(30))
+```
+That data will be available attached to the location. You can access it wherever you are picking up
+the location changes in your code (your Compose UI usually). It will also be persisted along with
+the rest of the navigation graph, so there is no way to loose it by rotating the screen or
+quitting the app, it becomes part of the graph and will still be there when you navigate back.
+
+Quite often you will want to collect some user data on a screen and then pass that data back to
+a previous location:
+
+``` kotlin
+navigationModel.navigateTo(Sydney())
+navigationModel.navigateTo(SunCreamSelector)
 navigationModel.navigateBack(
     setData = {
         when (it) {
@@ -456,11 +474,13 @@ For deep linking you probably want to construct a custom navigation state, which
 with the helper functions, for example:
 
 ``` kotlin
-backStackOf<Location, Unit>(
-    endNodeOf(HomeScreen),
-    endNodeOf(ProductReviews),
-    endNodeOf(Review(productId=7898)),
-).export()
+n8.export(
+    backStackOf<Location, Unit>(
+        endNodeOf(HomeScreen),
+        endNodeOf(ProductReviews),
+        endNodeOf(Review(productId=7898)),
+    )
+)
 ```
 
 The default serialized state is human readable, but not that pretty, especially once URLEncoded:
@@ -482,20 +502,17 @@ that most deep links have a shallow navigation hierarchy so it might be a non is
 ### Custom Navigation behaviour
 
 N8 tries to make standard navigation behaviour available to your app using basic functions by
-default, but you can implement any behaviour you like by writing a custom state mutation yourself.
+default, but you can implement any behaviour you like by writing a custom navigation mutation
+yourself.
 
 The N8 navigation state is immutable, but internally it also has parent / child relationships that
 go in both directions and most of the mutation operations involve recursion, so it's definitely an
 advance topic, but there are mutation helper functions that N8 uses internally and that are
-available for client use too which should make life easier.
+available for client use too (these are the functions that start with an underscore and are marked
+LowLevelApi - and they come with a warning! it's much easier to misuse these functions than the
+regular API)
 
-### Example custom mutation
-
-N8's API is intended to be flexible enough that no customisation is needed unless you have some very
-unique navigation requirements. But customisation is absolutely supported via the LowLevelApis.
-Writing custom navigation mutations is not for the faint hearted and requires a fairly good understanding
-about how the data structure works under the hood. There is an example in the sample app in
-CustomNavigationExt.kt
+There is an example in the sample app in CustomNavigationExt.kt
 
 The example custom navigation is hooked in using N8's interceptor API (which works a bit like Ktor's
 so you can add or remove multiple interceptors for things like custom navigation mutations, logging,
