@@ -840,11 +840,7 @@ class NavigationModel<L : Any, T : Any>(
         navigationInterceptors.removeAll { it.first == name }
     }
 
-    suspend fun serializeState(): String {
-        return Json.encodeToString(serializer(stateKType), state)
-    }
-
-    suspend fun deSerializeState(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
+    suspend fun import(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
         @Suppress("UNCHECKED_CAST")
         val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
         newState.navigation._ensureUniqueTabHosts()
@@ -852,5 +848,19 @@ class NavigationModel<L : Any, T : Any>(
             updateState(newState.copy(comingFrom = state.currentLocation))
         }
         return newState
+    }
+
+    /**
+     * Exports the given navigation, if either navigationGraph or willBeAddedToHistory are not set
+     * the current values from the NavigationModel wil be used
+     */
+    suspend fun export(navigationGraph: Navigation<L, T>? = null, willBeAddedToHistory: Boolean? = null): String {
+        return Json.encodeToString(
+            serializer(stateKType),
+            NavigationState(
+                navigation = navigationGraph ?: state.navigation,
+                willBeAddedToHistory = willBeAddedToHistory ?: state.willBeAddedToHistory
+            )
+        )
     }
 }

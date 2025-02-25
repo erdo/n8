@@ -4,6 +4,9 @@ import co.early.fore.kt.core.coroutine.awaitDefault
 import co.early.fore.kt.core.coroutine.launchDefault
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.n8.NestedTestData.Location
+import co.early.n8.NestedTestData.Location.Home
+import co.early.n8.NestedTestData.TabHost
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -31,39 +34,152 @@ class NavigationImportExportTest {
     fun `when exporting state, serialized representation is correct`() {
 
         // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory,
+        )
+
+        val navigationGraphToExport = backStackOf(
+            endNodeOf(Location.A),
+            endNodeOf(Location.B),
+            tabsOf(
+                tabHistory = listOf(0),
+                tabHostId = tabHostSpecAbc.tabHostId,
+                backStackOf(
+                    endNodeOf(Location.X1),
+                    endNodeOf(Location.C),
+                    endNodeOf(Location.D),
+                    tabsOf(
+                        tabHistory = listOf(0, 1),
+                        tabHostId = tabHostSpecX12.tabHostId,
+                        backStackOf(
+                            endNodeOf(Location.Y1),
+                            endNodeOf(Location.E)
+                        ),
+                        backStackOf(
+                            endNodeOf(Location.Y2)
+                        )
+                    )
+                ),
+                backStackOf(
+                    endNodeOf(Location.X1)
+                ),
+                backStackOf(
+                    endNodeOf(Location.X2)
+                )
+            ),
+            endNodeOf(Location.C),
+        )
+
+        launchDefault {
+
+            // act
+            val serialized = awaitDefault {
+                navigationModel.export(
+                    navigationGraph = navigationGraphToExport
+                )
+            }
+
+            Fore.e(navigationModel.toString(diagnostics = true))
+
+            val expected = """
+            {
+              "navigation": [
+                "co.early.n8.Navigation.BackStack",
+                {
+                  "stack": [
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.A"}}],
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.B"}}],
+                    ["co.early.n8.Navigation.TabHost", {
+                      "tabHistory": [0],
+                      "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabAbc"},
+                      "tabs": [
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X1"}}],
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}],
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.D"}}],
+                            ["co.early.n8.Navigation.TabHost", {
+                              "tabHistory": [0, 1],
+                              "tabHostId": {"type": "co.early.n8.NestedTestData.TabHost.TabX12"},
+                              "tabs": [
+                                {
+                                  "stack": [
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.Y1"}}],
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.E"}}]
+                                  ]
+                                },
+                                {
+                                  "stack": [
+                                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.Y2"}}]
+                                  ]
+                                }
+                              ]
+                            }]
+                          ]
+                        },
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X1"}}]
+                          ]
+                        },
+                        {
+                          "stack": [
+                            ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.X2"}}]
+                          ]
+                        }
+                      ]
+                    }],
+                    ["co.early.n8.Navigation.EndNode", {"location": {"type": "co.early.n8.NestedTestData.Location.C"}}]
+                  ]
+                }
+              ]
+            }
+        """.trimIndent()
+
+            // assert
+            assertEquals(expected.replace("\\s".toRegex(), ""), serialized)
+        }
+    }
+
+    @Test
+    fun `when exporting model state, serialized representation is correct`() {
+
+        // arrange
         val navigationModel = NavigationModel(
             initialNavigation = backStackOf(
-                endNodeOf(NestedTestData.Location.A),
-                endNodeOf(NestedTestData.Location.B),
+                endNodeOf(Location.A),
+                endNodeOf(Location.B),
                 tabsOf(
                     tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1),
-                        endNodeOf(NestedTestData.Location.C),
-                        endNodeOf(NestedTestData.Location.D),
+                        endNodeOf(Location.X1),
+                        endNodeOf(Location.C),
+                        endNodeOf(Location.D),
                         tabsOf(
                             tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y1),
-                                endNodeOf(NestedTestData.Location.E)
+                                endNodeOf(Location.Y1),
+                                endNodeOf(Location.E)
                             ),
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y2)
+                                endNodeOf(Location.Y2)
                             )
                         )
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1)
+                        endNodeOf(Location.X1)
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X2)
+                        endNodeOf(Location.X2)
                     )
                 ),
-                endNodeOf(NestedTestData.Location.C),
+                endNodeOf(Location.C),
             ),
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
 
@@ -71,7 +187,7 @@ class NavigationImportExportTest {
 
             // act
             val serialized = awaitDefault {
-                navigationModel.serializeState()
+                navigationModel.export()
             }
 
             Fore.e(navigationModel.toString(diagnostics = true))
@@ -140,9 +256,9 @@ class NavigationImportExportTest {
     fun `when importing serialized state, but not setting, navigation state returned is correct`() {
 
         // arrange
-        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
-            homeLocation = NestedTestData.Location.A,
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Location.A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
         val serialized = """
@@ -203,35 +319,35 @@ class NavigationImportExportTest {
 
         val expected = NavigationState(
             navigation = backStackOf(
-                endNodeOf(NestedTestData.Location.A),
-                endNodeOf(NestedTestData.Location.B),
+                endNodeOf(Location.A),
+                endNodeOf(Location.B),
                 tabsOf(
                     tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1),
-                        endNodeOf(NestedTestData.Location.C),
-                        endNodeOf(NestedTestData.Location.D),
+                        endNodeOf(Location.X1),
+                        endNodeOf(Location.C),
+                        endNodeOf(Location.D),
                         tabsOf(
                             tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y1),
-                                endNodeOf(NestedTestData.Location.E)
+                                endNodeOf(Location.Y1),
+                                endNodeOf(Location.E)
                             ),
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y2)
+                                endNodeOf(Location.Y2)
                             )
                         )
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1)
+                        endNodeOf(Location.X1)
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X2)
+                        endNodeOf(Location.X2)
                     )
                 ),
-                endNodeOf(NestedTestData.Location.C),
+                endNodeOf(Location.C),
             ),
             willBeAddedToHistory = false,
         )
@@ -240,12 +356,12 @@ class NavigationImportExportTest {
 
             // act
             val deSerializedNav = awaitDefault {
-                navigationModel.deSerializeState(serialized, setAsState = false)
+                navigationModel.import(serialized, setAsState = false)
             }
 
             // assert
             assertEquals(expected, deSerializedNav)
-            assertEquals(NestedTestData.Location.A, navigationModel.state.currentLocation)
+            assertEquals(Location.A, navigationModel.state.currentLocation)
             assertEquals(1, navigationModel.state.backsToExit)
             assertEquals(true, navigationModel.state.willBeAddedToHistory)
         }
@@ -255,9 +371,9 @@ class NavigationImportExportTest {
     fun `when importing serialized state, and setting navigation state is set correctly`() {
 
         // arrange
-        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
-            homeLocation = NestedTestData.Location.A,
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Location.A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
         val serialized = """
@@ -320,11 +436,11 @@ class NavigationImportExportTest {
 
             // act
             awaitDefault {
-                navigationModel.deSerializeState(serialized, setAsState = true)
+                navigationModel.import(serialized, setAsState = true)
             }
 
             // assert
-            assertEquals(NestedTestData.Location.C, navigationModel.state.currentLocation)
+            assertEquals(Location.C, navigationModel.state.currentLocation)
             assertEquals(9, navigationModel.state.backsToExit)
             assertEquals(false, navigationModel.state.willBeAddedToHistory)
         }
@@ -383,37 +499,37 @@ class NavigationImportExportTest {
         // arrange
         val navigationModel = NavigationModel(
             initialNavigation = backStackOf(
-                endNodeOf(NestedTestData.Location.A),
-                endNodeOf(NestedTestData.Location.B),
+                endNodeOf(Location.A),
+                endNodeOf(Location.B),
                 tabsOf(
                     tabHistory = listOf(0),
                     tabHostId = tabHostSpecAbc.tabHostId,
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1),
-                        endNodeOf(NestedTestData.Location.C),
-                        endNodeOf(NestedTestData.Location.D),
+                        endNodeOf(Location.X1),
+                        endNodeOf(Location.C),
+                        endNodeOf(Location.D),
                         tabsOf(
                             tabHistory = listOf(0, 1),
                             tabHostId = tabHostSpecX12.tabHostId,
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y1),
-                                endNodeOf(NestedTestData.Location.E)
+                                endNodeOf(Location.Y1),
+                                endNodeOf(Location.E)
                             ),
                             backStackOf(
-                                endNodeOf(NestedTestData.Location.Y2)
+                                endNodeOf(Location.Y2)
                             )
                         )
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X1)
+                        endNodeOf(Location.X1)
                     ),
                     backStackOf(
-                        endNodeOf(NestedTestData.Location.X2)
+                        endNodeOf(Location.X2)
                     )
                 ),
-                endNodeOf(NestedTestData.Location.C),
+                endNodeOf(Location.C),
             ),
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
 
@@ -421,7 +537,7 @@ class NavigationImportExportTest {
 
             // act
             val tokenized = awaitDefault {
-                navigationModel.serializeState().tokenize(tokens)
+                navigationModel.export().tokenize(tokens)
             }
 
             val expected = """
@@ -490,9 +606,9 @@ class NavigationImportExportTest {
     fun `when importing serialized state, string can be detokenized successfully`() {
 
         // arrange
-        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
-            homeLocation = NestedTestData.Location.A,
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Location.A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
         val serialized = """
@@ -556,11 +672,11 @@ class NavigationImportExportTest {
 
             // act
             awaitDefault {
-                navigationModel.deSerializeState(serialized, setAsState = true)
+                navigationModel.import(serialized, setAsState = true)
             }
 
             // assert
-            assertEquals(NestedTestData.Location.C, navigationModel.state.currentLocation)
+            assertEquals(Location.C, navigationModel.state.currentLocation)
             assertEquals(9, navigationModel.state.backsToExit)
         }
     }
@@ -570,9 +686,9 @@ class NavigationImportExportTest {
 
         // arrange
         var exception: Exception? = null
-        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
-            homeLocation = NestedTestData.Location.A,
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Location.A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
         val serialized = """
@@ -635,7 +751,7 @@ class NavigationImportExportTest {
             awaitDefault {
                 try {
                     // act
-                    navigationModel.deSerializeState(serialized, setAsState = true)
+                    navigationModel.import(serialized, setAsState = true)
                 } catch (e: Exception) {
                     Fore.e(e.message ?: "exception with no message")
                     exception = e
@@ -652,9 +768,9 @@ class NavigationImportExportTest {
 
         // arrange
         var exception: Exception? = null
-        val navigationModel = NavigationModel<NestedTestData.Location, NestedTestData.TabHost>(
-            homeLocation = NestedTestData.Location.A,
-            stateKType = typeOf<NavigationState<NestedTestData.Location, NestedTestData.TabHost>>(),
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Location.A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
         )
 
@@ -665,22 +781,22 @@ class NavigationImportExportTest {
                     stack = listOf(
                         Navigation.TabHost(
                             tabHistory = listOf(0),
-                            tabHostId = NestedTestData.TabHost.TabAbc,
+                            tabHostId = TabHost.TabAbc,
                             tabs = listOf(
                                 Navigation.BackStack(
                                     stack = listOf(
-                                        Navigation.EndNode(NestedTestData.Location.A)
+                                        Navigation.EndNode(Location.A)
                                     )
                                 )
                             )
                         ),
                         Navigation.TabHost(
                             tabHistory = listOf(0),
-                            tabHostId = NestedTestData.TabHost.TabAbc,
+                            tabHostId = TabHost.TabAbc,
                             tabs = listOf(
                                 Navigation.BackStack(
                                     stack = listOf(
-                                        Navigation.EndNode(NestedTestData.Location.A)
+                                        Navigation.EndNode(Location.A)
                                     )
                                 )
                             )
