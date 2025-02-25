@@ -291,6 +291,33 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
+    fun `when navigateBack() is called with addToHistory=false, flag is updated`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateBack()
+        navigationModel.navigateBack(addToHistory = false)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
+    }
+
+    @Test
     fun `when navigateBack() is called with times=3, back stack is cleared three times`() {
 
         // arrange

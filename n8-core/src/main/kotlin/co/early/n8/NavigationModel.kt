@@ -640,7 +640,7 @@ class NavigationModel<L : Any, T : Any>(
      * returns false if we were not able to go back the requested number of times (i.e. we reached
      * the home location first, the state will be updated with the home location as current)
      */
-    fun navigateBack(times: Int = 1, setData: (L) -> L = { it }): Boolean {
+    fun navigateBack(times: Int = 1, setData: (L) -> L = { it }, addToHistory: Boolean = true): Boolean {
         logger.d("navigateBack() times:$times")
 
         require(times > 0){
@@ -664,7 +664,7 @@ class NavigationModel<L : Any, T : Any>(
             updateState(
                 state.copy(
                     navigation = setDataOnCurrentLocation(newNavigation, setData),
-                    willBeAddedToHistory = true,
+                    willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
                 )
             )
