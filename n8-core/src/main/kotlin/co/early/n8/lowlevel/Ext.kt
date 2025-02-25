@@ -1,3 +1,4 @@
+@file:Suppress("FunctionName")
 package co.early.n8.lowlevel
 
 import co.early.fore.kt.core.delegate.Fore
@@ -8,8 +9,6 @@ import co.early.n8.Navigation.TabHost
 import co.early.n8.lowlevel.RestrictedNavigation.NotBackStack
 import co.early.n8.TabBackMode
 import co.early.n8.endNodeOf
-
-@Suppress("ktlint:standard:function-naming")
 
 /**
  * The functions listed here are part of n8 library internals, and have been exposed publicly

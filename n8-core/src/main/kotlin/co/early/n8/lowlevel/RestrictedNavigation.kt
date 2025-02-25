@@ -1,10 +1,9 @@
+@file:Suppress("FunctionName")
 package co.early.n8.lowlevel
 
 import co.early.n8.Navigation
 import co.early.n8.lowlevel.RestrictedNavigation.NotBackStack
 import co.early.n8.lowlevel.RestrictedNavigation.NotEndNode
-
-@Suppress("ktlint:standard:function-naming")
 
 /**
  * a Navigation can be one of 3 types (BackStack, EndNode, TabHost), but we can often further
