@@ -159,7 +159,7 @@ setContent {
         ...
         N8Host { navigationState ->
         
-            val location = navigationState.currentPage()
+            val location = navigationState.currentLocation()
 
             // the rest of your app goes here, this code runs
             // whenever your user's location changes as a
