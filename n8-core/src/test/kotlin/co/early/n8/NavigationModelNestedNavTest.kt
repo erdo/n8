@@ -74,6 +74,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("B", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -129,6 +130,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("Home>B>X1>X2>X3", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -279,20 +281,12 @@ class NavigationModelNestedNavTest {
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
-        assertEquals(
-            1, navigationModel.state.navigation.currentItem()
-                .parent?.parent?._isTabHost()?.tabHistory?.size
-        )
-        assertEquals(
-            0, navigationModel.state.navigation.currentItem()
-                .parent?.parent?._isTabHost()?.tabHistory?.get(0)
-        )
+        assertEquals(1, navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()?.tabHistory?.size)
+        assertEquals(0, navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()?.tabHistory?.get(0))
         assertEquals(1, navigationModel.state.hostedBy.size)
-        assertEquals(
-            tabHostSpecAbcStructural.tabHostId,
-            navigationModel.state.hostedBy[0].tabHostId
-        )
+        assertEquals(tabHostSpecAbcStructural.tabHostId,navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("Home>A", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -680,6 +674,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals("A>B>X1>X3>X2", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -1027,6 +1022,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(tabHostSpecX12.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals("A>B>X2>X1", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -1527,6 +1523,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(Z1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals("A>B>X1>C>D>Y1>E>Y2", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test

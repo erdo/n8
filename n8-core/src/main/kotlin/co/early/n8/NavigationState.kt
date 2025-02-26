@@ -49,6 +49,9 @@ data class NavigationState<L : Any, T : Any>(
     val hostedBy: List<TabHostLocation<T>> by lazy {
         navigation.currentItem().hostedBy()
     }
+    val breadcrumbs: List<L> by lazy {
+        navigation.topItem().breadcrumbs()
+    }
 }
 
 @Serializable(with = NavigationSerializer::class)
@@ -69,6 +72,14 @@ sealed class Navigation<L : Any, T : Any> {
      * NB: this typically is called on the currentItem: navigation.currentItem().hostedBy()
      */
     abstract fun hostedBy(): List<TabHostLocation<T>>
+
+    /**
+     * List of locations that form the back path for the user, starting with the location closest
+     * to the exit and ending at the currentLocation. These are historical breadcrumbs, i.e not
+     * structural / hierarchical breadcrumbs
+     * NB: this typically is called on the topItem: navigation.topItem().breadcrumbs()
+     */
+    abstract fun breadcrumbs(): List<L>
 
     /**
      * All the items contained in the stack of a BackStack have that BackStack as their parent.
@@ -151,10 +162,14 @@ sealed class Navigation<L : Any, T : Any> {
             get() = null
 
         override val backsToExit: Int
-            get() = 0
+            get() = 1
 
         override fun hostedBy(): List<TabHostLocation<T>> {
             return parent?.hostedBy() ?: emptyList()
+        }
+
+        override fun breadcrumbs(): List<L> {
+            return listOf(location)
         }
 
         override fun toString(): String {
@@ -229,6 +244,12 @@ sealed class Navigation<L : Any, T : Any> {
             return parent?.hostedBy() ?: emptyList()
         }
 
+        override fun breadcrumbs(): List<L> {
+            return tabHistory.flatMap {
+                tabs[it].breadcrumbs()
+            }
+        }
+
         override fun toString(): String {
             return "${this::class.simpleName}(${tabHostId} tabs:${tabs.size} hist:${tabHistory})"
         }
@@ -290,10 +311,7 @@ sealed class Navigation<L : Any, T : Any> {
         override val backsToExit: Int
             get(): Int {
                 return stack.sumOf {
-                    when (val notBackStack = it._notBackStack()) {
-                        is IsEndNode -> 1
-                        is IsTabHost -> notBackStack.value.backsToExit
-                    }
+                    it.backsToExit
                 }
             }
 
@@ -308,6 +326,12 @@ sealed class Navigation<L : Any, T : Any> {
                 }
 
                 else -> emptyList() // no parent i.e. we are at the top level BackStack
+            }
+        }
+
+        override fun breadcrumbs(): List<L> {
+            return stack.flatMap {
+                it.breadcrumbs()
             }
         }
 
