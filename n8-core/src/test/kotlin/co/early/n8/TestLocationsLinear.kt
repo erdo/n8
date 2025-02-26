@@ -1,12 +1,8 @@
 package co.early.n8
 
-import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations.London
-import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
-import co.early.n8.LinearExample.Location.Tokyo
 import kotlinx.serialization.Serializable
 
-class LinearExample {
+class LinearTestData {
 
     @Serializable
     sealed class Location {
@@ -32,15 +28,4 @@ class LinearExample {
             data object Paris : EuropeanLocations()
         }
     }
-}
-
-fun testX() {
-
-    val nav =
-        backStackOf<Location, Unit>(
-            endNodeOf(London),
-            endNodeOf(Paris),
-            endNodeOf(Tokyo),
-        )
-
 }

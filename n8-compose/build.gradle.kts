@@ -1,17 +1,15 @@
 plugins {
-    id("kotlin-android")
-    id("com.android.library")
+    alias(libs.plugins.androidLibraryPlugin)
+    alias(libs.plugins.kotlinAndroidPlugin)
+    alias(libs.plugins.composePlugin)
 }
 
 ext.apply {
     set("LIB_ARTIFACT_ID", "n8-compose")
     set("LIB_DESCRIPTION", "n8 pure kotlin persistent navigation backstack")
 }
-//val LIB_ARTIFACT_ID by extra("n8-compose")
-//val LIB_DESCRIPTION by extra("n8 pure kotlin persistent navigation backstack")
 
 println("[${ext.get("LIB_ARTIFACT_ID")} build file]")
-//println("[$LIB_ARTIFACT_ID build file]")
 
 kotlin {
     jvmToolchain {
@@ -47,10 +45,6 @@ android {
     buildFeatures {
         buildConfig = false
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompilerVersion.get()
     }
 
     publishing {

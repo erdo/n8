@@ -1,28 +1,34 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
-import co.early.n8.NestedExample.Location
-import co.early.n8.NestedExample.Location.A
-import co.early.n8.NestedExample.Location.B
-import co.early.n8.NestedExample.Location.C
-import co.early.n8.NestedExample.Location.D
-import co.early.n8.NestedExample.Location.E
-import co.early.n8.NestedExample.Location.F
-import co.early.n8.NestedExample.Location.Home
-import co.early.n8.NestedExample.Location.X1
-import co.early.n8.NestedExample.Location.X2
-import co.early.n8.NestedExample.Location.X3
-import co.early.n8.NestedExample.Location.Y1
-import co.early.n8.NestedExample.Location.Y2
-import co.early.n8.NestedExample.Location.Y3
-import co.early.n8.NestedExample.Location.Z1
-import co.early.n8.NestedExample.TabHost
+import co.early.n8.NestedTestData.Location
+import co.early.n8.NestedTestData.Location.A
+import co.early.n8.NestedTestData.Location.B
+import co.early.n8.NestedTestData.Location.C
+import co.early.n8.NestedTestData.Location.D
+import co.early.n8.NestedTestData.Location.E
+import co.early.n8.NestedTestData.Location.F
+import co.early.n8.NestedTestData.Location.Home
+import co.early.n8.NestedTestData.Location.X1
+import co.early.n8.NestedTestData.Location.X2
+import co.early.n8.NestedTestData.Location.X3
+import co.early.n8.NestedTestData.Location.Y1
+import co.early.n8.NestedTestData.Location.Y2
+import co.early.n8.NestedTestData.Location.Y3
+import co.early.n8.NestedTestData.Location.Z1
+import co.early.n8.NestedTestData.Location.Z3
+import co.early.n8.NestedTestData.TabHost
+import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._isBackStack
+import co.early.n8.lowlevel._isTabHost
 import io.mockk.MockKAnnotations
-import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -43,7 +49,6 @@ class NavigationModelNestedNavTest {
         dataDirectory = dataFolder.newFolder()
     }
 
-    @Ignore
     @Test
     fun `when navigating straight to a TabHost from the home location with addHomeLocationToHistory=false, the home location is not added to history`() {
 
@@ -52,7 +57,7 @@ class NavigationModelNestedNavTest {
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory,
-            addHomeLocationToHistory = false,
+            initialAddHomeLocationToHistory = false,
         )
 
         // act
@@ -61,13 +66,15 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(Home, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("B", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -83,13 +90,14 @@ class NavigationModelNestedNavTest {
         // act
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
+        Fore.i(navigationModel.toString())
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Home, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -114,13 +122,15 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X2, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("Home>B>X1>X2>X3", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -143,10 +153,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -175,10 +186,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(Home, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
         assertEquals(true, backedOk)
     }
@@ -202,10 +214,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
@@ -232,10 +245,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -262,24 +276,17 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(
-            1, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.selectedTabHistory?.size
-        )
-        assertEquals(
-            0, navigationModel.state.navigation.currentItem()
-                .parent?.parent?.isTabHost()?.selectedTabHistory?.get(0)
-        )
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()?.tabHistory?.size)
+        assertEquals(0, navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()?.tabHistory?.get(0))
         assertEquals(1, navigationModel.state.hostedBy.size)
-        assertEquals(
-            tabHostSpecAbcStructural.tabHostId,
-            navigationModel.state.hostedBy[0].tabHostId
-        )
+        assertEquals(tabHostSpecAbcStructural.tabHostId,navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals("Home>A", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -297,17 +304,524 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X1)
         navigationModel.navigateTo(location = X2)
         navigationModel.navigateTo(location = X3)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
         navigationModel.navigateBack()
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(Home, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
+    }
+
+    @Test
+    fun `when switching to an implicit tab from outside a tabHost, no mutation occurs`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D) { null }
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backsToExit)
-        assertEquals(Home, navigationModel.state.currentLocation)
-        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(false, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+    }
+
+    @Test
+    fun `when switching to a tab but not specifying tabHost or tabIndex, exception thrown`() {
+
+        // arrange
+        var exceptionMessage : String? = null
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D) { null }
+
+        // act
+        try {
+            navigationModel.switchTab()
+        }catch (e: Exception){
+            exceptionMessage = e.message
+        }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertNotNull(exceptionMessage)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
+    }
+
+    @Test
+    fun `when switching to a tab which doesn't already exist and not specifying a tabIndex, default tab index is used`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(B),
+                        endNodeOf(B),
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    ),
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.switchTab(tabHostSpecX123)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(X2, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a tab which doesn't already exist and specifying a tabIndex, specified tab index is used`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(B),
+                        endNodeOf(B),
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    ),
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.switchTab(tabHostSpecX123, tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(X1, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(0, navigationModel.state.hostedBy[1].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a tab which does already exist and not specifying a tabIndex, tab index is left unchanged`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(B),
+                        endNodeOf(B),
+                        tabsOf(
+                            tabHistory = listOf(1,0,2),
+                            tabHostId = tabHostSpecX123.tabHostId,
+                            backStackOf(
+                                endNodeOf(X1)
+                            ),
+                            backStackOf(
+                                endNodeOf(X2)
+                            ),
+                            backStackOf(
+                                endNodeOf(X3)
+                            ),
+                        )
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    ),
+                ),
+                endNodeOf(A),
+                endNodeOf(E),
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.switchTab(tabHostSpecX123)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(6, navigationModel.state.backsToExit)
+        assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(E, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(2, navigationModel.state.hostedBy[1].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a Temporal TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc),
+                endNodeOf(D),
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(E) { null }
+        navigationModel.switchTab(tabHostSpecAbc, tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(E, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a Structural TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbcStructural),
+                endNodeOf(D),
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(E) { null }
+        navigationModel.switchTab(tabHostSpecAbcStructural, tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(E, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(B, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a nested Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(B),
+                        tabsOf(
+                            tabHistory = listOf(0, 1, 2),
+                            tabHostId = tabHostSpecXyz.tabHostId,
+                            backStackOf(
+                                endNodeOf(X1),
+                            ),
+                            backStackOf(
+                                endNodeOf(X2)
+                            ),
+                            backStackOf(
+                                endNodeOf(X3)
+                            ),
+                        )
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    ),
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(X2, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals("A>B>X1>X3>X2", navigationModel.state.breadcrumbs.joinToString(">"))
+    }
+
+    @Test
+    fun `when switching within a Structural TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcStructural),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost with a clearToRoot flag and specifying the tabHostSpec and tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(B)
+        navigationModel.navigateTo(C)
+
+        // act
+        val success = navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(C, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost with a clearToRoot flag and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 1)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost but overriding a clearToRoot flag to false and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 1)
+        navigationModel.navigateTo(F)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(E, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost but overriding a clearToRoot flag to true and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbc),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbc, tabIndex = 1)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = true)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
     @Test
@@ -329,16 +843,17 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(
             tabHostSpec = tabHostSpecAbc,
             tabIndex = 1,
-            clearToTabRoot = false
+            clearToTabRootOverride = false
         )
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -363,16 +878,17 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(
             tabHostSpec = tabHostSpecAbc,
             tabIndex = 1,
-            clearToTabRoot = true
+            clearToTabRootOverride = true
         )
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -406,16 +922,17 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(10, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Y3, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(
             listOf(0, 2, 1), navigationModel.state.navigation.currentItem().parent
-                ?.isBackStack()?.parent?.isTabHost()!!.selectedTabHistory
+                ?._isBackStack()?.parent?._isTabHost()!!.tabHistory
         )
     }
 
@@ -442,7 +959,8 @@ class NavigationModelNestedNavTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
+        assertNotEquals(null, exception)
+        assertEquals(null, navigationModel.state.comingFrom)
     }
 
     @Test
@@ -465,33 +983,8 @@ class NavigationModelNestedNavTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
-    }
-
-    @Test
-    fun `given a home location with history false, immediately navigating to a tabHost clears the home location`() {
-
-        // arrange
-        val navigationModel = NavigationModel<Location, TabHost>(
-            homeLocation = Home,
-            addHomeLocationToHistory = false,
-            stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
-        )
-
-        // act
-        navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 0)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
-
-        // assert
-        assertEquals(false, navigationModel.state.loading)
-        assertEquals(1, navigationModel.state.backsToExit)
-        assertEquals(X1, navigationModel.state.currentLocation)
-        assertEquals(false, navigationModel.state.canNavigateBack)
-        assertEquals(1, navigationModel.state.hostedBy.size)
-        assertEquals(TabHost.TabX12, navigationModel.state.hostedBy[0].tabHostId)
-        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertNotEquals(null, exception)
+        assertEquals(null, navigationModel.state.comingFrom)
     }
 
     @Test
@@ -500,7 +993,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -519,15 +1012,17 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X2, navigationModel.state.comingFrom)
         assertEquals(2, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(tabHostSpecX12.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals("A>B>X2>X1", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -536,7 +1031,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -562,10 +1057,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X2, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -576,7 +1072,7 @@ class NavigationModelNestedNavTest {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
-            homeLocation = A,
+            homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataDirectory = dataDirectory
         )
@@ -588,10 +1084,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
@@ -601,7 +1098,7 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(
-                selectedTabHistory = listOf(0, 1),
+                tabHistory = listOf(0, 1),
                 tabHostId = TabHost.TabAbc,
                 backStackOf(
                     endNodeOf(A)
@@ -616,14 +1113,15 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 0)
 
         // act
-        navigationModel.navigateTo(location = X1) { null }
+        navigationModel.navigateTo(location = X2) { null }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
-        assertEquals(X1, navigationModel.state.currentLocation)
+        assertEquals(X2, navigationModel.state.currentLocation)
+        assertEquals(X1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(1, navigationModel.state.hostedBy.size)
     }
@@ -646,15 +1144,16 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = Y3)
 
         // act
-        navigationModel.navigateTo(location = F) { tabHostSpecAbcStructural.tabHostId }
+        navigationModel.navigateTo(location = F) { tabHostSpecAbcStructural }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(F, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Y3, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(
             tabHostSpecAbcStructural.tabHostId,
@@ -663,7 +1162,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating forward by breaking to an outer tabHost which is not found, continues in current TabHost`() {
+    fun `when navigating forward by breaking to an outer tabHost which is not found, creates that TabHost in place`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -679,26 +1178,30 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = Y2)
         navigationModel.navigateTo(location = Y3)
 
+        Fore.i(navigationModel.toString(diagnostics = true))
+
         // act
-        navigationModel.navigateTo(location = F) { tabHostSpecX12.tabHostId }
+        navigationModel.navigateTo(location = F) { tabHostSpecX12 }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
-        assertEquals(9, navigationModel.state.backsToExit)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(10, navigationModel.state.backsToExit)
         assertEquals(F, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(Y3, navigationModel.state.comingFrom)
+        assertEquals(3, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(tabHostSpecX12.tabHostId, navigationModel.state.hostedBy[2].tabHostId)
     }
 
     @Test
-    fun `given target exists inside tab, backTo target navigates to target`() {
+    fun `given target exists on back path inside tab, backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -722,20 +1225,21 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
     @Test
-    fun `given target exists in another tab index, but IS accessible via back only operations, backTo target navigates to target`() {
+    fun `given target exists in another tab index, and is on back path, backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -759,20 +1263,21 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
     @Test
-    fun `given target exists in another tab, but is NOT accessible via back only operations, using backTo target behaves as if target is not present`() {
+    fun `given target exists in another tab, but is not on back path, using backTo target behaves as if target is not present`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0),
+            tabHistory = listOf(0),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -796,17 +1301,18 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(B, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
     @Test
-    fun `given target exists outside of tab, backTo target from within tab navigates to target`() {
+    fun `given target exists outside of tab, but still on back path, backTo target from within tab navigates to target`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -826,10 +1332,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(D, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
@@ -837,7 +1344,7 @@ class NavigationModelNestedNavTest {
     fun `given current location is at ROOT of tabHost, and backTo target does not exist, target is navigated to in current tab index`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
-            selectedTabHistory = listOf(0, 1),
+            tabHistory = listOf(0, 1),
             tabHostId = TabHost.TabAbc,
             backStackOf(
                 endNodeOf(A)
@@ -858,10 +1365,11 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(C, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
@@ -889,15 +1397,16 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(D, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back to the same location, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false, when navigating back to the same location, location is not present`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -913,17 +1422,21 @@ class NavigationModelNestedNavTest {
 
         // act
         navigationModel.navigateTo(A, addToHistory = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
         navigationModel.navigateBackTo(A)
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
-        assertEquals(7, navigationModel.state.backsToExit)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(A, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
     @Test
@@ -948,11 +1461,12 @@ class NavigationModelNestedNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(6, navigationModel.state.backsToExit)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(D, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
     }
 
@@ -969,14 +1483,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1003,11 +1517,13 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Z1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals("A>B>X1>C>D>Y1>E>Y2", navigationModel.state.breadcrumbs.joinToString(">"))
     }
 
     @Test
@@ -1023,14 +1539,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1057,10 +1573,11 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Y2, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Z1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
@@ -1076,14 +1593,14 @@ class NavigationModelNestedNavTest {
             endNodeOf(A),
             endNodeOf(B),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABS_01",
                 backStackOf(
                     endNodeOf(X1),
                     endNodeOf(C),
                     endNodeOf(D),
                     tabsOf(
-                        selectedTabHistory = listOf(0, 1),
+                        tabHistory = listOf(0, 1),
                         tabHostId = "TABS_02",
                         backStackOf(
                             endNodeOf(Y1),
@@ -1111,263 +1628,477 @@ class NavigationModelNestedNavTest {
         Fore.e(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(Z1, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Y2, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
-    @Ignore
+
     @Test
-    fun `some custom navigation operations`() {
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
-//
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Paris)
-//        navigationModel.navigateBack()
-//        navigationModel.navigateBack()
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(NewYork, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+    fun `when navigating to a previous TabHost in history, from outside that TabHost, navigates correctly`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(1, 0, 3),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A)
+                    ),
+                    backStackOf(
+                        endNodeOf(B)
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    )
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateBack()
+        navigationModel.navigateTo(E) // continue in same tabHost
+        navigationModel.navigateTo(A) { null } // break out to top level
+        navigationModel.navigateTo(B)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        navigationModel.navigateTo(D) { tabHostSpecAbc } // break back to previous tabHost
+
+        Fore.i(navigationModel.toString())
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
-    @Ignore
+
     @Test
-    fun `when navigateBack() is called with times=3, back stack is cleared three times`() {
+    fun `when navigating to a previous TabHost outside of history, from outside that TabHost, navigates and sets current`() {
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0, 1, 2),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A)
+                    ),
+                    backStackOf(
+                        endNodeOf(B)
+                    ),
+                    backStackOf(
+                        tabsOf(
+                            tabHistory = listOf(0),
+                            tabHostId = tabHostSpecXyz.tabHostId,
+                            backStackOf(
+                                endNodeOf(C)
+                            ),
+                            backStackOf(
+                                endNodeOf(D)
+                            )
+                        )
+                    )
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Paris)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateBack(times = 3)
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(2, navigationModel.state.backsToExit)
-//        assertEquals(NewYork, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+        // act
+        navigationModel.navigateBack() //so TabXyz is not longer on history path
+        navigationModel.navigateTo(E)
+        navigationModel.navigateTo(A) { null } // break out to top level
+        navigationModel.navigateTo(B)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        navigationModel.navigateTo(F) { tabHostSpecXyz } // break back to previous tabHost (but it doesn't exist in the backStack)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(F, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
     }
 
-    @Ignore
+
     @Test
-    fun `given location is the current page, when navigating back to it, history status is updated`() {
+    fun `given target exists on back path inside tab, back times=3 navigates to target`() {
+        // arrange
+        val initialTabs = tabsOf<Location, TabHost>(
+            tabHistory = listOf(0),
+            tabHostId = TabHost.TabAbc,
+            backStackOf(
+                endNodeOf(A)
+            ),
+            backStackOf(
+                endNodeOf(B)
+            ),
+        )
+        val navigationModel = NavigationModel(
+            initialNavigation = initialTabs,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.navigateTo(F)
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // act
+        navigationModel.navigateBack(times = 3)
 
-//
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Paris)
-//        navigationModel.navigateBackTo(Paris, addToHistory = false)
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(4, navigationModel.state.backsToExit)
-//        assertEquals(Paris, navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-//        assertEquals(
-//            false,
-//            navigationModel.state.willBeAddedToHistory
-//        )
-        assert(false)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
-    @Ignore
     @Test
-    fun `given location is the current page, when navigating back to it, new location is swapped for current location`() {
+    fun `given target exists in another tab index, and is on back path, back times=3 navigates to target`() {
+        // arrange
+        val initialTabs = tabsOf<Location, TabHost>(
+            tabHistory = listOf(0, 1),
+            tabHostId = TabHost.TabAbc,
+            backStackOf(
+                endNodeOf(A)
+            ),
+            backStackOf(
+                endNodeOf(B)
+            ),
+        )
+        val navigationModel = NavigationModel(
+            initialNavigation = initialTabs,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.navigateTo(F)
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // act
+        navigationModel.navigateBack(times = 3)
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Sydney())
-//        navigationModel.navigateBackTo(Sydney(50))
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(4, navigationModel.state.backsToExit)
-//        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
-//        assertEquals(Sydney(50), navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(B, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
     }
 
-    @Ignore
     @Test
-    fun `when navigateBack is called with setData, final location receives data`() {
+    fun `given target exists outside of tab, but still on back path, back times=4 from within tab navigates to target`() {
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        navigationModel.navigateTo(A)
+        navigationModel.navigateTo(B)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 1)
+        navigationModel.navigateTo(C)
+        navigationModel.navigateTo(D)
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(Sydney())
-//        navigationModel.navigateTo(SunCreamSelector)
-//        navigationModel.navigateBack(
-//            setData = {
-//                when (it) {
-//                    is Sydney -> {
-//                        it.copy(withSunCreamFactor = 50)
-//                    }
-//
-//                    else -> it
-//                }
-//            }
-//        )
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(4, navigationModel.state.backsToExit)
-//        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
-//        assertEquals(Sydney(50), navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+        // act
+        navigationModel.navigateBack(times = 4)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(D, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
-    @Ignore
     @Test
-    fun `when navigateBack is called with times = 2 and setData, final location receives data`() {
+    fun `when navigateBack times=2 is called with setData on a nested graph, final location receives data`() {
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0, 1, 2),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(Z3(999))
+                    ),
+                    backStackOf(
+                        endNodeOf(B)
+                    ),
+                    backStackOf(
+                        tabsOf(
+                            tabHistory = listOf(0),
+                            tabHostId = tabHostSpecXyz.tabHostId,
+                            backStackOf(
+                                endNodeOf(C)
+                            ),
+                            backStackOf(
+                                endNodeOf(D)
+                            )
+                        )
+                    )
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(NewYork)
-//        navigationModel.navigateTo(Sydney())
-//        navigationModel.navigateTo(Tokyo)
-//        navigationModel.navigateTo(SunCreamSelector)
-//        navigationModel.navigateBack(
-//            times = 2,
-//            setData = {
-//                when (it) {
-//                    is Sydney -> {
-//                        it.copy(withSunCreamFactor = 50)
-//                    }
-//
-//                    else -> it
-//                }
-//            }
-//        )
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, navigationModel.state.loading)
-//        assertEquals(3, navigationModel.state.backsToExit)
-//        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
-//        assertEquals(Sydney(50), navigationModel.state.currentLocation)
-//        assertEquals(true, navigationModel.state.canNavigateBack)
-        assert(false)
+        // act
+        navigationModel.navigateBack(
+            times = 2
+        ) {
+            when (it) {
+                is Z3 -> {
+                    it.copy(id = 123)
+                }
+
+                else -> it
+            }
+        }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertNotEquals(Z3(999), navigationModel.state.currentLocation)
+        assertEquals(Z3(123), navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(C, navigationModel.state.comingFrom)
     }
 
-    @Ignore
     @Test
-    fun `given we are already on the home location, when navigateBack is called, false is returned`() {
+    fun `when navigating back to tabHost from outside of tabHost, mutation is correct`() {
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X1) { null }
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        val result = navigationModel.navigateBack()
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(false, result)
-        assert(false)
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(6, navigationModel.state.backsToExit)
+        assertEquals(F, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X1, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
     }
 
-    @Ignore
     @Test
-    fun `given we are not on the home location, when navigateBack is called, true is returned`() {
+    fun `when navigating back to tabHost we are already in, mutation occurs to the same place`() {
 
-        // TODO these tests come from NavigationModelLinearNavTest,
-        // we just need to check the same thing when the navigation graph is a nested one
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
 
-//        // arrange
-//        val navigationModel = NavigationModel<Location>(
-//            homeLocation = London,
-//            stateKType = typeOf<NavigationState<Location>>(),
-//            dataDirectory = dataDirectory
-//        )
-//
-//        // act
-//        navigationModel.navigateTo(Tokyo)
-//        val result = navigationModel.navigateBack()
-//        Fore.i(navigationModel.toString(diagnostics = true))
-//
-//        // assert
-//        assertEquals(true, result)
-        assert(false)
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
     }
+
+    @Test
+    fun `when navigating back to tabHost, from within nested tabHost, graph is updated with new data`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2) { tabHostSpecXyz }
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc, addToHistory = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(9, navigationModel.state.backsToExit)
+        assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+    }
+
+    @Test
+    fun `when navigating back to tabHost which is not found, creates that TabHost in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(9, navigationModel.state.backsToExit)
+        assertEquals(X1, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+    }
+
+    @Test
+    fun `when passing data back to tabHost - data is sent`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(location = B)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecZ3)
+        navigationModel.navigateTo(location = X1) { null }
+
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3) {
+            when (it) {
+                is Z3 -> {
+                    it.copy(id = 123)
+                }
+
+                else -> it
+            }
+        }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertNotEquals(Z3(), navigationModel.state.currentLocation)
+        assertEquals(Z3(123), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X1, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+    }
+
+    @Test
+    fun `when navigating back to TabHost and setting addToHistory=false, flag is set`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(location = B)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecZ3)
+        navigationModel.navigateTo(location = X1) { null }
+
+        // act
+        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3, addToHistory = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertEquals(Z3(), navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X1, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+    }
+
 }

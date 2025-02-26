@@ -1,9 +1,10 @@
 [versions]
-gradle = "8.3.1"
-kotlinVersion = "1.9.22"
+gradleVersion = "8.3.1"
+androidPluginVersion = "8.3.2"
+kotlinVersion = "2.0.20"
 foreVersion = "1.6.4"
 foreComposeVersion = "1.5.10"
-composeCompilerVersion = "1.5.10"
+ktLintVersion = "12.1.2"
 jvmToolchain = "8"
 androidCompileSdk = "34"
 androidTargetSdk = "34"
@@ -20,9 +21,7 @@ appcompatVersion = "1.6.1"
 materialVersion = "1.11.0"
 
 [libraries]
-kotlinSerializationPlugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinVersion" }
-kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinVersion" }
-androidGradlePlugin = "com.android.tools.build:gradle:8.3.1"
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinVersion" }
 kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
 persista = "co.early.persista:persista:1.5.4"
 koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
@@ -38,3 +37,15 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 fore-core = { module = "co.early.fore:fore-kt-core", version.ref = "foreVersion" }
 fore-android = { module = "co.early.fore:fore-kt-android", version.ref = "foreVersion" }
 fore-compose = { module = "co.early.fore:fore-kt-android-compose", version.ref = "foreComposeVersion" }
+
+[plugins]
+androidAppPlugin = { id = "com.android.application", version.ref = "androidPluginVersion" }
+androidLibraryPlugin = { id = "com.android.library", version.ref = "androidPluginVersion" }
+kotlinAndroidPlugin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinVersion" }
+kotlinJvmPlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinVersion" }
+kotlinMultiPlatformPlugin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinVersion" }
+kotlinKaptPlugin = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
+kotlinSerializationPlugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinVersion" }
+composePlugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }
+ktLintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLintVersion" }
+

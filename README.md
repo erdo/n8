@@ -1,18 +1,21 @@
 ## N8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
-⚠️WIP (~75% feature complete) & help wanted 🙏(check the issues) ⚠️
+⚠️help welcomed 🙏(check the issues) ⚠️
+
+Now we're at 1.0.0 the API should be stable, the next piece of work is to move this to a KMP lib for
+version 2
 
 ![example app screenshot landscape view](example-app/screenshot-land.png)
 
-Clone the repo and run the sample app... (that's the quickest way to understand what's going on here)
+Clone the repo and run the sample app... (that's the quickest way to understand what's going on here). Check App.kt, Activity.kt, CustomNavigationExt.kt files
 
 ### Quick Start
 
 The second quickest way to grok this is to see the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe)
 
 ``` kotlin
-implementation("co.early.n8:n8-core:0.0.5")
-implementation("co.early.n8:n8-compose:0.0.5")
+implementation("co.early.n8:n8-core:1.0.0")
+implementation("co.early.n8:n8-compose:1.0.0")
 ```
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
@@ -37,9 +40,9 @@ To use N8 in your app, you don't need to implement any special interfaces on you
 UI code remains largely independent of N8 itself.
 
 You do need to tell N8 what class you are using to keep track of your user's *Location* and your
-*TabHosts* - something like a sealed class works well here, but there is nothing stopping you from
-using basic Strings to identify your locations. If you don't have any TabHosts, you can just put
-Unit
+*TabHosts* - something like a sealed class works well here, you could use a String if you wanted,
+[but you might not want to](https://github.com/erdo/n8/issues/18). If you don't have any tabbed
+navigations you can just put Unit
 
 Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with N8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted
@@ -161,6 +164,12 @@ Pass the N8 instance around the app using your choice of DI, or access it direct
 N8.n8()
 ```
 
+In Compose style, you can also access the current navigation state from within N8Host scope:
+
+``` kotlin
+val navigationState = LocalN8HostState
+```
+
 Call the navigation functions from within ClickListeners / ViewModels / ActionHandlers etc as
 appropriate for your architecture
 
@@ -227,7 +236,7 @@ Here's a more complicated nested navigation graph:
 backStackOf(
     endNodeOf(Welcome),     <--- home location
     tabsOf(
-        selectedTabHistory = listOf(0,2),
+        tabHistory = listOf(0,2),
         tabHostId = "TABHOST_MAIN",
         backStackOf(
             endNodeOf(MyFeed),
@@ -240,7 +249,7 @@ backStackOf(
             endNodeOf(MyAccount),
             endNodeOf(Settings),
             tabsOf(
-                selectedTabHistory = listOf(0),
+                tabHistory = listOf(0),
                 tabHostId = "TABHOST_SETTINGS",
                 backStackOf(
                     endNodeOf(Audio),
@@ -256,7 +265,7 @@ backStackOf(
 ```
 
 To exit the app in this case, the user would have to press back 7 times, can you work out why? it's
-related to the selectedTabHistory list
+related to the tabHistory list
 
 Each node of the navigation graph is a Navigation item, and as you've probably noticed from the
 examples, a Navigation item can be one of 3 types:
@@ -345,7 +354,7 @@ The navigation graph might look like this:
 
 ``` kotlin
 tabsOf(
-    selectedTabHistory = listOf(2),
+    tabHistory = listOf(2),
     tabHostId = "TABHOST_MAIN",
     backStackOf(
         endNodeOf(Houston),
@@ -372,7 +381,7 @@ temporal version might look like this:
 
 ``` kotlin
 tabsOf(
-    selectedTabHistory = listOf(1,0,2),
+    tabHistory = listOf(1,0,2),
     tabHostId = "TABHOST_MAIN",
     backStackOf(
         endNodeOf(Houston),
@@ -397,15 +406,46 @@ visited while on ```tabIndex = 2```, and then do the same for ```tabIndex = 0```
 So in our example, that would take 7 clicks back to exit:
 Shanghai -> Mumbai -> London -> Tokyo -> Houston -> Sydney -> Paris -> [exit]
 
-Note that N8 implements those two modes using only the **selectedTabHistory** field.
+Note that N8 implements those two modes using only the **tabHistory** field.
 
 You can set the TabBackMode via the ```switchTab()``` function. The default
 is ```TabBackMode.Temporal```
 
 ### Passing data
+What data which locations accept, is defined by you. Here the location Sydney takes an optional
+withSunCreamFactor parameter
+``` kotlin
+@Serializable
+data class Sydney(val withSunCreamFactor: Int? = null) : Location()
+```
+So if you want to navigate to the Sydney location, with factor 30 sun cream, you can just do this:
+``` kotlin
+navigationModel.navigateTo(Sydney(30))
+```
+That data will be available attached to the location. You can access it wherever you are picking up
+the location changes in your code (your Compose UI usually). It will also be persisted along with
+the rest of the navigation graph, so there is no way to loose it by rotating the screen or
+quitting the app, it becomes part of the graph and will still be there when you navigate back.
 
-// TODO (check functionality and add tests for nested nav graphs, linear nav graphs already support this)
+Quite often you will want to collect some user data on a screen and then pass that data back to
+a previous location:
 
+``` kotlin
+navigationModel.navigateTo(Sydney())
+navigationModel.navigateTo(SunCreamSelector)
+navigationModel.navigateBack(
+    setData = {
+        when (it) {
+            is Sydney -> {
+                it.copy(withSunCreamFactor = 50)
+            }
+
+            else -> it
+        }
+    }
+)
+``` 
+        
 ### Persistence
 
 Whichever classes you chose to use to represent your Locations and TabHosts, make sure they are
@@ -425,8 +465,6 @@ added during construction).
 
 ### DeepLinking
 
-// TODO (add functionality and tests)
-
 The current state of the navigation is always exportable/importable. In fact the whole state is
 serialized and persisted to local storage at each navigation step. You can take this serialized
 state, send the String to someone in a message, import it into their app and thus transfer an entire
@@ -436,11 +474,13 @@ For deep linking you probably want to construct a custom navigation state, which
 with the helper functions, for example:
 
 ``` kotlin
-backStackOf<Location, Unit>(
-    endNodeOf(HomeScreen),
-    endNodeOf(ProductReviews),
-    endNodeOf(Review(productId=7898)),
-).export()
+n8.export(
+    backStackOf<Location, Unit>(
+        endNodeOf(HomeScreen),
+        endNodeOf(ProductReviews),
+        endNodeOf(Review(productId=7898)),
+    )
+)
 ```
 
 The default serialized state is human readable, but not that pretty, especially once URLEncoded:
@@ -452,55 +492,36 @@ Review%28productId%3D7898%29%29%2C%0A%29
 ```
 
 So you might want to encode/decode as you wish before sending it to your users, but that's outside
-the scope of a navigation library
+the scope of a navigation library.
+
+Anything more than a very small navigation graph can be quite verbose and I've found that tokenizing
+the serialised data before trying compression techniques like Zstd or Brotli makes a big difference.
+There's a basic example of using a tokens map for this in NavigationImportExportTest.kt Having said
+that most deep links have a shallow navigation hierarchy so it might be a non issue for you
 
 ### Custom Navigation behaviour
 
 N8 tries to make standard navigation behaviour available to your app using basic functions by
-default, but you can implement any behaviour you like by writing a custom state mutation yourself.
+default, but you can implement any behaviour you like by writing a custom navigation mutation
+yourself.
 
 The N8 navigation state is immutable, but internally it also has parent / child relationships that
 go in both directions and most of the mutation operations involve recursion, so it's definitely an
 advance topic, but there are mutation helper functions that N8 uses internally and that are
-available for client use too which should make life easier.
+available for client use too (these are the functions that start with an underscore and are marked
+LowLevelApi - and they come with a warning! it's much easier to misuse these functions than the
+regular API)
 
-### Example custom mutation
+There is an example in the sample app in CustomNavigationExt.kt
 
-//TODO
+The example custom navigation is hooked in using N8's interceptor API (which works a bit like Ktor's
+so you can add or remove multiple interceptors for things like custom navigation mutations, logging,
+or analytics)
 
-### Some ideas for what to do next
-
-- improve / simplify code comments & docs
-
-- finish implementing code functions
-
-- review API - can it do everything a reasonable client will need it to?
-- review API - can it be further simplified
-- review API - what can be made internal?
-- review API - what should be made public?
-
-- finish a simple example app
-
-- setup circle CI to run unit tests
-
-- look for / fix bugs
-
-- settle on solution for transition animations (before and after state - possibly keep this in the
-  compose lib)
-
-- kmp example app + lib changes if needed
-
-- formalise code formatter / linter
-
-- code coverage for tests
-
-- write an article + sample app
-
-- release v1.0.0
 
 ## License
 
-    Copyright 2015-2024 early.co
+    Copyright 2015-2025 early.co
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

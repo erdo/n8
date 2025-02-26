@@ -1,14 +1,18 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.fore.kt.core.delegate.Fore
 import co.early.fore.kt.core.delegate.TestDelegateDefault
-import co.early.n8.LinearExample.Location
-import co.early.n8.LinearExample.Location.EuropeanLocations.London
-import co.early.n8.LinearExample.Location.EuropeanLocations.Paris
-import co.early.n8.LinearExample.Location.NewYork
-import co.early.n8.LinearExample.Location.SunCreamSelector
-import co.early.n8.LinearExample.Location.Sydney
-import co.early.n8.LinearExample.Location.Tokyo
+import co.early.n8.LinearTestData.Location
+import co.early.n8.LinearTestData.Location.EuropeanLocations.London
+import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
+import co.early.n8.LinearTestData.Location.NewYork
+import co.early.n8.LinearTestData.Location.SunCreamSelector
+import co.early.n8.LinearTestData.Location.Sydney
+import co.early.n8.LinearTestData.Location.Tokyo
+import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._isBackStack
 import io.mockk.MockKAnnotations
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -46,13 +50,15 @@ class NavigationModelLinearNavTest {
         // act
         navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(NewYork)
+
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
     }
 
@@ -72,9 +78,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(Paris, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
         assertEquals(true, result)
     }
@@ -94,9 +101,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
         assertEquals(false, result)
     }
@@ -109,7 +117,7 @@ class NavigationModelLinearNavTest {
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
             dataDirectory = dataDirectory,
-            addHomeLocationToHistory = false,
+            initialAddHomeLocationToHistory = false,
         )
 
         // act
@@ -117,9 +125,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(London, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
@@ -140,9 +149,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(NewYork, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -164,11 +174,12 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1].currentLocation())
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(Paris, navigationModel.state.navigation._isBackStack().stack[1].currentLocation())
     }
 
     @Test
@@ -189,11 +200,12 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Paris, navigationModel.state.navigation.isBackStack().stack[1].currentLocation())
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(Paris, navigationModel.state.navigation._isBackStack().stack[1].currentLocation())
     }
 
     @Test
@@ -214,11 +226,12 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Tokyo, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Sydney(50), navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
+        assertEquals(Sydney(50), navigationModel.state.comingFrom)
+        assertEquals(Sydney(50), navigationModel.state.navigation._isBackStack().stack[2].currentLocation())
     }
 
     @Test
@@ -243,10 +256,11 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
@@ -269,10 +283,38 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
+    }
+
+    @Test
+    fun `when navigateBack() is called with addToHistory=false, flag is updated`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateBack()
+        navigationModel.navigateBack(addToHistory = false)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
@@ -294,9 +336,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -317,9 +360,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
@@ -341,12 +385,13 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(5, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[3].currentLocation())
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(Tokyo, navigationModel.state.navigation._isBackStack().stack[2].currentLocation())
+        assertEquals(Tokyo, navigationModel.state.navigation._isBackStack().stack[3].currentLocation())
     }
 
     @Test
@@ -367,9 +412,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
+        assertEquals(Paris, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -392,15 +438,16 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(Tokyo, navigationModel.state.navigation.isBackStack().stack[2].currentLocation())
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(Tokyo, navigationModel.state.navigation._isBackStack().stack[2].currentLocation())
     }
 
     @Test
-    fun `given location is the current page, when navigating back to it, history status is updated`() {
+    fun `given location is the Paris addToHistory = true, when navigating back to Paris with addToHist = false, history status is updated`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -417,18 +464,43 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
-        assertEquals(
-            false,
-            navigationModel.state.willBeAddedToHistory
-        )
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(false, navigationModel.state.willBeAddedToHistory)
     }
 
     @Test
-    fun `given location has NOT been previously visited, when navigating BACK to it, navigate to the location as normal`() {
+    fun `given current location is the Paris addToHistory = false, when navigating back to Paris, location not found`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris, addToHistory = false)
+        navigationModel.navigateBackTo(Paris)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+    }
+
+    @Test
+    fun `given location has NOT been previously visited, when navigating BACK to it, navigate forward to the location as normal`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -444,9 +516,10 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -468,10 +541,11 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertNotEquals(Sydney(), navigationModel.state.currentLocation)
         assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(Sydney(), navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -487,16 +561,17 @@ class NavigationModelLinearNavTest {
 
         // act
         navigationModel.navigateTo(NewYork)
-        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
         navigationModel.navigateTo(Paris)
         navigationModel.navigateBackTo(Sydney(50))
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertNotEquals(Sydney(), navigationModel.state.currentLocation)
         assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(Paris, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
     }
 
@@ -522,10 +597,11 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
     }
 
@@ -549,10 +625,11 @@ class NavigationModelLinearNavTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(1, navigationModel.state.backsToExit)
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(London, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
     }
 
@@ -571,24 +648,23 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.navigateBack(
-            setData = {
-                when (it) {
-                    is Sydney -> {
-                        it.copy(withSunCreamFactor = 50)
-                    }
-
-                    else -> it
+        navigationModel.navigateBack {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
                 }
+
+                else -> it
             }
-        )
+        }
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(4, navigationModel.state.backsToExit)
         assertNotEquals(Sydney(), navigationModel.state.currentLocation)
         assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(SunCreamSelector, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
     }
 
@@ -607,26 +683,63 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.navigateBack(
-            times = 2,
-            setData = {
-                when (it) {
-                    is Sydney -> {
-                        it.copy(withSunCreamFactor = 50)
-                    }
-
-                    else -> it
+        val success = navigationModel.navigateBack(
+            times = 2
+        ) {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
                 }
+
+                else -> it
             }
-        )
+        }
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        assertEquals(false, navigationModel.state.loading)
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(3, navigationModel.state.backsToExit)
         assertNotEquals(Sydney(), navigationModel.state.currentLocation)
         assertEquals(Sydney(50), navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(SunCreamSelector, navigationModel.state.comingFrom)
+        assertEquals(true, success)
+    }
+
+    @Test
+    fun `when navigateBack is called with times = 3 and setData, but only room for 2 backs, final location receives data`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = Sydney(),
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(Sydney())
+        navigationModel.navigateTo(SunCreamSelector)
+        val success = navigationModel.navigateBack(
+            times = 3
+        ) {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
+                }
+
+                else -> it
+            }
+        }
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertNotEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertEquals(SunCreamSelector, navigationModel.state.comingFrom)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(false, success)
     }
 
     @Test
@@ -645,6 +758,7 @@ class NavigationModelLinearNavTest {
 
         // assert
         assertEquals(false, result)
+        assertEquals(null, navigationModel.state.comingFrom)
     }
 
     @Test
@@ -664,5 +778,6 @@ class NavigationModelLinearNavTest {
 
         // assert
         assertEquals(true, result)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
     }
 }

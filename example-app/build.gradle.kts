@@ -1,10 +1,11 @@
 import co.early.n8.Shared
 
 plugins {
-    id("kotlin-kapt")
-    id("kotlin-android")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.android.application")
+    alias(libs.plugins.kotlinAndroidPlugin)
+    alias(libs.plugins.androidAppPlugin)
+    alias(libs.plugins.kotlinKaptPlugin)
+    alias(libs.plugins.kotlinSerializationPlugin)
+    alias(libs.plugins.composePlugin)
 }
 
 val appId = "foo.bar.n8"
@@ -22,10 +23,6 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompilerVersion.get()
     }
 
     compileSdk = libs.versions.androidCompileSdk.get().toInt()
@@ -93,4 +90,6 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
+    // test
+    testImplementation(libs.kotlin.test)
 }

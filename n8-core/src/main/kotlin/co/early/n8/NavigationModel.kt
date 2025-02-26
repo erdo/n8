@@ -1,3 +1,5 @@
+@file:OptIn(LowLevelApi::class)
+
 package co.early.n8
 
 import co.early.fore.core.observer.Observable
@@ -9,42 +11,93 @@ import co.early.n8.Navigation.EndNode
 import co.early.n8.NavigationModel.TabHostTarget.ChangeTabHostTo
 import co.early.n8.NavigationModel.TabHostTarget.NoChange
 import co.early.n8.NavigationModel.TabHostTarget.TopLevel
+import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel.RestrictedNavigation
+import co.early.n8.lowlevel._addLocation
+import co.early.n8.lowlevel._addLocationToCurrentTab
+import co.early.n8.lowlevel._applyOneStepBackNavigation
+import co.early.n8.lowlevel._ensureUniqueTabHosts
+import co.early.n8.lowlevel._isBackStack
+import co.early.n8.lowlevel._mutateNavigation
+import co.early.n8.lowlevel._notEndNode
+import co.early.n8.lowlevel._populateChildParents
+import co.early.n8.lowlevel._requireParent
+import co.early.n8.lowlevel._reverseToLocation
+import co.early.n8.lowlevel._tabHostFinder
 import co.early.persista.PerSista
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import java.io.File
 import kotlin.reflect.KType
 
-//TODO serialise to json for import amd export. maybe different class
-
 /**
  * # Navigation
  *
- * This model is the source of truth for the navigation state of an app. The navigation state
- * principally describes the locations that were visited by a user to reach their current location.
+ * This model is the source of truth for the navigation state of an app. The navigation state's
+ * most important component is the navigation graph. The navigation graph is built up of nodes
+ * (or navigation items) that describe the locations that were visited by a user to reach their
+ * current location.
  *
- * Public functions provide for navigating forward and backwards as the user navigates
- * around the app. In the most basic case this involves pushing new locations on to a backstack
- * when navigating forwards, and popping locations off a backstack when navigating backwards.
- *
- * The navigation state also handles an arbitrary number of nested navigation schemes such as you
- * might use for Tab style UI layouts (with each tab represented as its own backstack). Here public
- * functions enable the user to switch to previously visited tabs (with their own back stacks),
- * or backing out of the tabs entirely.
- *
- * This navigation scheme is built up using 3 Node types:
+ * This navigation graph is built up using 3 Node types:
  *
  * - EndNodes (representing a single location)
- * - BackStacks (a mixed list of EndNodes and TabHosts)
+ * - BackStacks (a list which mostly contain EndNodes, but can also contain TabHosts)
  * - TabHosts (a list of BackStacks)
  *
- * The simplest implementation would therefore be a BackStack containing a number of EndNodes with
- * the last EndNode in the BackStack representing the current location, and the first EndNode
- * representing the home location.
+ * We consider the "top level item" to be the root item in the navigation graph, it's the first
+ * item to be created in a navigation graph and often hosts the "home" location that the user
+ * encountered when starting their app session (and would return to if they kept pressing back).
+ * The top level item is also the only navigation item that does not have a parent, and it is
+ * always a TabHost or a BackStack
  *
- * Aside from the forward / backwards navigation functions, the navigation state can also be
- * completely rewritten or reordered at will to provide for custom navigation schemes or the
- * handling of deep links etc..
+ * We consider the "current" location to be where the user is currently, it is at the opposite
+ * end of the navigation graph to the top level item. A navigation graph containing only one
+ * location would mean that the current location and the home location are the same
+ *
+ * backStackOf( <--- top level item
+ *     endNodeOf(Paris), <--- home location
+ *     endNodeOf(London),
+ *     endNodeOf(Rome), <--- current location
+ * )
+ *
+ * This represents a very simple navigation graph, a single BackStack containing 3
+ * EndNodes. Paris is the home location, Rome is the current location
+ *
+ * The 'back path" is the route from the current location to the home location that the user
+ * would travel on by continually pressing back until they exit the app. In the example above
+ * the navigation graph and the back path are the same, but when tab hosts are included there
+ * will often be locations in the navigation graph that are not on the back path and cannot
+ * be accessed by the user just by navigating backwards
+ *
+ * backStackOf( <--- top level item
+ *     endNodeOf(NewYork), <--- home location
+ *     endNodeOf(Tokyo),
+ *     tabsOf(
+ *         tabHistory = listOf(0),
+ *         tabHostId = "European Cities",
+ *         backStackOf(
+ *             endNodeOf(London)
+ *             endNodeOf(Manchester) <--- current location
+ *         ),
+ *         backStackOf(
+ *             endNodeOf(Paris)
+ *         ),
+ *         backStackOf(
+ *             endNodeOf(Rome)
+ *         )
+ *     )
+ * )
+ *
+ * In the above case, the back path comprises: Manchester, London, Tokyo, New York. The locations Paris
+ * and Rome exist in the navigation graph, but they are not on the back path.
+ *
+ * Public functions provide for navigating forward and backwards as the user navigates
+ * around the app, and also for switching tabs and jumping between completely different
+ * tab hosts which may or may not be nested
+ *
+ * Aside from regular navigation functions, the navigation state can also be completely
+ * rewritten or reordered at will to provide for custom navigation schemes or the
+ * handling of deep links etc.
  *
  * # Observable State
  *
@@ -62,7 +115,7 @@ import kotlin.reflect.KType
  * is entirely defined by client code, it just needs to be serializable to play nicely with
  * persistence (a sealed class would be a good candidate - see the example).
  *
- * # Usage
+ * # Basic Usage
  *
  * It's not necessary to define the navigation graph beforehand, the backstack just keeps track of
  * whatever navigation operations are performed via the public functions, these functions allow you
@@ -111,7 +164,7 @@ import kotlin.reflect.KType
  *
  * navigateTo(Paris)
  * navigateTo(NewYork)
- * popBackStack()
+ * navigateBack()
  *
  * backstack: London > Paris
  * currentLocation: Paris
@@ -121,7 +174,7 @@ import kotlin.reflect.KType
  *
  * navigateTo(Paris)
  * navigateTo(NewYork)
- * popBackStack(times = 2)
+ * navigateBack(times = 2)
  *
  * backstack: London
  * currentLocation: London
@@ -188,7 +241,7 @@ import kotlin.reflect.KType
  * navigateTo(NewYork)
  * navigateTo(Sydney)
  * navigateTo(SunCreamSelector)
- * popBackStack { it -> // the new current location after popping backstack i.e. Sydney
+ * navigateBack { it -> // the new current location after popping backstack i.e. Sydney
  *    when(it){
  *      Sydney -> it.copy(withSunCreamFactor = 30)
  *      else -> it
@@ -214,7 +267,6 @@ import kotlin.reflect.KType
  * backstack: Paris > London > Sydney(50) > Tokyo > London
  * currentLocation: London
  *
- *
  * # Generics
  *
  * @param L Class used as Location object, typically a sealed class or an enum
@@ -222,67 +274,74 @@ import kotlin.reflect.KType
  * in its navigation, you can specify Unit here. Otherwise you could use a String or Int for a
  * basic implementation, or a sealed class or enum to avoid using magic values.
  *
- * Copyright © 2015-2024 early.co. All rights reserved.
+ * Copyright © 2015-2025 early.co. All rights reserved.
  */
 class NavigationModel<L : Any, T : Any>(
     private val stateKType: KType,
-    initialNavigation: Navigation<L, T>,
-    addHomeLocationToHistory: Boolean = true,
+    private val initialNavigation: Navigation<L, T>,
+    private val initialAddHomeLocationToHistory: Boolean = true,
     private val perSista: PerSista,
-    private val logger: Logger = Fore.getLogger()
+    clearPreviousNavGraph: Boolean = false,
+    private val logger: Logger = Fore.getLogger(),
 ) : Observable by ObservableImp() {
 
     constructor(
         stateKType: KType,
         homeLocation: L,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         perSista: PerSista,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        addHomeLocationToHistory = addHomeLocationToHistory,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         perSista = perSista,
+        clearPreviousNavGraph = clearPreviousNavGraph,
         logger = logger,
     )
 
     constructor(
         stateKType: KType,
         homeLocation: L,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        addHomeLocationToHistory = addHomeLocationToHistory,
-        logger = logger,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         perSista = PerSista(
             dataDirectory = dataDirectory,
             logger = logger,
         ),
+        clearPreviousNavGraph = clearPreviousNavGraph,
+        logger = logger,
     )
 
     constructor(
         stateKType: KType,
         initialNavigation: Navigation<L, T>,
-        addHomeLocationToHistory: Boolean = true,
+        initialAddHomeLocationToHistory: Boolean = true,
         dataDirectory: File,
+        clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = initialNavigation,
-        addHomeLocationToHistory = addHomeLocationToHistory,
-        logger = logger,
+        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
         perSista = PerSista(
             dataDirectory = dataDirectory,
             logger = logger,
         ),
+        clearPreviousNavGraph = clearPreviousNavGraph,
+        logger = logger,
     )
 
     var state = NavigationState(
         navigation = initialNavigation,
-        willBeAddedToHistory = addHomeLocationToHistory,
+        willBeAddedToHistory = initialAddHomeLocationToHistory,
     )
         private set
 
@@ -291,14 +350,20 @@ class NavigationModel<L : Any, T : Any>(
     private sealed class TabHostTarget {
         data object NoChange : TabHostTarget()
         data object TopLevel : TabHostTarget()
-        data class ChangeTabHostTo<T>(val target: T) : TabHostTarget()
+        data class ChangeTabHostTo<L : Any, T : Any>(val target: TabHostSpecification<L, T>) : TabHostTarget()
     }
+
+    fun interface NavigationInterceptor<L : Any, T : Any> {
+        fun intercept(old: NavigationState<L, T>, new: NavigationState<L, T>): NavigationState<L, T>
+    }
+
+    private val navigationInterceptors = mutableListOf<Pair<String, NavigationInterceptor<L, T>>>()
 
     init {
         try {
             Json.encodeToString(serializer(stateKType), state)
         } catch (e: Exception) {
-            require(false) {
+            throw Exception(
                 "\nFailed to serialise the specified location type. There are a few potential \n" +
                         "reasons for this, but the quickest solution is probably to compare your \n" +
                         "implementation with the example app that comes with the n8 library. \n\n" +
@@ -317,37 +382,50 @@ class NavigationModel<L : Any, T : Any>(
                         "  proguard rules to add (it's the same as when you are using ktor). The \n" +
                         "  actual error we received when trying to serialise the state follows... \n\n" +
                         e.toString()
-            }
+            )
         }
-        load()
+        if (clearPreviousNavGraph) {
+            updateState(state)
+        } else {
+            load()
+        }
     }
-
-    //TODO allow for clearing the navigation memory via this model, and maybe a flag via constructor too
 
     private fun load() {
 
         logger.i("load()")
 
-        if (state.loading) {
+        if (state.initialLoading) {
             return
         }
 
-        state = state.copy(loading = true)
+        state = state.copy(initialLoading = true)
         notifyObservers()
 
         launchIO {
             perSista.read(state, stateKType) {
                 state = it.copy(
-                    loading = false,
-                    navigation = it.navigation.populateChildParents()
+                    initialLoading = false,
+                    navigation = it.navigation._populateChildParents()
                 )
                 notifyObservers()
             }
         }
     }
 
-    // TODO add usage comment
-    fun navigateTo(location: L, addToHistory: Boolean = true, breakTo: BreakToTabHost<T> = null) {
+    /**
+     * Usage:
+     * navigateTo(A) // navigate to location A in current tab (or in the current backStack if there is no
+     * tab host for the current location)
+     * navigateTo(A) { TabsAbc } // find tab host TabsABC, and navigate to location A from there. If TabsABC
+     * does not exist in the navigation graph, create it at the current location first. Note that this can be
+     * a destructive operation, if the tab host identified is further back in the navigation graph, in order
+     * for it to be made current, the navigation items further forward from that point may be removed from
+     * the navigation graph
+     * navigateTo(A) { null } // jump out of any tab host(s) and continue at the top level host whether that
+     * is a backStack or a tabHost
+     */
+    fun navigateTo(location: L, addToHistory: Boolean = true, breakTo: BreakToTabHost<L, T> = null) {
         val tabHostTarget: TabHostTarget = breakTo?.let {
             breakTo()?.let {
                 ChangeTabHostTo(it)
@@ -356,160 +434,212 @@ class NavigationModel<L : Any, T : Any>(
         navigateTo(location, addToHistory, tabHostTarget)
     }
 
-    private fun navigateTo(location: L, addToHistory: Boolean = true, tabHostTarget: TabHostTarget) {
+    private fun navigateTo(
+        location: L,
+        addToHistory: Boolean = true,
+        tabHostTarget: TabHostTarget
+    ) {
 
         logger.d("navigateTo() ${location::class.simpleName} addToHistory:$addToHistory currentAddToHist:${state.willBeAddedToHistory} tabHostTarget:$tabHostTarget")
 
         val trimmed = if (!state.willBeAddedToHistory) {
-            state.navigation.currentItem().calculateBackStep()
+            state.navigation.currentItem()._applyOneStepBackNavigation()
         } else state.navigation
 
         val navigated = trimmed?.let { trimmedNav ->
 
-            val parentSwap: Pair<Navigation<L, T>, Navigation<L, T>> = when (tabHostTarget) {
-                is ChangeTabHostTo<*> -> {
+            val itemSwap: Pair<Navigation<L, T>, Navigation<L, T>> = when (tabHostTarget) {
+                is ChangeTabHostTo<*, *> -> {
+
                     @Suppress("UNCHECKED_CAST")
-                    val target = tabHostTarget.target as T
-                    trimmedNav.findTabHost(target)?.let { parent ->
-                        val newParent = parent.addLocationToCurrentTab(location)
-                        parent to newParent
-                    } ?: run {
-                        val parent = trimmedNav.currentItem().requireParent().isBackStack()
-                        val newParent = parent.addLocation(location)
-                        parent to newParent
+                    val tabHostSpec = tabHostTarget.target as TabHostSpecification<L, T>
+
+                    requireValidTabHostClass(tabHostSpec)
+
+                    trimmedNav._tabHostFinder(tabHostSpec.tabHostId)?.let { tabHost -> // tabHost already exists
+
+                        logger.d("[${tabHostSpec.tabHostId}] Found")
+
+                        tabHost to tabHost._addLocationToCurrentTab(location)
+
+                    } ?: run { // first time this tabHost has been added
+
+                        logger.w("[${tabHostSpec.tabHostId}] Not Found, adding in place")
+
+                        trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
+                            parent to parent.copy(
+                                stack = parent.stack.toMutableList().also {
+                                    it.add(tabsOf(tabHostSpec)._addLocationToCurrentTab(location))
+                                }
+                            )._populateChildParents()
+                        }
                     }
                 }
 
                 NoChange -> {
-                    val parent = trimmedNav.currentItem().requireParent().isBackStack()
-                    val newParent = parent.addLocation(location)
+                    val parent = trimmedNav.currentItem()._requireParent()._isBackStack()
+                    val newParent = parent._addLocation(location)
                     parent to newParent
                 }
 
                 TopLevel -> {
-                    when (val parentWrapper = trimmedNav.topParent().notEndNode()) {
+                    when (val parentWrapper = trimmedNav.topItem()._notEndNode()) {
                         is RestrictedNavigation.NotEndNode.IsBackStack -> {
                             val parent = parentWrapper.value
-                            val newParent = parent.addLocation(location)
+                            val newParent = parent._addLocation(location)
                             parent to newParent
                         }
 
                         is RestrictedNavigation.NotEndNode.IsTabHost -> {
                             val parent = parentWrapper.value
-                            val newParent = parent.addLocationToCurrentTab(location)
+                            val newParent = parent._addLocationToCurrentTab(location)
                             parent to newParent
                         }
                     }
                 }
             }
 
-            mutateNavigation(
-                oldItem = parentSwap.first,
-                newItem = parentSwap.second,
+            _mutateNavigation(
+                oldItem = itemSwap.first,
+                newItem = itemSwap.second,
+                ensureOnHistoryPath = true,
             )
-        } ?: backStackOf(endNodeOf(location))
+        } ?: backStackOf<L, T>(endNodeOf(location))
 
         updateState(
             state.copy(
                 navigation = navigated,
-                willBeAddedToHistory = addToHistory
+                willBeAddedToHistory = addToHistory,
+                comingFrom = state.currentLocation,
             )
         )
     }
 
-//    fun navigateBackToTab(
-//        tabHostSpec: TabHostSpecification<L, T>,
-//        tabIndex: Int = 0,
-//        addToHistory: Boolean = true
-//    ) {
-//
-//        // TODO
-//
-//    }
-
-
+    /**
+     * If the tabHosSpec is not specified, the nearest hosting tabHost will be used i.e. the value we get from
+     * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail.
+     *
+     * Depending on how your structure your client code, consider always specifying the tabHostSpec - in that case
+     * if the tabHost does not already exist in the navigation graph, n8 can create it in place. This style is also
+     * clearer in the case that the navigation graph has multiple nested TabHosts (n8 always switches on the deepest
+     * tabHost in this case)
+     *
+     * Be aware that a runtime exception will be thrown if you specify a tabIndex which is out of bounds for the tabHost
+     */
     fun switchTab(
-        tabHostSpec: TabHostSpecification<L, T>,
-        tabIndex: Int = 0,
-        clearToTabRoot: Boolean = false,
-    ) {
-        logger.d(
-            "switchTab() tabHostId:${tabHostSpec.tabHostId} currentAddToHist:${state.willBeAddedToHistory}"
-        )
+        tabHostSpec: TabHostSpecification<L, T>? = null,
+        tabIndex: Int? = null,
+        clearToTabRootOverride: Boolean? = null,
+    ): Boolean {
+        logger.d("switchTab() tabId:${tabHostSpec?.tabHostId} index:$tabIndex currentAddToHist:${state.willBeAddedToHistory}")
 
-        require(tabHostSpec.homeTabLocations.size > tabIndex) {
-            "tabIndex [$tabIndex] is out of bounds for tabs size:${tabHostSpec.homeTabLocations.size}"
+        require(tabHostSpec != null || tabIndex != null) {
+            "tabHostSpec or tabIndex must be specified, they can't both be null"
         }
-        require(tabIndex >= 0) {
+        require(tabIndex == null || tabIndex >= 0) {
             "tabIndex must be positive, $tabIndex is an invalid index"
         }
-        requireValidTabHostClass(tabHostSpec)
 
         val trimmed = if (!state.willBeAddedToHistory) {
-            state.navigation.currentItem().calculateBackStep()
+            state.navigation.currentItem()._applyOneStepBackNavigation()
         } else state.navigation
 
-        val navigated = trimmed?.currentItem()?.requireParent()?.isBackStack()?.let { parent ->
+        val navigated = trimmed?.currentItem()?._requireParent()?._isBackStack()?.let { parent ->
 
-            val tabHost = trimmed.findTabHost(tabHostSpec.tabHostId)
+            val tabHostId = tabHostSpec?.let {
+                requireValidTabHostClass(tabHostSpec)
+                it.tabHostId
+            } ?: run {
+                trimmed.currentItem().hostedBy().lastOrNull()?.tabHostId
+            }
+
+            logger.d("looking for tabHostId:$tabHostId")
+
+            val tabHost = tabHostId?.let { trimmed._tabHostFinder(it) }
 
             tabHost?.let { // tabHost already exists in navigation graph
 
-                logger.d("[${tabHostSpec.tabHostId}] Found")
+                logger.d("[${tabHost.tabHostId}] Found, tabIndex specified: $tabIndex")
 
-                val newSelectedHistory = when (tabHostSpec.backMode) {
-                    TabBackMode.Structural -> listOf(tabIndex)
-                    TabBackMode.Temporal -> {
-                        tabHost.selectedTabHistory.filter { tab ->
-                            tab != tabIndex
-                        }.toMutableList().also { list ->
-                            list.add(tabIndex)
-                        }
+                tabIndex?.let {
+
+                    require(tabHost.tabs.size > tabIndex) {
+                        "tabIndex [$tabIndex] is out of bounds for [${tabHost.tabHostId}] tabs size:${tabHost.tabs.size}"
                     }
-                }
 
-                mutateNavigation(
-                    oldItem = tabHost,
-                    newItem = tabHost.copy(
-                        selectedTabHistory = newSelectedHistory,
-                        tabs = tabHost.tabs.mapIndexed { index, backStack ->
-                            if (clearToTabRoot && index == tabIndex) {
-                                backStackOf(endNodeOf(tabHostSpec.homeTabLocations[tabIndex]))
-                            } else {
-                                backStack
+                    val newTabHistory = when (tabHost.tabBackModeDefault) {
+                        TabBackMode.Structural -> listOf(tabIndex)
+                        TabBackMode.Temporal -> {
+                            tabHost.tabHistory.filter { tab ->
+                                tab != (tabIndex)
+                            }.toMutableList().also { list ->
+                                list.add(tabIndex)
                             }
                         }
+                    }
+                    val newTabs = tabHost.tabs.mapIndexed { index, backStack ->
+                        if (index == tabIndex && ((clearToTabRootOverride == true)
+                            || (tabHost.clearToTabRootDefault && (clearToTabRootOverride != false)))
+                        ) {
+                            backStack.copy(stack = listOf(backStack.stack.first()))
+                        } else {
+                            backStack
+                        }
+                    }
+
+                    _mutateNavigation(
+                        oldItem = tabHost,
+                        newItem = tabHost.copy(
+                            tabHistory = newTabHistory,
+                            tabs = newTabs
+                        ),
+                        ensureOnHistoryPath = true,
                     )
-                )
+                }?: run {// make no changes, but ensure we are on the history path
+                    _mutateNavigation(
+                        oldItem = tabHost,
+                        newItem = tabHost,
+                        ensureOnHistoryPath = true,
+                    )
+                }
             } ?: run { // first time this tabHost has been added
 
-                logger.d("[${tabHostSpec.tabHostId}] Not Found, adding")
+                if (tabHostSpec == null){
+                    logger.w("No tabHostSpec specified, and no suitable TabHost found, cannot create in place!")
+                    return false
+                } else {
 
-                val newParent = parent.copy(
-                    stack = parent.stack.toMutableList().also {
-                        it.add(tabsOf(tabHostSpec, tabIndex))
-                    }
-                ).populateChildParents()
+                    logger.d("[${tabHostId}] NOT FOUND in navigation graph! creating in place")
 
-                mutateNavigation(
-                    oldItem = parent,
-                    newItem = newParent
-                )
+                    val newParent = parent.copy(
+                        stack = parent.stack.toMutableList().also {
+                            it.add(tabsOf(tabHostSpec, tabIndex))
+                        }
+                    )._populateChildParents()
+
+                    _mutateNavigation(
+                        oldItem = parent,
+                        newItem = newParent
+                    )
+                }
             }
-        } ?: tabsOf(tabHostSpec, tabIndex)
+        } ?: run {// trimmed to nothing, create TabHost in place if possible
+            if (tabHostSpec == null){
+                logger.w("Trimmed to nothing and no tabHostSpec specified, cannot create in place!")
+                return false
+            } else {
+                tabsOf(tabHostSpec, tabIndex)
+            }
+        }
 
         updateState(
             state.copy(
                 navigation = navigated,
-                willBeAddedToHistory = true
+                willBeAddedToHistory = true,
+                comingFrom = state.currentLocation,
             )
         )
-
-// TODO
-//        what about tabs that forget their backStacks when you navigate away from them ...
-//        how does back work when leaving a back stack and going to a tabHost somewhere completely different, could leave orphan backStacks?
-//        maybe we need a kind of simlink to the tabHost and add the simlink to the back stack rather than moving to the actual tabHost
-
+        return true
     }
 
     private fun requireValidTabHostClass(tabHostSpec: TabHostSpecification<L, T>) {
@@ -517,10 +647,10 @@ class NavigationModel<L : Any, T : Any>(
             try {
                 Json.encodeToString(
                     serializer(stateKType),
-                    NavigationState(backStackOf(tabsOf(tabHostSpec, 0)))
+                    NavigationState(backStackOf(tabsOf(tabHostSpec)))
                 )
             } catch (e: Exception) {
-                require(false) {
+                throw Exception(
                     "\nFailed to serialise the specified tabHost type. There might be something wrong \n" +
                             "with your [TabHostIdClass]. \n\n" +
                             "* check the stateKType that you specified at construction, it needs to look like \n" +
@@ -537,7 +667,7 @@ class NavigationModel<L : Any, T : Any>(
                             "  proguard rules to add (it's the same as when you are using ktor). The \n" +
                             "  actual error we received when trying to serialise the state follows... \n\n" +
                             e.toString()
-                }
+                )
             }
             tabHostClassChecked = true
         }
@@ -551,15 +681,19 @@ class NavigationModel<L : Any, T : Any>(
      * graph
      *
      * returns false if we were not able to go back the requested number of times (i.e. we reached
-     * the home location item first)
+     * the home location first, the state will be updated with the home location as current)
      */
-    fun navigateBack(times: Int = 1, setData: (L) -> L = { it }): Boolean {
+    fun navigateBack(times: Int = 1, addToHistory: Boolean = true, setData: (L) -> L = { it }): Boolean {
         logger.d("navigateBack() times:$times")
+
+        require(times > 0) {
+            "times must be larger than 0"
+        }
 
         var backUpSuccessful = true
         var newNavigation = state.navigation.currentItem()
         for (i in 1..times) {
-            val backed = newNavigation.calculateBackStep()
+            val backed = newNavigation._applyOneStepBackNavigation()
             if (backed != null) {
                 newNavigation = backed.currentItem()
             } else {
@@ -569,112 +703,175 @@ class NavigationModel<L : Any, T : Any>(
             }
         }
 
-        updateState(
-            state.copy(
-                navigation = setDataOnCurrentLocation(newNavigation, setData),
-                willBeAddedToHistory = true
+        if (backUpSuccessful || times > 1) {
+            updateState(
+                state.copy(
+                    navigation = setDataOnCurrentLocation(newNavigation, setData),
+                    willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
+                )
             )
-        )
+        }
 
         return backUpSuccessful
     }
 
-    fun navigateBackTo(location: L, tabHostId: T? = null, addToHistory: Boolean = true) {
-        logger.d("navigateBackTo() ${location::class.simpleName} addToHistory:$addToHistory")
+    fun navigateBackTo(location: L, addToHistory: Boolean = true) {
+        logger.d("navigateBackTo() location:$location addToHistory:$addToHistory")
 
-        val foundLocationNav = tabHostId?.let {
-            reverseToLocation(
-                location,
-                state.navigation
-            ) // TODO reverseToLocation(location, tabsOf(tabHostSpec = TabHostSpecification(T, emptyList())))
-        } ?: reverseToLocation(location, state.navigation)
+        val trimmed = if (!state.willBeAddedToHistory) {
+            state.navigation.currentItem()._applyOneStepBackNavigation()
+        } else state.navigation
 
-        // important, see note in reverseToLocation()
-        state.navigation.populateChildParents()
-        foundLocationNav?.populateChildParents()
+        trimmed?.let {
+            it._reverseToLocation(location)?.let { foundLocationNav ->
 
-        if (foundLocationNav != null) { //replace location as it might have different data
-            Fore.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
-            val newNavigation = mutateNavigation(
-                oldItem = foundLocationNav.currentItem(),
-                newItem = endNodeOf(location)
-            )
+                //replace location as it might have different data
+                logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
+                val newNavigation = _mutateNavigation(
+                    oldItem = foundLocationNav.currentItem(),
+                    newItem = endNodeOf(location)
+                )
+                updateState(
+                    state.copy(
+                        navigation = newNavigation,
+                        willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
+                    )
+                )
+            } ?: run { // didn't find location so just navigate forward
+                logger.d("navigateBackTo()... location NOT FOUND in history, navigating forward instead")
+                navigateTo(location, addToHistory)
+            }
+        } ?: run { // trimmed has removed all remaining nav
+
+            logger.d("trimmed to nothing")
+
             updateState(
-                state.copy(
-                    navigation = newNavigation,
+                NavigationState(
+                    navigation = backStackOf(endNodeOf(location)),
                     willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
                 )
             )
-        } else { // didn't find location so just navigate forward
-            Fore.d("navigateBackTo()... location NOT FOUND in history, navigating forward instead")
-            navigateTo(location, addToHistory)
         }
     }
 
-    /**
-     * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
-     * this function as changing parent references is part of the reversal algorithm
-     *
-     * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
-     * function initially (not required for subsequent recursive calls)
-     *
-     * @location location to be searched for
-     *
-     * @nav search will be conducted from the currentLocation of this nav graph, and up via
-     * parent relationships, and in the same manner as would a user continually
-     * navigating back from the current item until they exit the app
-     *
-     * @returns a mutated navigation graph containing the location in current position or null if
-     * the location is not found
-     */
-    private fun reverseToLocation(locationToFind: L, nav: Navigation<L, T>): Navigation<L, T>? {
-        Fore.d("reverseToLocation() locationToFind:${locationToFind::class.simpleName} nav:${nav}")
-        return if (nav.currentLocation()::class.simpleName == locationToFind::class.simpleName) {
-            Fore.d("reverseToLocation()... << MATCHED ${nav.currentLocation()::class.simpleName} >>")
-            nav
-        } else {
-            nav.currentItem().calculateBackStep()?.let {
-                reverseToLocation(locationToFind, it)
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true, setData: (L) -> L = { it }) {
+        logger.d("navigateBackTo() tabHostId:${tabHostSpec.tabHostId} addToHistory:$addToHistory")
+
+        requireValidTabHostClass(tabHostSpec)
+
+        if (state.hostedBy.find { it.tabHostId == tabHostSpec.tabHostId } != null) {
+
+            logger.w(
+                "Already hosted by this TabHost! hostedBy: " +
+                        state.hostedBy.map { it.tabHostId }.joinToString(" > ")
+            )
+
+            updateState(
+                state.copy(
+                    navigation = setDataOnCurrentLocation(state.navigation.currentItem(), setData),
+                    willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
+                )
+            )
+            return
+        }
+
+        val trimmed = if (!state.willBeAddedToHistory) {
+            state.navigation.currentItem()._applyOneStepBackNavigation()
+        } else state.navigation
+
+        trimmed?.let {
+            it._tabHostFinder(tabHostSpec.tabHostId)?.let { foundTabHostNav ->
+
+                logger.d("navigateBackTo()... tabHost ${foundTabHostNav.tabHostId} FOUND in nav graph")
+
+                val newNavigation = _mutateNavigation(
+                    oldItem = foundTabHostNav,
+                    newItem = foundTabHostNav,
+                    ensureOnHistoryPath = true,
+                )
+                updateState(
+                    state.copy(
+                        navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
+                        willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
+                    )
+                )
+            } ?: run {
+                logger.d("tabHost ${tabHostSpec.tabHostId} NOT FOUND in navigation graph, creating in place instead")
+
+                trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
+
+                    val newParent = parent.copy(
+                        stack = parent.stack.toMutableList().also { parentStack ->
+                            parentStack.add(tabsOf(tabHostSpec))
+                        }
+                    )._populateChildParents()
+
+                    val newNavigation = _mutateNavigation(
+                        oldItem = parent,
+                        newItem = newParent
+                    )
+
+                    updateState(
+                        state.copy(
+                            navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
+                            comingFrom = state.currentLocation,
+                            willBeAddedToHistory = addToHistory
+                        )
+                    )
+                }
             }
+        } ?: run { // trimmed has removed all remaining nav
+
+            logger.d("trimmed to nothing")
+
+            updateState(
+                NavigationState(
+                    navigation = setDataOnCurrentLocation(tabsOf(tabHostSpec).currentItem(), setData),
+                    willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
+                )
+            )
         }
     }
-
-//    /**
-//     * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
-//     * function initially (not required for subsequent recursive calls)
-//     *
-//     * @location location to be searched for
-//     *
-//     * @tabHost the search will visit only the tabHost identified, starting by going backwards
-//     * along the selectedTabHistory as usual, but then including any other tab backStacks not
-//     * checked in the previous step, in order, from tab [0] to tab [size-1]
-//     *
-//     * @returns a mutated navigation graph containing the location in current position or null if
-//     * the location is not found
-//     */
-//    private fun reverseToLocation(location: L, tabHost: TabHost<L, T>): EndNode<L, T>? {
-//        TODO()
-//    }
 
     private fun setDataOnCurrentLocation(
         currentItem: EndNode<L, T>,
         setData: (L) -> L = { it },
     ): Navigation<L, T> {
-        return mutateNavigation(
+        return _mutateNavigation(
             oldItem = currentItem,
             newItem = EndNode(setData(currentItem.location))
         )
     }
 
+    fun clearNavigationGraph() {
+        updateState(
+            NavigationState(
+                navigation = initialNavigation,
+                willBeAddedToHistory = initialAddHomeLocationToHistory,
+                comingFrom = null,
+            )
+        )
+    }
+
     fun reWriteNavigation(
         navigation: Navigation<L, T>,
-        addToHistory: Boolean = true
+        addToHistory: Boolean = true, //applies to the "current" location of the new navigation graph only
     ) {
-        Fore.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
+        logger.d("reWriteNavigation() currentLocation: ${navigation.currentLocation()::class.simpleName} willBeAddedToHistory:$addToHistory")
+
+        navigation._ensureUniqueTabHosts()
+
         updateState(
             NavigationState(
                 navigation = navigation,
                 willBeAddedToHistory = addToHistory,
+                comingFrom = state.currentLocation,
             )
         )
     }
@@ -688,8 +885,50 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     private fun updateState(newState: NavigationState<L, T>) {
-        state = newState
+        state = checkInterceptors(newState)
         notifyObservers()
         perSista.write(state, stateKType) {}
+    }
+
+    private fun checkInterceptors(newState: NavigationState<L, T>): NavigationState<L, T> {
+        var modifiedState = newState
+        for ((_, interceptor) in navigationInterceptors) {
+            modifiedState = interceptor.intercept(state, modifiedState)
+        }
+        return modifiedState
+    }
+
+    fun installInterceptor(name: String, interceptor: NavigationInterceptor<L, T>): NavigationModel<L, T> {
+        uninstallInterceptor(name)
+        navigationInterceptors.add(name to interceptor)
+        return this
+    }
+
+    fun uninstallInterceptor(name: String) {
+        navigationInterceptors.removeAll { it.first == name }
+    }
+
+    suspend fun import(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
+        @Suppress("UNCHECKED_CAST")
+        val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
+        newState.navigation._ensureUniqueTabHosts()
+        if (setAsState) {
+            updateState(newState.copy(comingFrom = state.currentLocation))
+        }
+        return newState
+    }
+
+    /**
+     * Exports the given navigation, if either navigationGraph or willBeAddedToHistory are not set
+     * the current values from the NavigationModel wil be used
+     */
+    suspend fun export(navigationGraph: Navigation<L, T>? = null, willBeAddedToHistory: Boolean? = null): String {
+        return Json.encodeToString(
+            serializer(stateKType),
+            NavigationState(
+                navigation = navigationGraph ?: state.navigation,
+                willBeAddedToHistory = willBeAddedToHistory ?: state.willBeAddedToHistory
+            )
+        )
     }
 }
