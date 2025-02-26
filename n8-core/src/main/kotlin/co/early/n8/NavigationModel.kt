@@ -515,20 +515,30 @@ class NavigationModel<L : Any, T : Any>(
         )
     }
 
+    /**
+     * If the tabHosSpec is not specified, the nearest hosting tabHost will be used i.e. the value we get from
+     * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail.
+     *
+     * Depending on how your structure your client code, consider always specifying the tabHostSpec - in that case
+     * if the tabHost does not already exist in the navigation graph, n8 can create it in place. This style is also
+     * clearer in the case that the navigation graph has multiple nested TabHosts (n8 always switches on the deepest
+     * tabHost in this case)
+     *
+     * Be aware that a runtime exception will be thrown if you specify a tabIndex which is out of bounds for the tabHost
+     */
     fun switchTab(
-        tabHostSpec: TabHostSpecification<L, T>,
+        tabHostSpec: TabHostSpecification<L, T>? = null,
         tabIndex: Int? = null,
         clearToTabRootOverride: Boolean? = null,
-    ) {
-        logger.d("switchTab() tabId:${tabHostSpec.tabHostId} index:$tabIndex currentAddToHist:${state.willBeAddedToHistory}")
+    ): Boolean {
+        logger.d("switchTab() tabId:${tabHostSpec?.tabHostId} index:$tabIndex currentAddToHist:${state.willBeAddedToHistory}")
 
-        require(tabIndex == null || tabHostSpec.homeTabLocations.size > tabIndex) {
-            "tabIndex [$tabIndex] is out of bounds for tabs size:${tabHostSpec.homeTabLocations.size}"
+        require(tabHostSpec != null || tabIndex != null) {
+            "tabHostSpec or tabIndex must be specified, they can't both be null"
         }
         require(tabIndex == null || tabIndex >= 0) {
             "tabIndex must be positive, $tabIndex is an invalid index"
         }
-        requireValidTabHostClass(tabHostSpec)
 
         val trimmed = if (!state.willBeAddedToHistory) {
             state.navigation.currentItem()._applyOneStepBackNavigation()
@@ -536,14 +546,28 @@ class NavigationModel<L : Any, T : Any>(
 
         val navigated = trimmed?.currentItem()?._requireParent()?._isBackStack()?.let { parent ->
 
-            val tabHost = trimmed._tabHostFinder(tabHostSpec.tabHostId)
+            val tabHostId = tabHostSpec?.let {
+                requireValidTabHostClass(tabHostSpec)
+                it.tabHostId
+            } ?: run {
+                trimmed.currentItem().hostedBy().lastOrNull()?.tabHostId
+            }
+
+            logger.d("looking for tabHostId:$tabHostId")
+
+            val tabHost = tabHostId?.let { trimmed._tabHostFinder(it) }
 
             tabHost?.let { // tabHost already exists in navigation graph
 
-                logger.d("[${tabHostSpec.tabHostId}] Found, tabIndex specified: $tabIndex")
+                logger.d("[${tabHost.tabHostId}] Found, tabIndex specified: $tabIndex")
 
-                val newTabHistory = tabIndex?.let {
-                    when (tabHostSpec.backMode) {
+                tabIndex?.let {
+
+                    require(tabHost.tabs.size > tabIndex) {
+                        "tabIndex [$tabIndex] is out of bounds for [${tabHost.tabHostId}] tabs size:${tabHost.tabs.size}"
+                    }
+
+                    val newTabHistory = when (tabHost.tabBackModeDefault) {
                         TabBackMode.Structural -> listOf(tabIndex)
                         TabBackMode.Temporal -> {
                             tabHost.tabHistory.filter { tab ->
@@ -553,42 +577,60 @@ class NavigationModel<L : Any, T : Any>(
                             }
                         }
                     }
-                } ?: tabHost.tabHistory
-
-                val newTabs = tabHost.tabs.mapIndexed { index, backStack ->
-                    if (index == (tabIndex ?: tabHostSpec.initialTab) && (clearToTabRootOverride == true)
-                        || (tabHost.clearToTabRootDefault && (clearToTabRootOverride != false))
-                    ) {
-                        backStackOf<L, T>(endNodeOf(tabHostSpec.homeTabLocations[tabIndex ?: tabHostSpec.initialTab]))
-                    } else {
-                        backStack
+                    val newTabs = tabHost.tabs.mapIndexed { index, backStack ->
+                        if (index == tabIndex && ((clearToTabRootOverride == true)
+                            || (tabHost.clearToTabRootDefault && (clearToTabRootOverride != false)))
+                        ) {
+                            backStack.copy(stack = listOf(backStack.stack.first()))
+                        } else {
+                            backStack
+                        }
                     }
-                }
 
-                _mutateNavigation(
-                    oldItem = tabHost,
-                    newItem = tabHost.copy(
-                        tabHistory = newTabHistory,
-                        tabs = newTabs
-                    ),
-                    ensureOnHistoryPath = true,
-                )
+                    _mutateNavigation(
+                        oldItem = tabHost,
+                        newItem = tabHost.copy(
+                            tabHistory = newTabHistory,
+                            tabs = newTabs
+                        ),
+                        ensureOnHistoryPath = true,
+                    )
+                }?: run {// make no changes, but ensure we are on the history path
+                    _mutateNavigation(
+                        oldItem = tabHost,
+                        newItem = tabHost,
+                        ensureOnHistoryPath = true,
+                    )
+                }
             } ?: run { // first time this tabHost has been added
 
-                logger.d("[${tabHostSpec.tabHostId}] NOT FOUND in navigation graph! creating in place")
+                if (tabHostSpec == null){
+                    logger.w("No tabHostSpec specified, and no suitable TabHost found, cannot create in place!")
+                    return false
+                } else {
 
-                val newParent = parent.copy(
-                    stack = parent.stack.toMutableList().also {
-                        it.add(tabsOf(tabHostSpec, tabIndex))
-                    }
-                )._populateChildParents()
+                    logger.d("[${tabHostId}] NOT FOUND in navigation graph! creating in place")
 
-                _mutateNavigation(
-                    oldItem = parent,
-                    newItem = newParent
-                )
+                    val newParent = parent.copy(
+                        stack = parent.stack.toMutableList().also {
+                            it.add(tabsOf(tabHostSpec, tabIndex))
+                        }
+                    )._populateChildParents()
+
+                    _mutateNavigation(
+                        oldItem = parent,
+                        newItem = newParent
+                    )
+                }
             }
-        } ?: tabsOf(tabHostSpec, tabIndex)
+        } ?: run {// trimmed to nothing, create TabHost in place if possible
+            if (tabHostSpec == null){
+                logger.w("Trimmed to nothing and no tabHostSpec specified, cannot create in place!")
+                return false
+            } else {
+                tabsOf(tabHostSpec, tabIndex)
+            }
+        }
 
         updateState(
             state.copy(
@@ -597,6 +639,7 @@ class NavigationModel<L : Any, T : Any>(
                 comingFrom = state.currentLocation,
             )
         )
+        return true
     }
 
     private fun requireValidTabHostClass(tabHostSpec: TabHostSpecification<L, T>) {

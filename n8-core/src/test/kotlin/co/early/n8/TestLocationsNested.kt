@@ -94,6 +94,12 @@ val tabHostSpecAbc = TabHostSpecification<NestedTestData.Location, NestedTestDat
     homeTabLocations = listOf(A, B, C),
 )
 
+val tabHostSpecAbcClear = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
+    tabHostId = NestedTestData.TabHost.TabAbc,
+    homeTabLocations = listOf(A, B, C),
+    clearToTabRoot = true
+)
+
 val tabHostSpecAbcStructural = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabAbcStructural,
     homeTabLocations = listOf(A, B, C),

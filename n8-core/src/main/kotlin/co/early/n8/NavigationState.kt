@@ -198,7 +198,7 @@ sealed class Navigation<L : Any, T : Any> {
         @Serializable
         val tabs: List<BackStack<L, T>>,
         @Serializable
-        val clearToTabRootDefault: Boolean = false,
+        val clearToTabRootDefault: Boolean = false, // when navigating to tab, ignored for back operations
         @Serializable
         val tabBackModeDefault: TabBackMode = TabBackMode.Temporal
     ) : Navigation<L, T>() {

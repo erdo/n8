@@ -27,6 +27,7 @@ import co.early.n8.lowlevel._isTabHost
 import io.mockk.MockKAnnotations
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -328,6 +329,67 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
+    fun `when switching to an implicit tab from outside a tabHost, no mutation occurs`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D) { null }
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
+    }
+
+    @Test
+    fun `when switching to a tab but not specifying tabHost or tabIndex, exception thrown`() {
+
+        // arrange
+        var exceptionMessage : String? = null
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D) { null }
+
+        // act
+        try {
+            navigationModel.switchTab()
+        }catch (e: Exception){
+            exceptionMessage = e.message
+        }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertNotNull(exceptionMessage)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
+    }
+
+    @Test
     fun `when switching to a tab which doesn't already exist and not specifying a tabIndex, default tab index is used`() {
 
         // arrange
@@ -472,6 +534,299 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(2, navigationModel.state.hostedBy[1].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a Temporal TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc),
+                endNodeOf(D),
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(E) { null }
+        navigationModel.switchTab(tabHostSpecAbc, tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(E, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching to a Structural TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbcStructural),
+                endNodeOf(D),
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        navigationModel.navigateTo(E) { null }
+        navigationModel.switchTab(tabHostSpecAbcStructural, tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(E, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(B, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a nested Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(
+                    tabHistory = listOf(0),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(B),
+                        tabsOf(
+                            tabHistory = listOf(0, 1, 2),
+                            tabHostId = tabHostSpecXyz.tabHostId,
+                            backStackOf(
+                                endNodeOf(X1),
+                            ),
+                            backStackOf(
+                                endNodeOf(X2)
+                            ),
+                            backStackOf(
+                                endNodeOf(X3)
+                            ),
+                        )
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    ),
+                    backStackOf(
+                        endNodeOf(D)
+                    ),
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 1)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(X2, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a Structural TabHost and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcStructural),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 2)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost with a clearToRoot flag and specifying the tabHostSpec and tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(B)
+        navigationModel.navigateTo(C)
+
+        // act
+        val success = navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(C, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost with a clearToRoot flag and only specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 1)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost but overriding a clearToRoot flag to false and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbcClear),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 1)
+        navigationModel.navigateTo(F)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = false)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(E, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(F, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+    }
+
+    @Test
+    fun `when switching within a TabHost but overriding a clearToRoot flag to true and specifying a tabIndex, mutation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbc),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataDirectory = dataDirectory
+        )
+        navigationModel.navigateTo(D)
+        navigationModel.navigateTo(E)
+        navigationModel.switchTab(tabHostSpecAbc, tabIndex = 1)
+
+        // act
+        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = true)
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(true, success)
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(B, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
     }
 
     @Test
