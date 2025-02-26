@@ -27,7 +27,7 @@ Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe an
 
 It's not necessary to specify navigation routes upfront, N8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
-needs to call to navigate around the app:
+needs to call to navigate around the app: ```navigateTo(), navigateBack(), navigateBackTo(), switchTab()```
 
 ``` kotlin
 n8.navigateTo(Paris)
@@ -49,6 +49,7 @@ n8.navigateTo(Krakow)
 n8.navigateTo(Tokyo) { SettingsTab } /* continue back in SettingsTab at tabIndex 1/*
 
 n8.navigateBackTo(NewYork) { /* with optional data */ }
+n8.navigateBack()
 
 ```
 
