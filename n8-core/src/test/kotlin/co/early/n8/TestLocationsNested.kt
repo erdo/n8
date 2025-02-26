@@ -7,6 +7,8 @@ import co.early.n8.NestedTestData.Location.X1
 import co.early.n8.NestedTestData.Location.X2
 import co.early.n8.NestedTestData.Location.X3
 import co.early.n8.NestedTestData.Location.Y1
+import co.early.n8.NestedTestData.Location.Z1
+import co.early.n8.NestedTestData.Location.Z3
 import kotlinx.serialization.Serializable
 
 
@@ -29,6 +31,9 @@ class NestedTestData {
 
         @Serializable
         data object TabXyz : TabHost()
+
+        @Serializable
+        data object TabZ3 : TabHost()
     }
 
     @Serializable
@@ -108,5 +113,11 @@ val tabHostSpecX123 = TabHostSpecification<NestedTestData.Location, NestedTestDa
 
 val tabHostSpecXyz = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabXyz,
-    homeTabLocations = listOf(X1, Y1, NestedTestData.Location.Z1),
+    homeTabLocations = listOf(X1, Y1, Z1),
+)
+
+val tabHostSpecZ3 = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
+    tabHostId = NestedTestData.TabHost.TabZ3,
+    homeTabLocations = listOf(X1, Y1, Z3()),
+    initialTab = 2,
 )

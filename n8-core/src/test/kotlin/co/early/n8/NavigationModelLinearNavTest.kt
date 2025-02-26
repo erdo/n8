@@ -648,17 +648,15 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(SunCreamSelector)
-        navigationModel.navigateBack(
-            setData = {
-                when (it) {
-                    is Sydney -> {
-                        it.copy(withSunCreamFactor = 50)
-                    }
-
-                    else -> it
+        navigationModel.navigateBack {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
                 }
+
+                else -> it
             }
-        )
+        }
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
@@ -686,17 +684,16 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(SunCreamSelector)
         val success = navigationModel.navigateBack(
-            times = 2,
-            setData = {
-                when (it) {
-                    is Sydney -> {
-                        it.copy(withSunCreamFactor = 50)
-                    }
-
-                    else -> it
+            times = 2
+        ) {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
                 }
+
+                else -> it
             }
-        )
+        }
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
@@ -723,17 +720,16 @@ class NavigationModelLinearNavTest {
         navigationModel.navigateTo(Sydney())
         navigationModel.navigateTo(SunCreamSelector)
         val success = navigationModel.navigateBack(
-            times = 3,
-            setData = {
-                when (it) {
-                    is Sydney -> {
-                        it.copy(withSunCreamFactor = 50)
-                    }
-
-                    else -> it
+            times = 3
+        ) {
+            when (it) {
+                is Sydney -> {
+                    it.copy(withSunCreamFactor = 50)
                 }
+
+                else -> it
             }
-        )
+        }
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert

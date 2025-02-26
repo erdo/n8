@@ -353,7 +353,7 @@ class NavigationModel<L : Any, T : Any>(
         data class ChangeTabHostTo<L : Any, T : Any>(val target: TabHostSpecification<L, T>) : TabHostTarget()
     }
 
-    fun interface NavigationInterceptor<L: Any, T: Any> {
+    fun interface NavigationInterceptor<L : Any, T : Any> {
         fun intercept(old: NavigationState<L, T>, new: NavigationState<L, T>): NavigationState<L, T>
     }
 
@@ -575,7 +575,7 @@ class NavigationModel<L : Any, T : Any>(
                 )
             } ?: run { // first time this tabHost has been added
 
-                logger.d("[${tabHostSpec.tabHostId}] Not Found, adding")
+                logger.d("[${tabHostSpec.tabHostId}] NOT FOUND in navigation graph! creating in place")
 
                 val newParent = parent.copy(
                     stack = parent.stack.toMutableList().also {
@@ -640,10 +640,10 @@ class NavigationModel<L : Any, T : Any>(
      * returns false if we were not able to go back the requested number of times (i.e. we reached
      * the home location first, the state will be updated with the home location as current)
      */
-    fun navigateBack(times: Int = 1, setData: (L) -> L = { it }, addToHistory: Boolean = true): Boolean {
+    fun navigateBack(times: Int = 1, addToHistory: Boolean = true, setData: (L) -> L = { it }): Boolean {
         logger.d("navigateBack() times:$times")
 
-        require(times > 0){
+        require(times > 0) {
             "times must be larger than 0"
         }
 
@@ -714,10 +714,27 @@ class NavigationModel<L : Any, T : Any>(
         }
     }
 
-    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true) {
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true, setData: (L) -> L = { it }) {
         logger.d("navigateBackTo() tabHostId:${tabHostSpec.tabHostId} addToHistory:$addToHistory")
 
         requireValidTabHostClass(tabHostSpec)
+
+        if (state.hostedBy.find { it.tabHostId == tabHostSpec.tabHostId } != null) {
+
+            logger.w(
+                "Already hosted by this TabHost! hostedBy: " +
+                        state.hostedBy.map { it.tabHostId }.joinToString(" > ")
+            )
+
+            updateState(
+                state.copy(
+                    navigation = setDataOnCurrentLocation(state.navigation.currentItem(), setData),
+                    willBeAddedToHistory = addToHistory,
+                    comingFrom = state.currentLocation,
+                )
+            )
+            return
+        }
 
         val trimmed = if (!state.willBeAddedToHistory) {
             state.navigation.currentItem()._applyOneStepBackNavigation()
@@ -735,25 +752,33 @@ class NavigationModel<L : Any, T : Any>(
                 )
                 updateState(
                     state.copy(
-                        navigation = newNavigation,
+                        navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
                     )
                 )
-            } ?: run { // didn't find tabHost so just navigate forward
-                logger.d("navigateBackTo()... tabHost NOT FOUND in history, navigating forward instead")
+            } ?: run {
+                logger.d("tabHost ${tabHostSpec.tabHostId} NOT FOUND in navigation graph, creating in place instead")
 
                 trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
 
                     val newParent = parent.copy(
-                        stack = parent.stack.toMutableList().also {
-                            it.add(tabsOf(tabHostSpec))
+                        stack = parent.stack.toMutableList().also { parentStack ->
+                            parentStack.add(tabsOf(tabHostSpec))
                         }
                     )._populateChildParents()
 
-                    _mutateNavigation(
+                    val newNavigation = _mutateNavigation(
                         oldItem = parent,
                         newItem = newParent
+                    )
+
+                    updateState(
+                        state.copy(
+                            navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
+                            comingFrom = state.currentLocation,
+                            willBeAddedToHistory = addToHistory
+                        )
                     )
                 }
             }
@@ -763,7 +788,7 @@ class NavigationModel<L : Any, T : Any>(
 
             updateState(
                 NavigationState(
-                    navigation = tabsOf(tabHostSpec),
+                    navigation = setDataOnCurrentLocation(tabsOf(tabHostSpec).currentItem(), setData),
                     willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
                 )
