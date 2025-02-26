@@ -40,9 +40,9 @@ To use N8 in your app, you don't need to implement any special interfaces on you
 UI code remains largely independent of N8 itself.
 
 You do need to tell N8 what class you are using to keep track of your user's *Location* and your
-*TabHosts* - something like a sealed class works well here, but there is nothing stopping you from
-using basic Strings to identify your locations. If you don't have any TabHosts, you can just put
-Unit
+*TabHosts* - something like a sealed class works well here, you could use a String if you wanted,
+[but you might not want to](https://github.com/erdo/n8/issues/18). If you don't have any tabbed
+navigations you can just put Unit
 
 Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with N8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted
