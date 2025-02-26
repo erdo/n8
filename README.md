@@ -31,9 +31,25 @@ needs to call to navigate around the app:
 
 ``` kotlin
 n8.navigateTo(Paris)
-n8.navigateBack()
-n8.navigateBackTo(NewYork)
-n8.switchTab(mainTabs, tabIndex = 1)
+n8.navigateTo(NewYork)
+n8.navigateTo(Mumbai)
+n8.navigateBack() { /* with optional data */ }
+
+n8.switchTab(MainTabs) /* add MainTabs if not yet added */
+n8.navigateTo(Seoul)  /* continue in MainTabs */
+n8.switchTab(2)
+n8.navigateTo(Hanoi) 
+
+n8.switchTab(SettingsTab) /* add SettingsTab, nested inside MainTabs */
+n8.switchTab(1)  /* continue in SettingsTab, from inside tabIndex 2 of MainTabs */
+n8.switchTab(MainTabs, 0)  /* switch to tabIndex 0 of MainTabs */
+
+n8.navigateTo(London) { null } /* jump out of any nested tabhosts and continue at the top level */
+n8.navigateTo(Krakow)
+n8.navigateTo(Tokyo) { SettingsTab } /* continue back in SettingsTab at tabIndex 1/*
+
+n8.navigateBackTo(NewYork) { /* with optional data */ }
+
 ```
 
 To use N8 in your app, you don't need to implement any special interfaces on your screens, so your
@@ -237,7 +253,7 @@ backStackOf(
     endNodeOf(Welcome),     <--- home location
     tabsOf(
         tabHistory = listOf(0,2),
-        tabHostId = "TABHOST_MAIN",
+        tabHostId = TABHOST_MAIN,
         backStackOf(
             endNodeOf(MyFeed),
             endNodeOf(Trending),
@@ -250,7 +266,7 @@ backStackOf(
             endNodeOf(Settings),
             tabsOf(
                 tabHistory = listOf(0),
-                tabHostId = "TABHOST_SETTINGS",
+                tabHostId = TABHOST_SETTINGS,
                 backStackOf(
                     endNodeOf(Audio),
                     endNodeOf(Dolby),     <--- current location
