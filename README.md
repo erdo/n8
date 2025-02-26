@@ -46,10 +46,9 @@ n8.switchTab(MainTabs, 0)  /* switch to tabIndex 0 of MainTabs */
 
 n8.navigateTo(London) { null } /* jump out of any nested tabhosts and continue at the top level */
 n8.navigateTo(Krakow)
-n8.navigateTo(Tokyo) { SettingsTab } /* continue back in SettingsTab at tabIndex 1/*
+n8.navigateTo(Tokyo) { SettingsTab } /* continue back in SettingsTab at tabIndex 1/ */
 
 n8.navigateBackTo(NewYork) { /* with optional data */ }
-n8.navigateBack()
 
 ```
 
