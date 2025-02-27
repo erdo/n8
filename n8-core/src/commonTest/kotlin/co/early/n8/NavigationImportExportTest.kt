@@ -31,7 +31,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when exporting state, serialized representation is correct`() {
+    fun `when exporting state - serialized representation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -144,7 +144,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when exporting model state, serialized representation is correct`() {
+    fun `when exporting model state - serialized representation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel(
@@ -253,7 +253,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when importing serialized state, but not setting, navigation state returned is correct`() {
+    fun `when importing serialized state - but not setting, navigation state returned is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -368,7 +368,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when importing serialized state, and setting navigation state is set correctly`() {
+    fun `when importing serialized state - and setting navigation state is set correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -494,7 +494,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when exporting state, serialized representation can be tokenized`() {
+    fun `when exporting state - serialized representation can be tokenized`() {
 
         // arrange
         val navigationModel = NavigationModel(
@@ -603,7 +603,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when importing serialized state, string can be detokenized successfully`() {
+    fun `when importing serialized state - string can be detokenized successfully`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(

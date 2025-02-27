@@ -25,7 +25,8 @@ plugins {
     alias(libs.plugins.kotlinAndroidPlugin) apply false
     alias(libs.plugins.kotlinJvmPlugin) apply false
     alias(libs.plugins.kotlinKaptPlugin) apply false
+    alias(libs.plugins.kotlinMultiPlatformPlugin).apply(false)
     alias(libs.plugins.kotlinSerializationPlugin) apply false
     alias(libs.plugins.composePlugin) apply false
-    // alias(libs.plugins.kotlinMultiPlatformPlugin)
+    alias(libs.plugins.kotlinCocoapodsPlugin).apply(false)
 }

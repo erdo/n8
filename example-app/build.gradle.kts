@@ -74,8 +74,8 @@ dependencies {
     // serialization
     implementation(libs.kotlinx.serialization)
     // reactivity
-    implementation(libs.fore.android)
-    implementation(libs.fore.compose)
+    implementation(libs.fore.core)
+   // implementation(libs.fore.compose)
     // di
     implementation(libs.koin.compose)
     implementation(libs.koin.core)

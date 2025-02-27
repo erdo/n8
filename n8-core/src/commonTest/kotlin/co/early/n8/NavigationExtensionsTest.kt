@@ -2,8 +2,8 @@
 
 package co.early.n8
 
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.NestedTestData.Location
 import co.early.n8.NestedTestData.Location.A
 import co.early.n8.NestedTestData.Location.B
@@ -21,20 +21,19 @@ import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._isEndNode
 import co.early.n8.lowlevel._isTabHost
 import co.early.n8.lowlevel._mutateNavigation
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.DefaultAsserter.assertEquals
+import kotlin.test.Test
 
 class NavigationExtensionsTest {
 
-    @Before
+    @BeforeTest
     fun setup() {
         Fore.setDelegate(TestDelegateDefault())
     }
 
     @Test
-    fun `when logging nav graph with diagnostics, output is correct`() {
+    fun `when logging nav graph with diagnostics - output is correct`() {
 
         // arrange
         val nav = backStackOf(
@@ -112,7 +111,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when logging nav graph without diagnostics, output is correct`() {
+    fun `when logging nav graph without diagnostics - output is correct`() {
 
         // arrange
         val nav = backStackOf(
@@ -186,7 +185,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given a BackStack, createdBackCopy is correct`() {
+    fun `given a BackStack - createdBackCopy is correct`() {
 
         // arrange
         val nav = backStackNoTabsOf(
@@ -213,7 +212,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given a TabHost, createdBackCopy is correct`() {
+    fun `given a TabHost - createdBackCopy is correct`() {
 
         // arrange
         val nav = tabsOf(
@@ -251,7 +250,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when removing item from a top level backStack, mutation completes successfully`() {
+    fun `when removing item from a top level backStack - mutation completes successfully`() {
 
         // arrange
         val nav = backStackOf(
@@ -304,7 +303,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when removing an item from a backStack hosted in a TabHost, mutation completes successfully`() {
+    fun `when removing an item from a backStack hosted in a TabHost - mutation completes successfully`() {
 
         // arrange
         val nav = backStackOf(
@@ -381,7 +380,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when removing a tab from a nested TabHost, mutation completes successfully`() {
+    fun `when removing a tab from a nested TabHost - mutation completes successfully`() {
 
         // arrange
         val nav = tabsOf(
@@ -439,7 +438,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes, when mutating to swap EndNode, correct item is swapped`() {
+    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes - when mutating to swap EndNode, correct item is swapped`() {
 
         // arrange
         val nav = backStackOf<Location, Unit>(
@@ -488,7 +487,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks, when mutating to swap BackStack, correct item is swapped`() {
+    fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks - when mutating to swap BackStack - correct item is swapped`() {
 
         // arrange
         val nav = tabsOf(
@@ -528,7 +527,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks, when mutating to swap BackStack with ensureOnHistoryPath = true, correct item is swapped`() {
+    fun `given a BackStack with a parent TabHost that contains multiple identical BackStacks - when mutating to swap BackStack with ensureOnHistoryPath = true - correct item is swapped`() {
 
         // arrange
         val nav = tabsOf(
@@ -569,7 +568,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when hosted inside multiple tabHosts, showSelected is correct`() {
+    fun `when hosted inside multiple tabHosts - showSelected is correct`() {
 
         // arrange
         val nav = tabsOf(
@@ -617,7 +616,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when creating a navigation graph with duplicate String tabHostIds, exception is thrown`() {
+    fun `when creating a navigation graph with duplicate String tabHostIds - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
@@ -664,7 +663,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when creating a navigation graph with duplicate tabHostIds, exception is thrown`() {
+    fun `when creating a navigation graph with duplicate tabHostIds - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
@@ -713,7 +712,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `when creating a navigation graph with duplicate tabHostIds in the same BackStack, exception is thrown`() {
+    fun `when creating a navigation graph with duplicate tabHostIds in the same BackStack - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
