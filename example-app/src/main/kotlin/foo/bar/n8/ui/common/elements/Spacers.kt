@@ -4,7 +4,7 @@ import androidx.compose.ui.unit.dp
 import co.early.fore.ui.size.HeightBasedDp
 import co.early.fore.ui.size.WidthBasedDp
 
-// Useage:
+// Usage:
 //
 // Spacer(
 //    modifier = Modifier.height(SH2(size))

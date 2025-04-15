@@ -30,7 +30,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import co.early.fore.kt.core.delegate.Fore
+import co.early.fore.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
 import co.early.n8.NavigationModel

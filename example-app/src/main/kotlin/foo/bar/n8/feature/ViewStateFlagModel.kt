@@ -1,7 +1,7 @@
 package foo.bar.n8.feature
 
 import co.early.fore.core.observer.Observable
-import co.early.fore.kt.core.observer.ObservableImp
+import co.early.fore.core.observer.ObservableImp
 import kotlinx.serialization.Serializable
 
 /**

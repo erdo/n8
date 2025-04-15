@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import co.early.fore.kt.core.delegate.Fore
+import co.early.fore.core.delegate.Fore
 import co.early.fore.ui.size.AspectBasedComposable
 import co.early.fore.ui.size.LocalWindowSize
 import co.early.fore.ui.size.MinDimBasedTextUnit

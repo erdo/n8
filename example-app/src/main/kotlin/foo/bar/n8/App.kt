@@ -1,16 +1,16 @@
 package foo.bar.n8
 
 import android.app.Application
-import co.early.fore.kt.core.delegate.DebugDelegateDefault
-import co.early.fore.kt.core.delegate.Fore
+import co.early.fore.core.delegate.DebugDelegateDefault
+import co.early.fore.core.delegate.Fore
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
-import co.early.n8.lowlevel.LowLevelApi
 import foo.bar.n8.feature.ViewStateFlagModel
 import foo.bar.n8.ui.navigation.Location
 import foo.bar.n8.ui.navigation.TabHostId
 import foo.bar.n8.ui.navigation.limitBackPath
+import okio.Path.Companion.toOkioPath
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 
@@ -29,7 +29,7 @@ class App : Application() {
         val n8 = NavigationModel<Location, TabHostId>(
             homeLocation = Location.Home,
             stateKType = typeOf<NavigationState<Location, TabHostId>>(),
-            dataDirectory = filesDir,
+            dataPath = filesDir.toOkioPath(),
             // clearPreviousNavGraph = true
         )
         // example custom mutation: "we should never be more than 5 back steps away from quitting the app"
