@@ -5,14 +5,14 @@ plugins {
     alias(libs.plugins.androidAppPlugin)
     alias(libs.plugins.kotlinKaptPlugin)
     alias(libs.plugins.kotlinSerializationPlugin)
-    alias(libs.plugins.composePlugin)
+    alias(libs.plugins.composeCompilerPlugin)
 }
 
 val appId = "foo.bar.n8"
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jvm.toolchain.get().toInt()))
     }
 }
 

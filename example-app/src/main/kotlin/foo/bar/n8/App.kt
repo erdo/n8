@@ -32,7 +32,7 @@ class App : Application() {
             dataDirectory = filesDir,
             // clearPreviousNavGraph = true
         )
-        // example custom mutation: we should never be more than 5 back steps away from quitting the app
+        // example custom mutation: "we should never be more than 5 back steps away from quitting the app"
         n8.installInterceptor("limitNavGraphTo5BacksToExit") { _, new ->
             new.copy(
                 navigation = limitBackPath(5, new.navigation),

@@ -1,45 +1,52 @@
 [versions]
-gradleVersion = "8.3.1"
-androidPluginVersion = "8.3.2"
-kotlinVersion = "2.0.20"
-foreVersion = "2.0.0-rc.1"
-foreComposeVersion = "1.5.10"
+androidPluginVersion = "8.9.1"
+kotlinVersion = "2.1.10"
+foreVersion = "2.0.0"
 ktLintVersion = "12.1.2"
-composeBomVersion = "2025.02.00"
-jvm-toolchain = "8"
+composeBomVersion = "2025.04.00"
+composeUiVersion = "1.7.8"
+composeMultiplatformUiVersion = "1.7.3"
+jvm-toolchain = "21"
+jvm-target = "1.8"
 androidCompileSdk = "34"
 androidTargetSdk = "34"
 androidMinSdk = "21"
-junit = "4.13.2"
-androidx-test-ext-junit = "1.1.5"
-espresso-core = "3.5.1"
-appcompat = "1.6.1"
-material = "1.11.0"
-coreKtx = "1.12.0"
-junitVersion = "4.13.2"
-androidxJunit = "1.1.5"
-appcompatVersion = "1.6.1"
-materialVersion = "1.11.0"
 
 [libraries]
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinVersion" }
-kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
-persista = "co.early.persista:persista:2.0.0-rc.1"
-koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
-koin-core = "io.insert-koin:koin-core:3.4.2"
-multidex = "androidx.multidex:multidex:2.0.1"
+
+# kotlin
+kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1"
+kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0"
+
+# androidx compose
 compose-activity = "androidx.activity:activity-compose:1.8.2"
-compose-constraint-layout = "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+compose-constraint-layout = "androidx.constraintlayout:constraintlayout-compose:1.1.1"
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
-compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "composeUiVersion" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
+
+# jetbrains compose
+jetbrains-compose-ui  = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatformUiVersion" }
+
+# di
+koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
+koin-core = "io.insert-koin:koin-core:3.4.2"
+
+# persistence
+persista = "co.early.persista:persista:2.0.0-rc.1"
+
+# reactivity / observability
 fore-core = { module = "co.early.fore:fore-core", version.ref = "foreVersion" }
-#fore-android = { module = "co.early.fore:fore-kt-android", version.ref = "foreVersion" }
-#fore-compose = { module = "co.early.fore:fore-kt-android-compose", version.ref = "foreComposeVersion" }
-kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
-kotlin-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+fore-compose = { module = "co.early.fore:fore-compose", version.ref = "foreVersion" }
+
+# misc
+multidex = "androidx.multidex:multidex:2.0.1"
+
+# test
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinVersion" }
+fore-test-fixtures = { module = "co.early.fore:fore-test-fixtures", version.ref = "foreVersion" }
 
 [plugins]
 androidAppPlugin = { id = "com.android.application", version.ref = "androidPluginVersion" }
@@ -49,7 +56,6 @@ kotlinJvmPlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinVersio
 kotlinMultiPlatformPlugin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinVersion" }
 kotlinKaptPlugin = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
 kotlinSerializationPlugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinVersion" }
-composePlugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }
-ktLintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLintVersion" }
+composeCompilerPlugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinVersion" }
 kotlinCocoapodsPlugin = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlinVersion" }
 dokkaPlugin = "org.jetbrains.dokka:2.0.0"

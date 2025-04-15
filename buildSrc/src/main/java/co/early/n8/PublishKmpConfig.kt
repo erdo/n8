@@ -58,8 +58,10 @@ fun Project.applyPublishingConfig() {
                 }
 
                 // mavenCentral insists on javadocs for the jvm artifact
-                (getByName("jvm") as MavenPublication).apply {
-                    artifact(tasks.named("javadocJar"))
+                findByName("jvm")?.let {
+                    (it as MavenPublication).apply {
+                        artifact(tasks.named("javadocJar"))
+                    }
                 }
 
                 publications.forEach { publication ->

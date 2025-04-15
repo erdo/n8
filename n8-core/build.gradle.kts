@@ -1,5 +1,6 @@
 import co.early.n8.applyPublishingConfig
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiPlatformPlugin)
@@ -14,6 +15,16 @@ kotlin {
 
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(libs.versions.jvm.toolchain.get().toInt()))
+    }
+
+    targets.withType<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget> {
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvm.target.get()))
+                }
+            }
+        }
     }
 
     androidTarget{
@@ -47,13 +58,9 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                // serialization
                 implementation(libs.kotlinx.serialization)
-                // coroutines
                 implementation(libs.kotlinx.coroutines.core)
-                // persistence
                 api(libs.persista)
-                // reactivity
                 api(libs.fore.core)
             }
         }
@@ -67,7 +74,7 @@ kotlin {
 }
 
 android {
-    namespace = "co.early.n8.compose"
+    namespace = "co.early.n8.core"
 
     compileSdk = libs.versions.androidCompileSdk.get().toInt()
 
@@ -84,7 +91,6 @@ android {
 
     buildFeatures {
         buildConfig = false
-        compose = true
     }
 
     buildTypes {

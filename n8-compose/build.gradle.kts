@@ -1,12 +1,13 @@
 import co.early.n8.applyPublishingConfig
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiPlatformPlugin)
     alias(libs.plugins.androidLibraryPlugin)
-    alias(libs.plugins.dokkaPlugin)
-    alias(libs.plugins.composePlugin)
+    alias(libs.plugins.composeCompilerPlugin)
     alias(libs.plugins.kotlinSerializationPlugin)
+    alias(libs.plugins.dokkaPlugin)
     id("maven-publish")
     id("signing")
 }
@@ -18,32 +19,25 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(libs.versions.jvm.toolchain.get().toInt()))
     }
 
+    targets.withType<org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget> {
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvm.target.get()))
+                }
+            }
+        }
+    }
+
     androidTarget{
         publishLibraryVariants("release")
     }
 
-    jvm()
+    applyDefaultHierarchyTemplate()
 
     iosArm64()
     iosX64()
     iosSimulatorArm64()
-
-    macosX64()
-    macosArm64()
-
-    watchosArm32()
-    watchosArm64()
-    watchosX64()
-    watchosSimulatorArm64()
-
-    tvosArm64()
-    tvosX64()
-    tvosSimulatorArm64()
-
-    linuxX64()
-    linuxArm64()
-
-    mingwX64()
 
     sourceSets {
 
@@ -52,23 +46,29 @@ kotlin {
                 api(project(":n8-core"))
                 api(libs.persista)
                 api(libs.fore.core)
-              //  implementation(libs.fore.compose)
+                api(libs.fore.compose)
                 api(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlin.serialization)
+                implementation(libs.kotlinx.serialization)
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.fore.test.fixtures)
             }
         }
 
         val androidMain by getting {
             dependencies {
-                implementation(project.dependencies.platform(libs.compose.bom))
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui)
+            }
+        }
+
+        val iosMain by getting {
+            dependencies {
+                implementation(libs.jetbrains.compose.ui)
             }
         }
     }
