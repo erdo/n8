@@ -3,10 +3,10 @@
 package co.early.n8
 
 import co.early.fore.core.observer.Observable
-import co.early.fore.kt.core.coroutine.launchIO
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.logging.Logger
-import co.early.fore.kt.core.observer.ObservableImp
+import co.early.fore.core.coroutine.launchIO
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.logging.Logger
+import co.early.fore.core.observer.ObservableImp
 import co.early.n8.Navigation.EndNode
 import co.early.n8.NavigationModel.TabHostTarget.ChangeTabHostTo
 import co.early.n8.NavigationModel.TabHostTarget.NoChange
@@ -27,7 +27,7 @@ import co.early.n8.lowlevel._tabHostFinder
 import co.early.persista.PerSista
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import java.io.File
+import okio.Path
 import kotlin.reflect.KType
 
 /**
@@ -279,23 +279,38 @@ import kotlin.reflect.KType
 class NavigationModel<L : Any, T : Any>(
     private val stateKType: KType,
     private val initialNavigation: Navigation<L, T>,
-    private val initialAddHomeLocationToHistory: Boolean = true,
+    private val initialWillBeAddedToHistoryFlag: Boolean = true,
     private val perSista: PerSista,
     clearPreviousNavGraph: Boolean = false,
     private val logger: Logger = Fore.getLogger(),
 ) : Observable by ObservableImp() {
 
+    // a lot of these constructors are for iOS target benefit which doesn't like default parameters in constructors
+
+    constructor(
+        stateKType: KType,
+        initialNavigation: Navigation<L, T>,
+        perSista: PerSista,
+    ) : this(
+        stateKType = stateKType,
+        initialNavigation = initialNavigation,
+        initialWillBeAddedToHistoryFlag = true,
+        perSista = perSista,
+        clearPreviousNavGraph = false,
+        logger = Fore.getLogger(),
+    )
+
     constructor(
         stateKType: KType,
         homeLocation: L,
-        initialAddHomeLocationToHistory: Boolean = true,
+        initialWillBeAddedToHistoryFlag: Boolean = true,
         perSista: PerSista,
         clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
+        initialWillBeAddedToHistoryFlag = initialWillBeAddedToHistoryFlag,
         perSista = perSista,
         clearPreviousNavGraph = clearPreviousNavGraph,
         logger = logger,
@@ -304,16 +319,64 @@ class NavigationModel<L : Any, T : Any>(
     constructor(
         stateKType: KType,
         homeLocation: L,
-        initialAddHomeLocationToHistory: Boolean = true,
-        dataDirectory: File,
+        perSista: PerSista,
+    ) : this(
+        stateKType = stateKType,
+        initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
+        initialWillBeAddedToHistoryFlag = true,
+        perSista = perSista,
+        clearPreviousNavGraph = false,
+        logger = Fore.getLogger(),
+    )
+
+    constructor(
+        stateKType: KType,
+        homeLocation: L,
+        initialWillBeAddedToHistoryFlag: Boolean = true,
+        dataPath: Path,
         clearPreviousNavGraph: Boolean = false,
         logger: Logger = Fore.getLogger(),
     ) : this(
         stateKType = stateKType,
         initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
-        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
+        initialWillBeAddedToHistoryFlag = initialWillBeAddedToHistoryFlag,
         perSista = PerSista(
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
+            logger = logger,
+        ),
+        clearPreviousNavGraph = clearPreviousNavGraph,
+        logger = logger,
+    )
+
+    constructor(
+        stateKType: KType,
+        homeLocation: L,
+        dataPath: Path,
+    ) : this(
+        stateKType = stateKType,
+        initialNavigation = backStackOf<L, T>(endNodeOf(homeLocation)),
+        initialWillBeAddedToHistoryFlag = true,
+        perSista = PerSista(
+            dataPath = dataPath,
+            logger = Fore.getLogger(),
+        ),
+        clearPreviousNavGraph = false,
+        logger = Fore.getLogger(),
+    )
+
+    constructor(
+        stateKType: KType,
+        initialNavigation: Navigation<L, T>,
+        initialWillBeAddedToHistoryFlag: Boolean = true,
+        dataPath: Path,
+        clearPreviousNavGraph: Boolean = false,
+        logger: Logger = Fore.getLogger(),
+    ) : this(
+        stateKType = stateKType,
+        initialNavigation = initialNavigation,
+        initialWillBeAddedToHistoryFlag = initialWillBeAddedToHistoryFlag,
+        perSista = PerSista(
+            dataPath = dataPath,
             logger = logger,
         ),
         clearPreviousNavGraph = clearPreviousNavGraph,
@@ -323,25 +386,22 @@ class NavigationModel<L : Any, T : Any>(
     constructor(
         stateKType: KType,
         initialNavigation: Navigation<L, T>,
-        initialAddHomeLocationToHistory: Boolean = true,
-        dataDirectory: File,
-        clearPreviousNavGraph: Boolean = false,
-        logger: Logger = Fore.getLogger(),
+        dataPath: Path,
     ) : this(
         stateKType = stateKType,
         initialNavigation = initialNavigation,
-        initialAddHomeLocationToHistory = initialAddHomeLocationToHistory,
+        initialWillBeAddedToHistoryFlag = true,
         perSista = PerSista(
-            dataDirectory = dataDirectory,
-            logger = logger,
+            dataPath = dataPath,
+            logger = Fore.getLogger(),
         ),
-        clearPreviousNavGraph = clearPreviousNavGraph,
-        logger = logger,
+        clearPreviousNavGraph = false,
+        logger = Fore.getLogger(),
     )
 
     var state = NavigationState(
         navigation = initialNavigation,
-        willBeAddedToHistory = initialAddHomeLocationToHistory,
+        willBeAddedToHistory = initialWillBeAddedToHistoryFlag,
     )
         private set
 
@@ -853,7 +913,7 @@ class NavigationModel<L : Any, T : Any>(
         updateState(
             NavigationState(
                 navigation = initialNavigation,
-                willBeAddedToHistory = initialAddHomeLocationToHistory,
+                willBeAddedToHistory = initialWillBeAddedToHistoryFlag,
                 comingFrom = null,
             )
         )

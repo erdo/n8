@@ -2,7 +2,7 @@
 
 package co.early.n8.lowlevel
 
-import co.early.fore.kt.core.delegate.Fore
+import co.early.fore.core.delegate.Fore
 import co.early.n8.Navigation
 import co.early.n8.Navigation.BackStack
 import co.early.n8.Navigation.EndNode
