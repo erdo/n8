@@ -22,8 +22,9 @@ import co.early.n8.lowlevel._isEndNode
 import co.early.n8.lowlevel._isTabHost
 import co.early.n8.lowlevel._mutateNavigation
 import kotlin.test.BeforeTest
-import kotlin.test.DefaultAsserter.assertEquals
+import kotlin.test.assertEquals
 import kotlin.test.Test
+import kotlin.test.assertNotEquals
 
 class NavigationExtensionsTest {
 
@@ -659,7 +660,7 @@ class NavigationExtensionsTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
+        assertNotEquals(null, exception)
     }
 
     @Test
@@ -708,7 +709,7 @@ class NavigationExtensionsTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
+        assertNotEquals(null, exception)
     }
 
     @Test
@@ -741,6 +742,6 @@ class NavigationExtensionsTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
+        assertNotEquals(null, exception)
     }
 }

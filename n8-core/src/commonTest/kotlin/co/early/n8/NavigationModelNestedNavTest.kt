@@ -2,8 +2,8 @@
 
 package co.early.n8
 
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.NestedTestData.Location
 import co.early.n8.NestedTestData.Location.A
 import co.early.n8.NestedTestData.Location.B
@@ -24,29 +24,24 @@ import co.early.n8.NestedTestData.TabHost
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._isTabHost
-import io.mockk.MockKAnnotations
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertNotEquals
 import kotlin.reflect.typeOf
+import kotlin.test.BeforeTest
+import okio.Path
+import okio.Path.Companion.toPath
+import okio.SYSTEM
+import kotlin.test.assertNotNull
 
 class NavigationModelNestedNavTest {
 
-    private lateinit var dataDirectory: File
+    private val dataPath: Path = "test".toPath()
 
-    @Before
+    @BeforeTest
     fun setup() {
-        MockKAnnotations.init(this, relaxed = true)
-
         Fore.setDelegate(TestDelegateDefault())
-
-        val dataFolder = TemporaryFolder()
-        dataFolder.create()
-        dataDirectory = dataFolder.newFolder()
+        okio.FileSystem.SYSTEM.deleteRecursively(dataPath)
     }
 
     @Test
@@ -56,8 +51,8 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
-            initialAddHomeLocationToHistory = false,
+            dataPath = dataPath,
+            initialWillBeAddedToHistoryFlag = false,
         )
 
         // act
@@ -84,7 +79,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -110,7 +105,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -140,7 +135,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -170,7 +165,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -202,7 +197,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -231,7 +226,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -263,7 +258,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -296,7 +291,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -331,7 +326,7 @@ class NavigationModelNestedNavTest {
                 tabsOf(tabHostSpecAbc)
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D) { null }
 
@@ -360,7 +355,7 @@ class NavigationModelNestedNavTest {
                 tabsOf(tabHostSpecAbc)
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D) { null }
 
@@ -406,7 +401,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -450,7 +445,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -509,7 +504,7 @@ class NavigationModelNestedNavTest {
                 endNodeOf(E),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -540,7 +535,7 @@ class NavigationModelNestedNavTest {
                 endNodeOf(D),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -570,7 +565,7 @@ class NavigationModelNestedNavTest {
                 endNodeOf(D),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -599,7 +594,7 @@ class NavigationModelNestedNavTest {
                 tabsOf(tabHostSpecAbc)
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -654,7 +649,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -684,7 +679,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(tabHostSpecAbcStructural),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -711,7 +706,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(tabHostSpecAbcClear),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(B)
         navigationModel.navigateTo(C)
@@ -740,7 +735,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(tabHostSpecAbcClear),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -770,7 +765,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(tabHostSpecAbcClear),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -801,7 +796,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = tabsOf(tabHostSpecAbc),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -831,7 +826,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -866,7 +861,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -901,7 +896,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -943,7 +938,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         var exception: Exception? = null
 
@@ -970,7 +965,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         var exception: Exception? = null
 
@@ -1003,7 +998,7 @@ class NavigationModelNestedNavTest {
                 ),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -1041,7 +1036,7 @@ class NavigationModelNestedNavTest {
                 ),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 1)
         navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 0)
@@ -1074,7 +1069,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
 
@@ -1108,7 +1103,7 @@ class NavigationModelNestedNavTest {
                 ),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 0)
 
@@ -1133,7 +1128,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -1168,7 +1163,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -1213,7 +1208,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -1251,7 +1246,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -1289,7 +1284,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -1317,7 +1312,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         navigationModel.navigateTo(A)
@@ -1356,7 +1351,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -1381,7 +1376,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         navigationModel.navigateTo(A)
@@ -1411,7 +1406,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         navigationModel.navigateTo(A)
@@ -1445,7 +1440,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         navigationModel.navigateTo(A)
@@ -1477,7 +1472,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, String>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, String>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         val nav = backStackOf(
             endNodeOf(A),
@@ -1533,7 +1528,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, String>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, String>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         val nav = backStackOf(
             endNodeOf(A),
@@ -1587,7 +1582,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, String>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, String>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         val nav = backStackOf(
             endNodeOf(A),
@@ -1661,7 +1656,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -1718,7 +1713,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -1759,7 +1754,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -1797,7 +1792,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel(
             initialNavigation = initialTabs,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(D)
         navigationModel.navigateTo(E)
@@ -1825,7 +1820,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         navigationModel.navigateTo(A)
@@ -1878,7 +1873,7 @@ class NavigationModelNestedNavTest {
                 )
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -1912,7 +1907,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -1943,7 +1938,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -1975,7 +1970,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -2009,7 +2004,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
         navigationModel.navigateTo(location = D)
@@ -2042,7 +2037,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(location = B)
         navigationModel.switchTab(tabHostSpec = tabHostSpecZ3)
@@ -2079,7 +2074,7 @@ class NavigationModelNestedNavTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(location = B)
         navigationModel.switchTab(tabHostSpec = tabHostSpecZ3)

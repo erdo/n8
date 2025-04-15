@@ -2,8 +2,8 @@
 
 package co.early.n8
 
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.LinearTestData.Location
 import co.early.n8.LinearTestData.Location.EuropeanLocations.London
 import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
@@ -13,28 +13,23 @@ import co.early.n8.LinearTestData.Location.Sydney
 import co.early.n8.LinearTestData.Location.Tokyo
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._isBackStack
-import io.mockk.MockKAnnotations
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertNotEquals
 import kotlin.reflect.typeOf
+import kotlin.test.BeforeTest
+import okio.Path
+import okio.Path.Companion.toPath
+import okio.SYSTEM
 
 class NavigationModelLinearNavTest {
 
-    private lateinit var dataDirectory: File
+    private val dataPath: Path = "test".toPath()
 
-    @Before
+    @BeforeTest
     fun setup() {
-        MockKAnnotations.init(this, relaxed = true)
-
         Fore.setDelegate(TestDelegateDefault())
-
-        val dataFolder = TemporaryFolder()
-        dataFolder.create()
-        dataDirectory = dataFolder.newFolder()
+        okio.FileSystem.SYSTEM.deleteRecursively(dataPath)
     }
 
     @Test
@@ -44,7 +39,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Int>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Int>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -69,7 +64,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -93,7 +88,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -116,8 +111,8 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory,
-            initialAddHomeLocationToHistory = false,
+            dataPath = dataPath,
+            initialWillBeAddedToHistoryFlag = false,
         )
 
         // act
@@ -139,7 +134,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -163,7 +158,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -189,7 +184,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -215,7 +210,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -241,7 +236,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -271,7 +266,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -297,7 +292,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -324,7 +319,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -350,7 +345,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -374,7 +369,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -401,7 +396,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -426,7 +421,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -453,7 +448,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -479,7 +474,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -506,7 +501,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -530,7 +525,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -556,7 +551,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = Sydney(),
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -582,7 +577,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -612,7 +607,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -640,7 +635,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -675,7 +670,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -713,7 +708,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = Sydney(),
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -749,7 +744,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -768,7 +763,7 @@ class NavigationModelLinearNavTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act

@@ -1,41 +1,34 @@
 package co.early.n8
 
+import MockObserver
 import co.early.fore.core.observer.Observer
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.LinearTestData.Location
 import co.early.n8.LinearTestData.Location.EuropeanLocations.London
 import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
 import co.early.n8.LinearTestData.Location.NewYork
 import co.early.n8.LinearTestData.Location.Tokyo
 import co.early.persista.PerSista
-import io.mockk.MockKAnnotations
-import io.mockk.impl.annotations.MockK
-import io.mockk.verify
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertNotEquals
 import kotlin.reflect.typeOf
+import kotlin.test.BeforeTest
+import okio.Path
+import okio.Path.Companion.toPath
+import okio.SYSTEM
+import kotlin.test.assertTrue
 
 class NavigationModelTest {
 
-    private lateinit var dataDirectory: File
+    private val dataPath: Path = "test".toPath()
+    private val mockObserver = MockObserver()
 
-    @MockK
-    private lateinit var mockObserver: Observer
-
-    @Before
+    @BeforeTest
     fun setup() {
-        MockKAnnotations.init(this, relaxed = true)
-
         Fore.setDelegate(TestDelegateDefault())
-
-        val dataFolder = TemporaryFolder()
-        dataFolder.create()
-        dataDirectory = dataFolder.newFolder()
+        okio.FileSystem.SYSTEM.deleteRecursively(dataPath)
     }
 
     @Test
@@ -45,7 +38,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         // act
@@ -67,7 +60,7 @@ class NavigationModelTest {
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
             perSista = PerSista(
-                dataDirectory = dataDirectory,
+                dataPath = dataPath,
             ),
         )
 
@@ -89,7 +82,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel(
             initialNavigation = backStackNoTabsOf(endNodeOf(Tokyo), endNodeOf(NewYork)),
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         // act
@@ -111,7 +104,7 @@ class NavigationModelTest {
             initialNavigation = backStackNoTabsOf(endNodeOf(Tokyo), endNodeOf(NewYork)),
             stateKType = typeOf<NavigationState<Location, Unit>>(),
             perSista = PerSista(
-                dataDirectory = dataDirectory,
+                dataPath = dataPath,
             ),
         )
 
@@ -139,7 +132,7 @@ class NavigationModelTest {
             ),
             stateKType = typeOf<NavigationState<Location, String>>(),
             perSista = PerSista(
-                dataDirectory = dataDirectory,
+                dataPath = dataPath,
             ),
         )
 
@@ -165,7 +158,7 @@ class NavigationModelTest {
             NavigationModel<Location, Unit>(
                 homeLocation = London,
                 stateKType = typeOf<NavigationState<String, Unit>>(),
-                dataDirectory = dataDirectory
+                dataPath = dataPath,
             )
         } catch (e: Exception) {
             Fore.e(e.message ?: "exception with no message")
@@ -184,7 +177,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Int>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, String>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -225,7 +218,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.addObserver(mockObserver)
 
@@ -234,9 +227,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        verify(atLeast = 1) {
-            mockObserver.somethingChanged()
-        }
+        assertTrue(mockObserver.notifications() > 0)
     }
 
     @Test
@@ -246,7 +237,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -256,9 +247,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        verify(atLeast = 1) {
-            mockObserver.somethingChanged()
-        }
+        assertTrue(mockObserver.notifications() > 0)
     }
 
     @Test
@@ -268,7 +257,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -278,9 +267,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        verify(atLeast = 1) {
-            mockObserver.somethingChanged()
-        }
+        assertTrue(mockObserver.notifications() > 0)
     }
 
     @Test
@@ -290,7 +277,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -304,9 +291,7 @@ class NavigationModelTest {
         Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
-        verify(atLeast = 1) {
-            mockObserver.somethingChanged()
-        }
+        assertTrue(mockObserver.notifications() > 0)
     }
 
     @Test
@@ -316,7 +301,7 @@ class NavigationModelTest {
         var navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -327,7 +312,7 @@ class NavigationModelTest {
         navigationModel = NavigationModel(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         Fore.e(navigationModel.toString(diagnostics = true))
@@ -348,7 +333,7 @@ class NavigationModelTest {
         var navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
 
         // act
@@ -359,7 +344,7 @@ class NavigationModelTest {
         navigationModel = NavigationModel(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
             clearPreviousNavGraph = true,
         )
 
@@ -381,7 +366,7 @@ class NavigationModelTest {
         val navigationModel = NavigationModel<Location, Unit>(
             homeLocation = London,
             stateKType = typeOf<NavigationState<Location, Unit>>(),
-            dataDirectory = dataDirectory
+            dataPath = dataPath,
         )
         navigationModel.navigateTo(Tokyo)
         navigationModel.navigateTo(NewYork)

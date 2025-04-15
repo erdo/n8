@@ -1,33 +1,29 @@
 package co.early.n8
 
-import co.early.fore.kt.core.coroutine.awaitDefault
-import co.early.fore.kt.core.coroutine.launchDefault
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.coroutine.awaitDefault
+import co.early.fore.core.coroutine.launchDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.NestedTestData.Location
 import co.early.n8.NestedTestData.Location.Home
 import co.early.n8.NestedTestData.TabHost
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertNotEquals
 import kotlin.reflect.typeOf
-
+import kotlin.test.BeforeTest
+import okio.Path
+import okio.Path.Companion.toPath
+import okio.SYSTEM
 
 class NavigationImportExportTest {
 
-    private lateinit var dataDirectory: File
+    private val dataPath: Path = "test".toPath()
 
-    @Before
+    @BeforeTest
     fun setup() {
-
         Fore.setDelegate(TestDelegateDefault())
-
-        val dataFolder = TemporaryFolder()
-        dataFolder.create()
-        dataDirectory = dataFolder.newFolder()
+        okio.FileSystem.SYSTEM.deleteRecursively(dataPath)
     }
 
     @Test
@@ -37,7 +33,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         val navigationGraphToExport = backStackOf(
@@ -180,7 +176,7 @@ class NavigationImportExportTest {
                 endNodeOf(Location.C),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         launchDefault {
@@ -259,7 +255,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Location.A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
         val serialized = """
             {
@@ -374,7 +370,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Location.A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
         val serialized = """
             {
@@ -530,7 +526,7 @@ class NavigationImportExportTest {
                 endNodeOf(Location.C),
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         launchDefault {
@@ -609,7 +605,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Location.A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
         val serialized = """
             {
@@ -689,7 +685,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Location.A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
         val serialized = """
             {
@@ -759,7 +755,7 @@ class NavigationImportExportTest {
             }
 
             // assert
-            Assert.assertNotEquals(null, exception)
+            assertNotEquals(null, exception)
         }
     }
 
@@ -771,7 +767,7 @@ class NavigationImportExportTest {
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Location.A,
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
-            dataDirectory = dataDirectory,
+            dataPath = dataPath,
         )
 
         // act
@@ -810,7 +806,6 @@ class NavigationImportExportTest {
         }
 
         // assert
-        Assert.assertNotEquals(null, exception)
+        assertNotEquals(null, exception)
     }
-
 }
