@@ -35,7 +35,7 @@ koin-compose = "io.insert-koin:koin-androidx-compose:3.4.5"
 koin-core = "io.insert-koin:koin-core:3.4.2"
 
 # persistence
-persista = "co.early.persista:persista:2.0.0-rc.1"
+persista = "co.early.persista:persista:2.0.0"
 
 # reactivity / observability
 fore-core = { module = "co.early.fore:fore-core", version.ref = "foreVersion" }

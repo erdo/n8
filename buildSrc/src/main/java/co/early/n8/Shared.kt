@@ -8,7 +8,7 @@ object Shared {
 
     object Publish {
 
-        const val LIB_VERSION_NAME = "1.0.0" //"x.x.x-SNAPSHOT"
+        const val LIB_VERSION_NAME = "2.0.0-rc.1" //"x.x.x-SNAPSHOT"
 
         const val LIB_GROUP = "co.early.n8"
         const val PROJ_NAME = "n8"
