@@ -30,6 +30,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import backInterceptor
 import co.early.fore.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
@@ -71,7 +72,7 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                N8Host { navigationState ->
+                N8Host(onBack = backInterceptor() ) { navigationState ->
 
                     val location = navigationState.currentLocation
                     Fore.i("Latest Location is:$location")

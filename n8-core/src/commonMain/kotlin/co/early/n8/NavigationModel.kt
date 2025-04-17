@@ -453,12 +453,11 @@ class NavigationModel<L : Any, T : Any>(
 
     private fun load() {
 
-        logger.i("load()")
+        logger.d("load()")
 
         if (state.initialLoading) {
             return
         }
-
         state = state.copy(initialLoading = true)
         notifyObservers()
 
