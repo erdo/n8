@@ -45,8 +45,6 @@ fun <L : Any, T : Any> Activity.N8Host(
         if (backEvent.value) {
             val intercepted = onBack?.invoke(navigationState) == true
 
-            Fore.e("backInterceptor() x intercepted:$intercepted")
-
             if (!intercepted) {
                 if (navigationState.canNavigateBack) {
                     navigationModel.navigateBack()
