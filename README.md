@@ -138,7 +138,7 @@ Tell N8 what classes you decided on like this:
 val n8 = NavigationModel<Location, TabHostId>(
     homeLocation = Home,
     stateKType = typeOf<NavigationState<Location, TabHostId>>(),
-    dataDirectory = application.filesDir
+    dataPath = application.filesDir.toOkioPath(),
 )
 ```
 
