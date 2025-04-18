@@ -447,10 +447,14 @@ class NavigationImportExportTest {
      * The following are more of a demo of how to do very basic minimisation of the exported serialised state data, it's a little
      * outside the scope of a navigation library IMO, n8 will export / import a serialized version of it's state, but the client
      * can minify / compress / encrypt / urlEncode that serialized representation as they see fit (for sending to other devices)
+     *
+     * Obviously be careful here, it can become very hacky. but we get quite a big bang for our buck by using basic token
+     * replacement compared with any other compression technique
+     *
+     * I've chosen these tokens for maximum space efficiency, but you might want to choose tokens that are more clear for your
+     * users eg "co.early.n8.NestedTestData.Location.B" to "NEWS". Or if you want to make reverse engineering the deep link
+     * harder, then encrypting / decrypting the deeplink string is a good idea
      */
-
-    // obviously be careful here, it can become very hacky. but we get quite a big bang for our buck by using basic token
-    // replacement compared with any other compression technique
     val tokens = mapOf(
         "co.early.n8.Navigation.EndNode" to "EN",
         "co.early.n8.Navigation.TabHost" to "TH",
