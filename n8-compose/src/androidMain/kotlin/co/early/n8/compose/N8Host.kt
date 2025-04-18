@@ -37,8 +37,14 @@ fun <L : Any, T : Any> Activity.N8Host(
 
     val backEvent = remember { mutableStateOf(false) }
 
-    BackHandler(enabled = true) {
-        backEvent.value = true
+    if (onBack == null){
+        BackHandler(navigationState.canNavigateBack) {
+            navigationModel.navigateBack()
+        }
+    } else {
+        BackHandler(enabled = true) {
+            backEvent.value = true
+        }
     }
 
     LaunchedEffect(backEvent.value) {
