@@ -79,6 +79,11 @@ android {
 
     compileSdk = libs.versions.androidCompileSdk.get().toInt()
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.valueOf("VERSION_${libs.versions.jvm.target.get().replace(".", "_")}")
+        targetCompatibility = JavaVersion.valueOf("VERSION_${libs.versions.jvm.target.get().replace(".", "_")}")
+    }
+
     lint {
         abortOnError = true
         lintConfig = File(project.rootDir, "lint-library.xml")
@@ -104,6 +109,14 @@ android {
     publishing {
         singleVariant("release") {
             withSourcesJar()
+        }
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (name.contains("android", ignoreCase = true)) {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvm.target.get()))
         }
     }
 }
