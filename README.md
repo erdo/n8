@@ -36,7 +36,7 @@ n8.navigateBack() { /* with optional data */ }
 n8.switchTab(MainTabs) /* add MainTabs if not yet added */
 n8.navigateTo(Seoul)  /* continue in MainTabs */
 n8.switchTab(2)
-n8.navigateTo(Hanoi(holdBags = 2)) /* navigate to Hanoi with data
+n8.navigateTo(Hanoi(holdBags = 2)) /* navigate to Hanoi with data */
 
 n8.switchTab(SettingsTab) /* add SettingsTab, nested inside MainTabs */
 n8.switchTab(1)  /* continue in SettingsTab, from inside tabIndex 2 of MainTabs */
