@@ -2,20 +2,18 @@
 
 ⚠️help welcomed 🙏(check the issues) ⚠️
 
-Now we're at 1.0.0 the API should be stable, the next piece of work is to move this to a KMP lib for
-version 2
+- There are two samples in the repo that will make things clearer: one android, one KMP(android/ios)
+- There are also a large number of unit tests which define N8 behaviour and they are good place to understand what N8 does under what situations and logs the results
 
 ![example app screenshot landscape view](example-app/screenshot-land.png)
 
-Clone the repo and run the sample app... (that's the quickest way to understand what's going on here). Check App.kt, Activity.kt, CustomNavigationExt.kt files
-
 ### Quick Start
 
-The second quickest way to grok this is to see the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe)
+See the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe) for an intro
 
 ``` kotlin
-implementation("co.early.n8:n8-core:1.0.0")
-implementation("co.early.n8:n8-compose:1.0.0")
+implementation("co.early.n8:n8-core:2.0.0-rc.1")
+implementation("co.early.n8:n8-compose:2.0.0-rc.1")
 ```
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
