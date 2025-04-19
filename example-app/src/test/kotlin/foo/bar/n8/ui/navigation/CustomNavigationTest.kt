@@ -1,7 +1,7 @@
 package foo.bar.n8.ui.navigation
 
-import co.early.fore.kt.core.delegate.Fore
-import co.early.fore.kt.core.delegate.TestDelegateDefault
+import co.early.fore.core.delegate.Fore
+import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.backStackOf
 import co.early.n8.endNodeOf
 import co.early.n8.tabsOf
