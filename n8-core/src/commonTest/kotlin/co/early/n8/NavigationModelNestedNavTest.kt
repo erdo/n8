@@ -38,6 +38,15 @@ class NavigationModelNestedNavTest {
 
     private val dataPath: Path = "test".toPath()
 
+    private fun <T> NavigationModel<Location, TabHost>.beforeAndAfterLog(action: () -> T): T {
+        Fore.i("\n\n******** state BEFORE action ********\n")
+        Fore.i(toString(diagnostics = true)) // state before
+        val result: T = action()
+        Fore.i("\n\n******** state AFTER action ********\n")
+        Fore.i(toString(diagnostics = true)) // state after
+        return result
+    }
+
     @BeforeTest
     fun setup() {
         Fore.setDelegate(TestDelegateDefault())
@@ -56,9 +65,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -83,9 +92,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
-
-        Fore.i(navigationModel.toString())
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -205,8 +214,10 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X1)
         navigationModel.navigateTo(location = X2)
         navigationModel.navigateTo(location = X3)
-        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
-        Fore.i(navigationModel.toString(diagnostics = true))
+
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -300,13 +311,10 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X2)
         navigationModel.navigateTo(location = X3)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
-
-        navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
-
-        navigationModel.navigateBack()
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
+            navigationModel.navigateBack()
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -405,9 +413,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpecX123)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecX123)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -449,9 +457,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpecX123, tabIndex = 0)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecX123, tabIndex = 0)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -508,9 +516,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpecX123)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecX123)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -540,9 +548,9 @@ class NavigationModelNestedNavTest {
 
         // act
         navigationModel.navigateTo(E) { null }
-        navigationModel.switchTab(tabHostSpecAbc, tabIndex = 2)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecAbc, tabIndex = 2)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -570,9 +578,9 @@ class NavigationModelNestedNavTest {
 
         // act
         navigationModel.navigateTo(E) { null }
-        navigationModel.switchTab(tabHostSpecAbcStructural, tabIndex = 2)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecAbcStructural, tabIndex = 2)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -598,9 +606,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 1)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 1)
+        }
 
         // assert
         assertEquals(true, success)
@@ -653,9 +661,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 1)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 1)
+        }
 
         // assert
         assertEquals(true, success)
@@ -683,9 +691,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 2)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 2)
+        }
 
         // assert
         assertEquals(true, success)
@@ -712,9 +720,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(C)
 
         // act
-        val success = navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 0)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 0)
+        }
 
         // assert
         assertEquals(true, success)
@@ -742,9 +750,9 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpecAbcClear, tabIndex = 1)
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 0)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 0)
+        }
 
         // assert
         assertEquals(true, success)
@@ -773,9 +781,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = false)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = false)
+        }
 
         // assert
         assertEquals(true, success)
@@ -803,9 +811,9 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpecAbc, tabIndex = 1)
 
         // act
-        val success = navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = true)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabIndex = 0, clearToTabRootOverride = true)
+        }
 
         // assert
         assertEquals(true, success)
@@ -835,13 +843,13 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X2)
         navigationModel.navigateTo(location = X3)
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
-        navigationModel.switchTab(
-            tabHostSpec = tabHostSpecAbc,
-            tabIndex = 1,
-            clearToTabRootOverride = false
-        )
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(
+                tabHostSpec = tabHostSpecAbc,
+                tabIndex = 1,
+                clearToTabRootOverride = false
+            )
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -870,13 +878,13 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X2)
         navigationModel.navigateTo(location = X3)
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
-        navigationModel.switchTab(
-            tabHostSpec = tabHostSpecAbc,
-            tabIndex = 1,
-            clearToTabRootOverride = true
-        )
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(
+                tabHostSpec = tabHostSpecAbc,
+                tabIndex = 1,
+                clearToTabRootOverride = true
+            )
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1002,9 +1010,10 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 1)
-        navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 0)
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 1)
+            navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 0)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1042,14 +1051,12 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecX12, tabIndex = 0)
         navigationModel.navigateTo(location = B)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
-
         // act
-        navigationModel.navigateBack()
-        navigationModel.navigateBack()
-        navigationModel.navigateBack()
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack()
+            navigationModel.navigateBack()
+            navigationModel.navigateBack()
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1074,9 +1081,9 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
 
         // act
-        navigationModel.navigateTo(location = X1) { null }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(location = X1) { null }
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1108,9 +1115,9 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 0)
 
         // act
-        navigationModel.navigateTo(location = X2) { null }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(location = X2) { null }
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1139,9 +1146,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = Y3)
 
         // act
-        navigationModel.navigateTo(location = F) { tabHostSpecAbcStructural }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(location = F) { tabHostSpecAbcStructural }
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1173,12 +1180,10 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = Y2)
         navigationModel.navigateTo(location = Y3)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
-
         // act
-        navigationModel.navigateTo(location = F) { tabHostSpecX12 }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(location = F) { tabHostSpecX12 }
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1215,9 +1220,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        navigationModel.navigateBackTo(A)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(A)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1253,9 +1258,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        navigationModel.navigateBackTo(A)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(A)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1291,9 +1296,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        navigationModel.navigateBackTo(B)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(B)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1322,9 +1327,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(D)
 
         // act
-        navigationModel.navigateBackTo(A)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(A)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1355,7 +1360,9 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.navigateBackTo(C)
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(C)
+        }
 
         Fore.i(navigationModel.toString(diagnostics = true))
 
@@ -1387,9 +1394,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(D)
 
         // act
-        navigationModel.navigateBackTo(A)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(A)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1416,9 +1423,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(D)
 
         // act
-        navigationModel.navigateTo(A, addToHistory = false)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(A, addToHistory = false)
+        }
 
         navigationModel.navigateBackTo(A)
 
@@ -1451,9 +1458,9 @@ class NavigationModelNestedNavTest {
 
         // act
         navigationModel.navigateTo(A, addToHistory = false)
-        navigationModel.navigateBack()
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack()
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1615,7 +1622,6 @@ class NavigationModelNestedNavTest {
             )
         )
 
-
         // act
         navigationModel.reWriteNavigation(navigation = nav, addToHistory = false)
         navigationModel.navigateTo(Z1)
@@ -1665,11 +1671,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(A) { null } // break out to top level
         navigationModel.navigateTo(B)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
-
-        navigationModel.navigateTo(D) { tabHostSpecAbc } // break back to previous tabHost
-
-        Fore.i(navigationModel.toString())
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(D) { tabHostSpecAbc } // break back to previous tabHost
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1722,11 +1726,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(A) { null } // break out to top level
         navigationModel.navigateTo(B)
 
-        Fore.i(navigationModel.toString(diagnostics = true))
-
-        navigationModel.navigateTo(F) { tabHostSpecXyz } // break back to previous tabHost (but it doesn't exist in the backStack)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateTo(F) { tabHostSpecXyz } // break back to previous tabHost (but it doesn't exist in the backStack)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1761,9 +1763,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        navigationModel.navigateBack(times = 3)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack(times = 3)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1799,9 +1801,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(F)
 
         // act
-        navigationModel.navigateBack(times = 3)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack(times = 3)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1830,9 +1832,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(D)
 
         // act
-        navigationModel.navigateBack(times = 4)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack(times = 4)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1877,19 +1879,19 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.navigateBack(
-            times = 2
-        ) {
-            when (it) {
-                is Z3 -> {
-                    it.copy(id = 123)
-                }
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBack(
+                times = 2
+            ) {
+                when (it) {
+                    is Z3 -> {
+                        it.copy(id = 123)
+                    }
 
-                else -> it
+                    else -> it
+                }
             }
         }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1917,9 +1919,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X1) { null }
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1932,7 +1934,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost we are already in, mutation occurs to the same place`() {
+    fun `when navigating back to tabHost we are already in, nothing changes`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1949,9 +1951,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1981,9 +1983,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc, addToHistory = false)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc, addToHistory = false)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -2015,9 +2017,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -2044,17 +2046,17 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X1) { null }
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3) {
-            when (it) {
-                is Z3 -> {
-                    it.copy(id = 123)
-                }
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3) {
+                when (it) {
+                    is Z3 -> {
+                        it.copy(id = 123)
+                    }
 
-                else -> it
+                    else -> it
+                }
             }
         }
-
-        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -2081,9 +2083,9 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X1) { null }
 
         // act
-        navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3, addToHistory = false)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecZ3, addToHistory = false)
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -2095,5 +2097,4 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
     }
-
 }
