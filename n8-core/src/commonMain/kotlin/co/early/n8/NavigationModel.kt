@@ -493,6 +493,16 @@ class NavigationModel<L : Any, T : Any>(
         navigateTo(location, addToHistory, tabHostTarget)
     }
 
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateTo(location: L, addToHistory: Boolean) {
+        navigateTo(location, addToHistory, null)
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateTo(location: L) {
+        navigateTo(location, true, null)
+    }
+
     private fun navigateTo(
         location: L,
         addToHistory: Boolean = true,
@@ -575,8 +585,9 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     /**
-     * If the tabHosSpec is not specified, the nearest hosting tabHost will be used i.e. the value we get from
-     * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail.
+     * If the tabHostSpec is not specified, the nearest hosting tabHost will be used i.e. the value we get from
+     * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail (the function
+     * will return false).
      *
      * Depending on how your structure your client code, consider always specifying the tabHostSpec - in that case
      * if the tabHost does not already exist in the navigation graph, n8 can create it in place. This style is also
@@ -701,6 +712,28 @@ class NavigationModel<L : Any, T : Any>(
         return true
     }
 
+    /** for kmp swift benefit (where default values don't work) **/
+    fun switchTab(
+        tabHostSpec: TabHostSpecification<L, T>,
+    ): Boolean {
+        return switchTab(tabHostSpec, null, null)
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun switchTab(
+        tabIndex: Int,
+    ): Boolean {
+        return switchTab(null, tabIndex, null)
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun switchTab(
+        tabHostSpec: TabHostSpecification<L, T>,
+        tabIndex: Int,
+    ): Boolean {
+        return switchTab(tabHostSpec, tabIndex, null)
+    }
+
     private fun requireValidTabHostClass(tabHostSpec: TabHostSpecification<L, T>) {
         if (!tabHostClassChecked) {
             try {
@@ -739,6 +772,10 @@ class NavigationModel<L : Any, T : Any>(
      * set data on the new location before it is set as the new currentLocation of the navigation
      * graph
      *
+     * @addToHistory - set this to false in the unlikely event that you want to navigate back to a
+     * location, and ALSO don't want that location added to history when the user next navigates
+     * away from that location. Defaults to true which is the usual behaviour
+     *
      * returns false if we were not able to go back the requested number of times (i.e. we reached
      * the home location first, the state will be updated with the home location as current)
      */
@@ -775,6 +812,24 @@ class NavigationModel<L : Any, T : Any>(
         return backUpSuccessful
     }
 
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBack(times: Int, addToHistory: Boolean): Boolean {
+        return navigateBack(times, addToHistory, { it })
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBack(times: Int): Boolean {
+        return navigateBack(times, true, { it })
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBack(): Boolean {
+        return navigateBack(1, true, { it })
+    }
+
+    /**
+     * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before passing it in
+     */
     fun navigateBackTo(location: L, addToHistory: Boolean = true) {
         logger.d("navigateBackTo() location:$location addToHistory:$addToHistory")
 
@@ -816,6 +871,19 @@ class NavigationModel<L : Any, T : Any>(
         }
     }
 
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBackTo(location: L) {
+        return navigateBackTo(location, true)
+    }
+
+    /**
+     * Sometimes you might not know which specific Location you want to navigate back to (e.g. Audio settings,
+     * Video Settings or Account Settings), you just know you want to navigate back to a specific tabHost
+     * (e.g. TabHostId.Settings). With this function you will land on whatever location is current on the tabHost
+     * requested (providing that tabHost exists in the backStack)
+     *
+     * If the TabHostId is not found in the navigation graph, it will be create in place instead
+     */
     fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true, setData: (L) -> L = { it }) {
         logger.d("navigateBackTo() tabHostId:${tabHostSpec.tabHostId} addToHistory:$addToHistory")
 
@@ -898,6 +966,21 @@ class NavigationModel<L : Any, T : Any>(
         }
     }
 
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean) {
+        return navigateBackTo(tabHostSpec, addToHistory, { it })
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, setData: (L) -> L = { it }) {
+        return navigateBackTo(tabHostSpec, true, setData)
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>) {
+        return navigateBackTo(tabHostSpec, true, { it })
+    }
+
     private fun setDataOnCurrentLocation(
         currentItem: EndNode<L, T>,
         setData: (L) -> L = { it },
@@ -933,6 +1016,11 @@ class NavigationModel<L : Any, T : Any>(
                 comingFrom = state.currentLocation,
             )
         )
+    }
+
+    /** for kmp swift benefit (where default values don't work) **/
+    fun reWriteNavigation(navigation: Navigation<L, T>) {
+        reWriteNavigation(navigation, true)
     }
 
     override fun toString(): String {
