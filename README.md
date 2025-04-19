@@ -132,7 +132,7 @@ sealed class TabHostId {
 }
 ```
 
-Tell N8 what classes you decided on like this:
+Tell N8 what classes you decided on, like this from android:
 
 ``` kotlin
 val n8 = NavigationModel<Location, TabHostId>(
@@ -141,6 +141,7 @@ val n8 = NavigationModel<Location, TabHostId>(
     dataPath = application.filesDir.toOkioPath(),
 )
 ```
+(For KMP the dataPath differs based on platform, see the KMP example app in this repo)
 
 The navigationModel is observable so that your code can remain informed of any navigation
 operations as they happen, but for Compose there is a wrapper that does this whilst handling
