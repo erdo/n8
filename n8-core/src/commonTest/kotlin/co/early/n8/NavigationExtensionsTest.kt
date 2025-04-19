@@ -439,7 +439,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes - when mutating to swap EndNode, correct item is swapped`() {
+    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes - when mutating to swap EndNode - correct item is swapped`() {
 
         // arrange
         val nav = backStackOf<Location, Unit>(
@@ -463,7 +463,7 @@ class NavigationExtensionsTest {
     }
 
     @Test
-    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes, when mutating to swap EndNode with ensureOnHistoryPath=true, correct item is swapped`() {
+    fun `given an EndNode with a parent BackStack that contains multiple identical EndNodes - when mutating to swap EndNode with ensureOnHistoryPath=true - correct item is swapped`() {
 
         // arrange
         val nav = backStackOf<Location, Unit>(

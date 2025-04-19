@@ -682,7 +682,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when deserializing a navigation graph with duplicate tabHostIds, exception is thrown`() {
+    fun `when deserializing a navigation graph with duplicate tabHostIds - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
@@ -764,7 +764,7 @@ class NavigationImportExportTest {
     }
 
     @Test
-    fun `when rewriting with a navigation graph with duplicate tabHostIds, exception is thrown`() {
+    fun `when rewriting with a navigation graph with duplicate tabHostIds - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null

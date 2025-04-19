@@ -33,7 +33,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigating forward, back stack is added to`() {
+    fun `when navigating forward - back stack is added to`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Int>(
@@ -58,7 +58,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigating back with room, location is reverted & returns true`() {
+    fun `when navigating back with room - location is reverted and returns true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -82,7 +82,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigating back with no room, location is not changed & returns false`() {
+    fun `when navigating back with no room - location is not changed and returns false`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -105,7 +105,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigating from the home location with addHomeLocationToHistory=false, the home location is not added to history`() {
+    fun `when navigating from the home location with addHomeLocationToHistory=false - the home location is not added to history`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -128,7 +128,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigating forward with addToHistory set to false, location is not added to history`() {
+    fun `when navigating forward with addToHistory set to false - location is not added to history`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -152,7 +152,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when navigating back - addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -178,7 +178,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back to x, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when navigating back to x - addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -204,7 +204,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back to the same location, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when navigating back to the same location - addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -230,7 +230,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when rewriting path, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when rewriting path - addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -260,7 +260,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack() is called, back stack is cleared`() {
+    fun `when navigateBack is called - back stack is cleared`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -286,7 +286,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack() is called with addToHistory=false, flag is updated`() {
+    fun `when navigateBack is called with addToHistory=false - flag is updated`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -313,7 +313,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack() is called with times=3, back stack is cleared three times`() {
+    fun `when navigateBack is called with times=3 - back stack is cleared three times`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -339,7 +339,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given the backstack is only 3 items long, when navigateBack is called with times=5, back stack is cleared to home item`() {
+    fun `given the backstack is only 3 items long - when navigateBack is called with times=5 - back stack is cleared to home item`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -363,7 +363,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location is visited twice, both entries are added to navigation back stack`() {
+    fun `given location is visited twice - both entries are added to navigation back stack`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -390,7 +390,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location has been previously visited, when navigating back to it, back stack is cleared forward from that point`() {
+    fun `given location has been previously visited - when navigating back to it - back stack is cleared forward from that point`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -415,7 +415,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location has been visited twice before, when navigating back to it, the most recent entry becomes the current page`() {
+    fun `given location has been visited twice before - when navigating back to it - the most recent entry becomes the current page`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -442,7 +442,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location is the Paris addToHistory = true, when navigating back to Paris with addToHist = false, history status is updated`() {
+    fun `given location is the Paris addToHistory = true - when navigating back to Paris with addToHist = false - history status is updated`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -468,7 +468,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given current location is the Paris addToHistory = false, when navigating back to Paris, location not found`() {
+    fun `given current location is the Paris addToHistory = false - when navigating back to Paris - location not found`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -495,7 +495,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location has NOT been previously visited, when navigating BACK to it, navigate forward to the location as normal`() {
+    fun `given location has NOT been previously visited - when navigating BACK to it - navigate forward to the location as normal`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -519,7 +519,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given location is the current page, when navigating back to it, new location is swapped for current location`() {
+    fun `given location is the current page - when navigating back to it - new location is swapped for current location`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -545,7 +545,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBackTo is called with the same location as homepage, all other locations are cleared and the homepage is swapped`() {
+    fun `when navigateBackTo is called with the same location as homepage - all other locations are cleared and the homepage is swapped`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -571,7 +571,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when rewriting back stack, back stack is replaced`() {
+    fun `when rewriting back stack - back stack is replaced`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -601,7 +601,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when rewriting back stack with addToHistory = false, back stack is replaced`() {
+    fun `when rewriting back stack with addToHistory = false - back stack is replaced`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -629,7 +629,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack is called with setData, final location receives data`() {
+    fun `when navigateBack is called with setData - final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -664,7 +664,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack is called with times = 2 and setData, final location receives data`() {
+    fun `when navigateBack is called with times = 2 and setData - final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -702,7 +702,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `when navigateBack is called with times = 3 and setData, but only room for 2 backs, final location receives data`() {
+    fun `when navigateBack is called with times = 3 and setData - but only room for 2 backs - final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -738,7 +738,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given we are already on the home location, when navigateBack is called, false is returned`() {
+    fun `given we are already on the home location - when navigateBack is called - false is returned`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -757,7 +757,7 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
-    fun `given we are not on the home location, when navigateBack is called, true is returned`() {
+    fun `given we are not on the home location - when navigateBack is called - true is returned`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(

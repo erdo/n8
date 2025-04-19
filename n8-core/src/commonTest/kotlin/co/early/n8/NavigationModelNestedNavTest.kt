@@ -54,7 +54,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating straight to a TabHost from the home location with addHomeLocationToHistory=false, the home location is not added to history`() {
+    fun `when navigating straight to a TabHost from the home location with addHomeLocationToHistory=false - the home location is not added to history`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -82,7 +82,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating to a new TabHost, the TabHost is setup correctly`() {
+    fun `when navigating to a new TabHost - the TabHost is setup correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -108,7 +108,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a tab, backstack is maintained correctly`() {
+    fun `when navigating within a tab - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -138,7 +138,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a tab, then navigating back, backstack is maintained correctly`() {
+    fun `when navigating within a tab - then navigating back - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -168,7 +168,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back out of a tab, backstack is maintained correctly`() {
+    fun `when navigating back out of a tab - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -200,7 +200,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a tab, then switching tabs, backstack is maintained correctly`() {
+    fun `when navigating within a tab - then switching tabs - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -231,7 +231,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a tab, switching tabs, then navigating back, backstack is maintained correctly`() {
+    fun `when navigating within a tab - switching tabs - then navigating back - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -263,7 +263,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a structural tab, then switching tabs, backstack is maintained correctly`() {
+    fun `when navigating within a structural tab - then switching tabs - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -296,7 +296,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating within a structural tab, switching tabs, then navigating back, backstack is maintained correctly`() {
+    fun `when navigating within a structural tab - switching tabs - then navigating back - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -326,7 +326,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to an implicit tab from outside a tabHost, no mutation occurs`() {
+    fun `when switching to an implicit tab from outside a tabHost - no mutation occurs`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -354,7 +354,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a tab but not specifying tabHost or tabIndex, exception thrown`() {
+    fun `when switching to a tab but not specifying tabHost or tabIndex - exception thrown`() {
 
         // arrange
         var exceptionMessage : String? = null
@@ -387,7 +387,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a tab which doesn't already exist and not specifying a tabIndex, default tab index is used`() {
+    fun `when switching to a tab which doesn't already exist and not specifying a tabIndex - default tab index is used`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -431,7 +431,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a tab which doesn't already exist and specifying a tabIndex, specified tab index is used`() {
+    fun `when switching to a tab which doesn't already exist and specifying a tabIndex - specified tab index is used`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -475,7 +475,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a tab which does already exist and not specifying a tabIndex, tab index is left unchanged`() {
+    fun `when switching to a tab which does already exist and not specifying a tabIndex - tab index is left unchanged`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -534,7 +534,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a Temporal TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+    fun `when switching to a Temporal TabHost which does already exist and specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -564,7 +564,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a Structural TabHost which does already exist and specifying a tabIndex, mutation is correct`() {
+    fun `when switching to a Structural TabHost which does already exist and specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -594,7 +594,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a Temporal TabHost and only specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -623,7 +623,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a nested Temporal TabHost and only specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a nested Temporal TabHost and only specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -681,7 +681,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a Structural TabHost and only specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a Structural TabHost and only specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -708,7 +708,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a TabHost with a clearToRoot flag and specifying the tabHostSpec and tabIndex, mutation is correct`() {
+    fun `when switching within a TabHost with a clearToRoot flag and specifying the tabHostSpec and tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -737,7 +737,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a TabHost with a clearToRoot flag and only specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a TabHost with a clearToRoot flag and only specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -767,7 +767,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a TabHost but overriding a clearToRoot flag to false and specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a TabHost but overriding a clearToRoot flag to false and specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -798,7 +798,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching within a TabHost but overriding a clearToRoot flag to true and specifying a tabIndex, mutation is correct`() {
+    fun `when switching within a TabHost but overriding a clearToRoot flag to true and specifying a tabIndex - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -828,7 +828,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when returning to previous tab with clearToTabRoot = false, backstack is maintained correctly`() {
+    fun `when returning to previous tab with clearToTabRoot = false - backstack is maintained correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -863,7 +863,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when returning to previous tab with clearToTabRoot = true, the previous tabs history is maintained`() {
+    fun `when returning to previous tab with clearToTabRoot = true - the previous tabs history is maintained`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -898,7 +898,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when repeatedly switching tabs, tab visit history is stored only once for each tab`() {
+    fun `when repeatedly switching tabs - tab visit history is stored only once for each tab`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -940,7 +940,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating to a different tab with a tabIndex which is too high, fails`() {
+    fun `when navigating to a different tab with a tabIndex which is too high - fails`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -967,7 +967,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating to a different tab with a tabIndex which is too low, fails`() {
+    fun `when navigating to a different tab with a tabIndex which is too low - fails`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -991,7 +991,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given a tabbed initial navigation, creating an additional nested tab succeeds`() {
+    fun `given a tabbed initial navigation - creating an additional nested tab succeeds`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1030,7 +1030,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given a nested tab, navigating back out of the inner tab succeeds`() {
+    fun `given a nested tab - navigating back out of the inner tab succeeds`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1070,7 +1070,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given top level nav is BackStack, when navigating forward by breaking to top level, navigation history is correct`() {
+    fun `given top level nav is BackStack - when navigating forward by breaking to top level - navigation history is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1095,7 +1095,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given top level nav is TabHost, when navigating forward by breaking to top level, navigation history is correct`() {
+    fun `given top level nav is TabHost - when navigating forward by breaking to top level - navigation history is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1129,7 +1129,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating forward by breaking to an outer tabHost, navigation history is correct`() {
+    fun `when navigating forward by breaking to an outer tabHost - navigation history is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1164,7 +1164,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating forward by breaking to an outer tabHost which is not found, creates that TabHost in place`() {
+    fun `when navigating forward by breaking to an outer tabHost which is not found - creates that TabHost in place`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1198,7 +1198,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists on back path inside tab, backTo target navigates to target`() {
+    fun `given target exists on back path inside tab - backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0),
@@ -1236,7 +1236,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists in another tab index, and is on back path, backTo target navigates to target`() {
+    fun `given target exists in another tab index - and is on back path - backTo target navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0, 1),
@@ -1274,7 +1274,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists in another tab, but is not on back path, using backTo target behaves as if target is not present`() {
+    fun `given target exists in another tab - but is not on back path - using backTo target behaves as if target is not present`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0),
@@ -1312,7 +1312,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists outside of tab, but still on back path, backTo target from within tab navigates to target`() {
+    fun `given target exists outside of tab - but still on back path - backTo target from within tab navigates to target`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -1341,7 +1341,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given current location is at ROOT of tabHost, and backTo target does not exist, target is navigated to in current tab index`() {
+    fun `given current location is at ROOT of tabHost - and backTo target does not exist - target is navigated to in current tab index`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0, 1),
@@ -1378,7 +1378,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target has been visited twice before, when navigating back to it from within a tab, the most recent target is chosen`() {
+    fun `given target has been visited twice before - when navigating back to it from within a tab - the most recent target is chosen`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -1408,7 +1408,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back to the same location, location is not present`() {
+    fun `given previous location was added with addToHistory = false - when navigating back to the same location - location is not present`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -1442,7 +1442,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when navigating back, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when navigating back - addToHistory is set back to true`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -1473,7 +1473,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given previous location was added with addToHistory = false, when rewriting navigation state with nested graph, addToHistory is set back to true`() {
+    fun `given previous location was added with addToHistory = false - when rewriting navigation state with nested graph - addToHistory is set back to true`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, String>(
@@ -1529,7 +1529,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when rewriting navigation state with nested graph, state is replaced correctly`() {
+    fun `when rewriting navigation state with nested graph - state is replaced correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, String>(
@@ -1584,7 +1584,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when rewriting navigation graph with a history including tabHosts with willBeAddedToHistory=false, state is replaced correctly`() {
+    fun `when rewriting navigation graph with a history including tabHosts with willBeAddedToHistory=false - state is replaced correctly`() {
         // arrange
         val navigationModel = NavigationModel<Location, String>(
             homeLocation = Home,
@@ -1639,7 +1639,7 @@ class NavigationModelNestedNavTest {
 
 
     @Test
-    fun `when navigating to a previous TabHost in history, from outside that TabHost, navigates correctly`() {
+    fun `when navigating to a previous TabHost in history - from outside that TabHost - navigates correctly`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1688,7 +1688,7 @@ class NavigationModelNestedNavTest {
 
 
     @Test
-    fun `when navigating to a previous TabHost outside of history, from outside that TabHost, navigates and sets current`() {
+    fun `when navigating to a previous TabHost outside of history - from outside that TabHost - navigates and sets current`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1741,7 +1741,7 @@ class NavigationModelNestedNavTest {
 
 
     @Test
-    fun `given target exists on back path inside tab, back times=3 navigates to target`() {
+    fun `given target exists on back path inside tab - back times=3 navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0),
@@ -1779,7 +1779,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists in another tab index, and is on back path, back times=3 navigates to target`() {
+    fun `given target exists in another tab index - and is on back path - back times=3 navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(
             tabHistory = listOf(0, 1),
@@ -1817,7 +1817,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `given target exists outside of tab, but still on back path, back times=4 from within tab navigates to target`() {
+    fun `given target exists outside of tab - but still on back path - back times=4 from within tab navigates to target`() {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             homeLocation = Home,
@@ -1846,7 +1846,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigateBack times=2 is called with setData on a nested graph, final location receives data`() {
+    fun `when navigateBack times=2 is called with setData on a nested graph - final location receives data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1903,7 +1903,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost from outside of tabHost, mutation is correct`() {
+    fun `when navigating back to tabHost from outside of tabHost - mutation is correct`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1934,7 +1934,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost we are already in, nothing changes`() {
+    fun `when navigating back to tabHost we are already in - nothing changes`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1966,7 +1966,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost, from within nested tabHost, graph is updated with new data`() {
+    fun `when navigating back to tabHost - from within nested tabHost - graph is updated with new data`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -2000,7 +2000,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost which is not found, creates that TabHost in place`() {
+    fun `when navigating back to tabHost which is not found - creates that TabHost in place`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -2070,7 +2070,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to TabHost and setting addToHistory=false, flag is set`() {
+    fun `when navigating back to TabHost and setting addToHistory=false - flag is set`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(

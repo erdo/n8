@@ -1,7 +1,6 @@
 package co.early.n8
 
 import MockObserver
-import co.early.fore.core.observer.Observer
 import co.early.fore.core.delegate.Fore
 import co.early.fore.core.delegate.TestDelegateDefault
 import co.early.n8.LinearTestData.Location
@@ -148,7 +147,7 @@ class NavigationModelTest {
     }
 
     @Test
-    fun `when instantiating with the wrong Location KType, exception is thrown`() {
+    fun `when instantiating with the wrong Location KType - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
@@ -170,7 +169,7 @@ class NavigationModelTest {
     }
 
     @Test
-    fun `when adding a tabHost, with the wrong TabHost KType specified in the constructor, exception is thrown`() {
+    fun `when adding a tabHost - with the wrong TabHost KType specified in the constructor - exception is thrown`() {
 
         // arrange
         var exception: Exception? = null
@@ -212,7 +211,7 @@ class NavigationModelTest {
      * expectation that they will be composed a certain number of times)
      */
     @Test
-    fun `when navigating forward, observers are notified`() {
+    fun `when navigating forward - observers are notified`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -231,7 +230,7 @@ class NavigationModelTest {
     }
 
     @Test
-    fun `when navigating back to a previous location, observers are notified`() {
+    fun `when navigating back to a previous location - observers are notified`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -251,7 +250,7 @@ class NavigationModelTest {
     }
 
     @Test
-    fun `when navigating back, observers are notified`() {
+    fun `when navigating back - observers are notified`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
@@ -271,7 +270,7 @@ class NavigationModelTest {
     }
 
     @Test
-    fun `when rewriting back stack, observers are notified`() {
+    fun `when rewriting back stack - observers are notified`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, Unit>(
