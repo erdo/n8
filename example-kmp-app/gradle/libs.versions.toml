@@ -1,0 +1,44 @@
+[versions]
+agp = "8.9.0"
+kotlin = "2.1.10"
+compose = "1.7.8"
+compose-material3 = "1.3.1"
+androidx-activityCompose = "1.10.1"
+foreVersion = "2.0.0"
+persistaVersion = "2.0.0"
+n8Version = "2.0.0-rc.1"
+wearComposeVersion = "1.4.1"
+wearToolingPreviewVersion = "1.0.0"
+jvm-toolchain = "21"
+jvm-target = "1.8"
+
+[libraries]
+okio = "com.squareup.okio:okio:3.10.2"
+fore-core = { module = "co.early.fore:fore-core", version.ref = "foreVersion" }
+fore-net = { module = "co.early.fore:fore-net", version.ref = "foreVersion" }
+fore-compose = { module = "co.early.fore:fore-compose", version.ref = "foreVersion" }
+fore-test-fixtures = { module = "co.early.fore:fore-test-fixtures", version.ref = "foreVersion" }
+persista = { module = "co.early.persista:persista", version.ref = "persistaVersion" }
+n8-core = { module = "co.early.n8:n8-core", version.ref = "n8Version" }
+n8-compose = { module = "co.early.n8:n8-compose", version.ref = "n8Version" }
+kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0"
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+androidx-wear-compose-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "wearComposeVersion" }
+androidx-wear-tooling-preview = { module = "androidx.wear:wear-tooling-preview", version.ref = "wearToolingPreviewVersion" }
+
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinKaptPlugin = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlinSerializationPlugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
