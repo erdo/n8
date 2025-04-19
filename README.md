@@ -2,10 +2,10 @@
 
 ⚠️help welcomed 🙏(check the issues) ⚠️
 
-- There are two samples in the repo that will make things clearer: one android, one KMP(android/ios)
-- There are also a large number of unit tests which define N8 behaviour and they are good place to understand what N8 does under what situations and logs the results
+- There are two sample apps in the repo that will make things clearer: one Android, one KMP(android/ios)
+- There are also a large number of unit tests which define N8 behaviour, and they are good place to understand what N8 does under what situations and logs the results
 
-![example app screenshot landscape view](example-app/screenshot-land.png)
+![example app screenshot landscape view](example-android-app/screenshot-land.png)
 
 ### Quick Start
 
