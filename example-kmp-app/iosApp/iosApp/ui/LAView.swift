@@ -25,17 +25,6 @@ struct LAView: View {
         .background(Color.indigo)
         .navigationTitle("LA")
         .navigationBarTitleDisplayMode(.inline)
-        
-//
-//        VStack {
-//            Text("location: LA")
-//                .font(.system(size: 35, weight: .bold))
-//
-//            Button(action: { navigationModel.navigateBack() }) {
-//                Text("Go back")
-//                    .font(.system(size: 25, weight: .bold))
-//            }
-//        }.padding().background(Color.indigo)
     }
 }
 
