@@ -16,36 +16,36 @@ struct iOSApp: App {
         navigationModel = navModel
     }
     
-	var body: some Scene {
-        
+    var body: some Scene {
         let state = navigationState.state
         
-		WindowGroup {
-            Group {
-                if state.initialLoading {
-                    ProgressView()
-                        .scaleEffect(2)
-                        .padding().tint(.blue)
-                } else {
-                    switch state.currentLocation {
-                    case Location.Bangkok.shared:
-                        BangkokView()
-                    case Location.Dakar.shared:
-                        DakarView()
-                    case Location.LA.shared:
-                        LAView()
-                    default:
-                        Text("Unknown location")
+        WindowGroup {
+            NavigationStack {
+                Group {
+                    if state.initialLoading {
+                        ProgressView()
+                            .scaleEffect(2)
+                            .padding().tint(.blue)
+                    } else {
+                        switch state.currentLocation {
+                        case Location.Bangkok.shared:
+                            BangkokView()
+                        case Location.Dakar.shared:
+                            DakarView()
+                        case Location.LA.shared:
+                            LAView()
+                        default:
+                            Text("Unknown location")
+                        }
                     }
                 }
+                .onAppear {
+                    Fore.Companion().i(message: "initial navigation state initialLoading: \(state.initialLoading)")
+                }
+                .onChange(of: state) { newState in
+                    Fore.Companion().i(message: "navigation state changed initialLoading: \(newState.initialLoading)")
+                }
             }
-            .onAppear {
-                // Log the initial state when view appears
-                Fore.Companion().i(message: "initial navigation state initialLoading: \(state.initialLoading)")
-            }
-            .onChange(of: state) { newState in
-                Fore.Companion().i(message: "navigation state changed initialLoading: \(newState.initialLoading)")
-            }
-		}
-	}
+        }
+    }
 }
