@@ -11,28 +11,23 @@ struct DakarView: View {
     }
     
     var body: some View {
+        
         VStack {
             Text("location: Dakar")
                 .font(.system(size: 35, weight: .bold))
             
-            Button(action: { navigationModel.navigateTo(location: Location.LA.shared) }){
+            NavigationLink {
+                LAView()
+            } label: {
                 Text("Go to LA")
                     .font(.system(size: 25, weight: .bold))
             }
-            Button(action: { navigationModel.navigateBack() }) {
-                Text("Go back")
-                    .font(.system(size: 25, weight: .bold))
-            }
-        }.padding().background(Color.orange)
-            .gesture(
-            DragGesture()
-                .onEnded { gesture in
-                    if gesture.translation.width > 100 {
-                        // Left-to-right swipe (back gesture)
-                        navigationModel.navigateBack()
-                    }
-                }
-            )
+            .padding()
+        }
+        .padding()
+        .background(Color.orange)
+        .navigationTitle("Dakar")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

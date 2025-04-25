@@ -3,7 +3,6 @@ import SwiftUI
 import shared
 
 struct BangkokView: View {
-
     private let navigationModel: NavigationModel<Location, KotlinUnit>
     
     init() {
@@ -15,11 +14,18 @@ struct BangkokView: View {
             Text("location: Bangkok")
                 .font(.system(size: 35, weight: .bold))
             
-            Button(action: { navigationModel.navigateTo(location: Location.Dakar.shared) }){
+            NavigationLink {
+                DakarView()
+            } label: {
                 Text("Go to Dakar")
                     .font(.system(size: 25, weight: .bold))
             }
-        }.padding().background(Color.green)
+            .padding()
+        }
+        .padding()
+        .background(Color.green)
+        .navigationTitle("Bangkok")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -14,12 +14,17 @@ struct LAView: View {
         VStack {
             Text("location: LA")
                 .font(.system(size: 35, weight: .bold))
-
-            Button(action: { navigationModel.navigateBack() }) {
+            
+            Button(action: { navigationModel.navigateBack() }) { // TH: this will do nothing, you should implement a pop, if the navigationModel implements a stack data structure
                 Text("Go back")
                     .font(.system(size: 25, weight: .bold))
+                
             }
-        }.padding().background(Color.indigo)
+        }
+        .padding()
+        .background(Color.indigo)
+        .navigationTitle("LA")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
