@@ -35,7 +35,6 @@ struct iOSApp: App {
 }
 
 
-
 //@main
 //struct MyApp: App {
 //    @StateObject private var sessionManager = SessionManager()

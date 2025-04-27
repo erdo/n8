@@ -25,9 +25,54 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
     var body: some View {
         NavigationStack(path: $path) {
             AnyView(uiBuilder(n8ObservableObject.state))
-            .onChange(of: n8ObservableObject.state) { newState in
-                path.append(newState.currentLocation)
-            }
+                .navigationDestination(for: NavigationState<L, T>.self) { newState in
+                 //   Fore.companion.e(message: "navigationDestination() newState=\(newState)")
+                    AnyView(uiBuilder(newState))
+                }
+        }
+        .onReceive(n8ObservableObject.$state) { newState in // when n8 state changes
+            Fore.companion.e(message:" onReceive() newState:\(newState)")
+            syncPath(with: newState)
+        }
+        .onChange(of: path) { newPath in // for when user swipes back
+            Fore.companion.e(message: "onChange(path) newPath.count=\(newPath.count)")
+            handlePathChange(newPath)
+        }
+    }
+    
+    private func syncPath(with state: NavigationState<L, T>) {
+        
+        Fore.companion.e(message: "syncPath() state:\(state)")
+        
+        var newPath = NavigationPath()
+        
+        //TODO this matching needs to be more complex, we might need a peekBack function in n8...
+        
+        if state.canNavigateBack {
+            newPath.append(state.comingFrom)
+            newPath.append(state.currentLocation)
+        } else {
+            newPath.append(state.currentLocation)
+        }
+        
+  //      withAnimation(.easeInOut) {
+            self.path = newPath
+  //      }
+    }
+    
+    
+    private func handlePathChange(_ newPath: NavigationPath) {
+        
+        Fore.companion.e(message: "handlePathChange() newPath:\(newPath)")
+        
+        let oldCount = path.count
+        let newCount = newPath.count
+
+        //TODO improve this
+        
+        if newCount < oldCount {
+            Fore.companion.e(message: "User navigated back")
+          //  n8ObservableObject.foreModel.navigateBack()
         }
     }
 }
