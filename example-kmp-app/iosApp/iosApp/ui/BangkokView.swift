@@ -13,10 +13,7 @@ struct BangkokView: View {
         VStack {
             Text("location: Bangkok")
                 .font(.system(size: 35, weight: .bold))
-            
-            NavigationLink {
-                DakarView()
-            } label: {
+            Button(action: { navigationModel.navigateTo(location: Location.Dakar.shared) }){
                 Text("Go to Dakar")
                     .font(.system(size: 25, weight: .bold))
             }
