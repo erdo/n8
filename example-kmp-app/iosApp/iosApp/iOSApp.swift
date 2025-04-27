@@ -24,10 +24,10 @@ struct iOSApp: App {
                     }
                 }
                 .onAppear {
-                    Fore.Companion().i(message: "initial navigation state initialLoading: \(navState.initialLoading)")
+                    Fore.Companion().i(message: "(D) --onAppear() state: \(navState)")
                 }
                 .onChange(of: navState) { newState in
-                    Fore.Companion().i(message: "navigation state changed initialLoading: \(newState.initialLoading)")
+                    Fore.Companion().i(message: "(C) --onChange() state: \(newState)")
                 }
             }
         }

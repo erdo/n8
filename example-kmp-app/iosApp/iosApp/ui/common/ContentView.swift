@@ -12,13 +12,13 @@ struct ContentView: View {
     var body: some View {
         switch navState.currentLocation {
             case Location.Bangkok.shared:
-                BangkokView().onAppear { Fore.companion.e(message: "BangkokView() onAppear") }
+                BangkokView().onAppear { Fore.companion.e(message: "BangkokView() onAppear state:\(navState)") }
             case Location.Dakar.shared:
-                DakarView().onAppear { Fore.companion.e(message: "DakarView() onAppear") }
+                DakarView().onAppear { Fore.companion.e(message: "DakarView() onAppear state:\(navState)") }
             case Location.LA.shared:
-                LAView().onAppear { Fore.companion.e(message: "LAView() onAppear") }
+                LAView().onAppear { Fore.companion.e(message: "LAView() onAppear state:\(navState)") }
             default:
-                Text("Unknown location \(navState.currentLocation)").onAppear { Fore.companion.e(message: "Text onAppear") }
+                Text("Unknown location \(navState.currentLocation)").onAppear { Fore.companion.e(message: "Text onAppear state:\(navState)") }
         }
     }
 }
