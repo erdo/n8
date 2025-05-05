@@ -1,5 +1,7 @@
 ## N8 [![circleci](https://circleci.com/gh/erdo/n8.svg?style=svg)](https://circleci.com/gh/erdo/n8)
 
+![n8_logo](n8_logo_400h.png)
+
 ⚠️help welcomed 🙏(check the issues) ⚠️
 
 - There are two sample apps in the repo that will make things clearer: one Android, one KMP(android/ios)
