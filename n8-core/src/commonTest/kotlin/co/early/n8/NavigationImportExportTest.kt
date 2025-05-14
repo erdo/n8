@@ -360,6 +360,8 @@ class NavigationImportExportTest {
             assertEquals(Location.A, navigationModel.state.currentLocation)
             assertEquals(1, navigationModel.state.backsToExit)
             assertEquals(true, navigationModel.state.willBeAddedToHistory)
+            assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+            assertEquals(Location.Y2, deSerializedNav.peekBack?.currentLocation())
         }
     }
 
@@ -439,6 +441,7 @@ class NavigationImportExportTest {
             assertEquals(Location.C, navigationModel.state.currentLocation)
             assertEquals(9, navigationModel.state.backsToExit)
             assertEquals(false, navigationModel.state.willBeAddedToHistory)
+            assertEquals(Location.Y2, navigationModel.state.peekBack?.currentLocation())
         }
     }
 

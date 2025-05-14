@@ -1057,7 +1057,10 @@ class NavigationModel<L : Any, T : Any>(
 
     suspend fun import(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
         @Suppress("UNCHECKED_CAST")
-        val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
+        val deSerializedState = (Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>)
+        val newState = deSerializedState.copy(
+            navigation = deSerializedState.navigation._populateChildParents()
+        )
         newState.navigation._ensureUniqueTabHosts()
         if (setAsState) {
             updateState(newState.copy(comingFrom = state.currentLocation))
