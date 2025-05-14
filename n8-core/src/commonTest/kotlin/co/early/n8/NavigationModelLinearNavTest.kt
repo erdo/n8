@@ -21,6 +21,7 @@ import kotlin.test.BeforeTest
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
+import kotlin.test.AfterTest
 
 class NavigationModelLinearNavTest {
 
@@ -29,6 +30,10 @@ class NavigationModelLinearNavTest {
     @BeforeTest
     fun setup() {
         Fore.setDelegate(TestDelegateDefault())
+    }
+
+    @AfterTest
+    fun cleanup() {
         okio.FileSystem.SYSTEM.deleteRecursively(dataPath)
     }
 
