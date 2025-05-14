@@ -106,6 +106,8 @@ sealed class Navigation<L : Any, T : Any> {
     abstract fun currentItem(): EndNode<L, T>
 
     /**
+     * This is the first Navigation item at the top of the navigation graph and will be a BackStack or a TabHost
+     * Note: this is not the Home location (which will be an EndNode, contained somewhere inside the topItem)
      * This obviously depends on all the parents having already been set correctly
      */
     fun topItem(): Navigation<L, T> {

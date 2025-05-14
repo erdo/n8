@@ -364,11 +364,15 @@ The navigation graph is represented as an immutable tree structure, when N8 logs
 that
 tree structure from top-left to bottom-right, like a file explorer.
 
-The first item is drawn at the
-top-left location, and represents the
-entry into the app, and as the user navigates to different locations in the app, the tree structure
-grows down and right as locations are added in such a way that the user can always find their way
-back to the home location and ultimately to the "exit", by continually pressing back.
+The first item is drawn on the top-left, and represents the entry into the app. As the user navigates 
+to different locations, the tree structure grows down and right as locations are added in such a way 
+that the user can always find their way back to the home location and ultimately to exit the app 
+by continually pressing back.
+
+We call this first item (or the last item before exit as a user navigates back) the "home" location. 
+The home location of a nav graph is not necessarily where the user entered because the graph can
+be arbitrarily re-written. Or the location where the user entered may have been some kind of intro
+screen and never have even been added to the navigation graph in the first place (using `willBeAddedToHistory = false`)
 
 The "current" location represents the screen the user is currently on and is typically towards the
 bottom right of the graph.
@@ -448,8 +452,8 @@ examples, a Navigation item can be one of 3 types:
 
 #### 1. BackStack
 
-A list of other Navigation items. The first item is the one closest to the exit, and for a simple
-navigation graph with no TabHosts, the last item is the current item. A BackStack can contain
+A list of other Navigation items. The _first_ item is the one closest to the exit. And for a simple
+navigation graph with no TabHosts, the _last_ item is the current item. A BackStack can contain
 EndNodes or TabHosts (but can not directly contain other BackStacks)
 
 #### 2. EndNode

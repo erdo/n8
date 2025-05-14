@@ -468,7 +468,7 @@ private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): N
  *
  * @navigation opportunities for navigating back will be looked for from
  * this point in the navigation graph, and up via parents (i.e. ignoring children), therefore
- * clients will typically start by sending currentItem() here
+ * clients will typically start by calling this on currentItem()
  *
  * @returns the complete new navigation graph after the back operation has been
  * performed or null if it was not possible to navigate further back in the graph
