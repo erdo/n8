@@ -994,7 +994,7 @@ class NavigationModel<L : Any, T : Any>(
     fun clearNavigationGraph() {
         updateState(
             NavigationState(
-                navigation = initialNavigation,
+                navigation = initialNavigation._populateChildParents(),
                 willBeAddedToHistory = initialWillBeAddedToHistoryFlag,
                 comingFrom = null,
             )
