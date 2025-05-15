@@ -2,7 +2,7 @@
 
 ![n8_logo](n8_logo_400h.png)
 
-Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
+_*Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API*_
 
 (obviously it also doesn't loose the user's location on config change or process death)
 
