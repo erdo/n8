@@ -9,7 +9,7 @@ Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe an
 ⚠️help welcomed 🙏(check the issues) ⚠️
 
 - There are two sample apps in the repo that will make things clearer: one Android, one KMP(android/ios)
-- There are also a large number of unit tests which define N8 behaviour, and they are good place to understand what N8 does under what situations
+- There are also a large number of unit tests which define N8 behaviour, and log navigation state to the console (which is quite useful to see what is going on)
 
 ![example app screenshot landscape view](example-android-app/screenshot-land.png)
 
