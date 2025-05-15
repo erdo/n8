@@ -38,15 +38,6 @@ class NavigationModelNestedNavTest {
 
     private val dataPath: Path = "test".toPath()
 
-    private fun <T> NavigationModel<Location, TabHost>.beforeAndAfterLog(action: () -> T): T {
-        Fore.i("\n\n******** state BEFORE action ********\n")
-        Fore.i(toString(diagnostics = true)) // state before
-        val result: T = action()
-        Fore.i("\n\n******** state AFTER action ********\n")
-        Fore.i(toString(diagnostics = true)) // state after
-        return result
-    }
-
     @BeforeTest
     fun setup() {
         Fore.setDelegate(TestDelegateDefault())

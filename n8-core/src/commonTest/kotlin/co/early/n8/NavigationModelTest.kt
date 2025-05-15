@@ -8,6 +8,7 @@ import co.early.n8.LinearTestData.Location.EuropeanLocations.London
 import co.early.n8.LinearTestData.Location.EuropeanLocations.Paris
 import co.early.n8.LinearTestData.Location.NewYork
 import co.early.n8.LinearTestData.Location.Tokyo
+import co.early.n8.beforeAndAfterLog
 import co.early.persista.PerSista
 import kotlin.test.assertEquals
 import kotlin.test.Test
