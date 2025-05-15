@@ -589,7 +589,7 @@ class NavigationModel<L : Any, T : Any>(
      * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail (the function
      * will return false).
      *
-     * Depending on how your structure your client code, consider always specifying the tabHostSpec - in that case
+     * Depending on how you structure your client code, consider always specifying the tabHostSpec - in that case
      * if the tabHost does not already exist in the navigation graph, n8 can create it in place. This style is also
      * clearer in the case that the navigation graph has multiple nested TabHosts (n8 always switches on the deepest
      * tabHost in this case)

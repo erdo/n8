@@ -49,6 +49,7 @@ class NavigationModelTest {
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -72,6 +73,7 @@ class NavigationModelTest {
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -93,6 +95,7 @@ class NavigationModelTest {
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -116,6 +119,7 @@ class NavigationModelTest {
         assertEquals(NewYork, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -144,6 +148,7 @@ class NavigationModelTest {
         assertEquals(Paris, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(London, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -323,6 +328,7 @@ class NavigationModelTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(null, navigationModel.state.comingFrom) // comingFrom is not persisted
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
+        assertEquals(London, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -356,6 +362,7 @@ class NavigationModelTest {
         assertEquals(false, navigationModel.state.canNavigateBack)
         assertEquals(null, navigationModel.state.comingFrom) // comingFrom is not persisted
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -371,9 +378,9 @@ class NavigationModelTest {
         navigationModel.navigateTo(NewYork)
 
         // act
-        navigationModel.clearNavigationGraph()
-
-        Fore.e(navigationModel.toString(diagnostics = true))
+        navigationModel.beforeAndAfterLog {
+            navigationModel.clearNavigationGraph()
+        }
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -381,5 +388,6 @@ class NavigationModelTest {
         assertEquals(London, navigationModel.state.currentLocation)
         assertEquals(null, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 }

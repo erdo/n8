@@ -79,6 +79,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals("B", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -105,6 +106,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -135,6 +137,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals("Home>B>X1>X2>X3", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -165,6 +168,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -197,6 +201,7 @@ class NavigationModelNestedNavTest {
         assertEquals(B, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
         assertEquals(true, backedOk)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -228,6 +233,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(X3, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -260,6 +266,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(true, backedOk)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -293,6 +300,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecAbcStructural.tabHostId,navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals("Home>A", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -323,6 +331,7 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.canNavigateBack)
         assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -331,12 +340,11 @@ class NavigationModelNestedNavTest {
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
             initialNavigation = backStackOf(
-                tabsOf(tabHostSpecAbc)
+                endNodeOf(A)
             ),
             stateKType = typeOf<NavigationState<Location, TabHost>>(),
             dataPath = dataPath,
         )
-        navigationModel.navigateTo(D) { null }
 
         // act
         val success = navigationModel.switchTab(tabIndex = 1)
@@ -346,11 +354,64 @@ class NavigationModelNestedNavTest {
         // assert
         assertEquals(false, success)
         assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(1, navigationModel.state.backsToExit)
+        assertEquals(A, navigationModel.state.currentLocation)
+        assertEquals(false, navigationModel.state.canNavigateBack)
+        assertEquals(null, navigationModel.state.comingFrom)
+        assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when switching to a BackStack top level - from inside a tabHost - navigation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = backStackOf(
+                tabsOf(tabHostSpecAbc)
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(D) { null }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(2, navigationModel.state.backsToExit)
         assertEquals(D, navigationModel.state.currentLocation)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when switching to a TabHost top level - from inside that tabHost - navigation is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation = tabsOf(tabHostSpecAbc),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(D) { null }
+
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(D, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -387,7 +448,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when switching to a tab which doesn't already exist and not specifying a tabIndex - default tab index is used`() {
+    fun `when switching to a tab of a TabHost which doesn't already exist and not specifying a tabIndex - default tab index is used`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -428,10 +489,11 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
-    fun `when switching to a tab which doesn't already exist and specifying a tabIndex - specified tab index is used`() {
+    fun `when switching to a tab of a TabHost which doesn't already exist and specifying a tabIndex - specified tab index is used`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -472,10 +534,11 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(0, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
-    fun `when switching to a tab which does already exist and not specifying a tabIndex - tab index is left unchanged`() {
+    fun `when switching to a tab of a TabHost which does already exist and not specifying a tabIndex - tab index is left unchanged`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -531,6 +594,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecX123.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(2, navigationModel.state.hostedBy[1].tabIndex)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -561,6 +625,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -591,6 +656,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -620,6 +686,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -678,6 +745,7 @@ class NavigationModelNestedNavTest {
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
         assertEquals(1, navigationModel.state.hostedBy[1].tabIndex)
         assertEquals("A>B>X1>X3>X2", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(X3, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -705,6 +773,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(2, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -734,6 +803,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -764,6 +834,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -795,6 +866,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(D, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -825,6 +897,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbcClear.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -860,6 +933,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -895,6 +969,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -937,6 +1012,7 @@ class NavigationModelNestedNavTest {
             listOf(0, 2, 1), navigationModel.state.navigation.currentItem().parent
                 ?._isBackStack()?.parent?._isTabHost()!!.tabHistory
         )
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1027,6 +1103,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecX12.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[1].tabIndex)
         assertEquals("A>B>X2>X1", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1067,6 +1144,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1092,6 +1170,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1126,6 +1205,7 @@ class NavigationModelNestedNavTest {
         assertEquals(X1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1161,6 +1241,7 @@ class NavigationModelNestedNavTest {
             tabHostSpecAbcStructural.tabHostId,
             navigationModel.state.hostedBy[0].tabHostId
         )
+        assertEquals(Y3, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1195,6 +1276,7 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(tabHostSpecX12.tabHostId, navigationModel.state.hostedBy[2].tabHostId)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1233,6 +1315,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1271,6 +1354,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1309,6 +1393,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(F, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1338,6 +1423,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(D, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1375,6 +1461,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1405,6 +1492,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(D, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(C, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1421,15 +1509,12 @@ class NavigationModelNestedNavTest {
         navigationModel.switchTab(tabHostSpec = tabHostSpecXyz, tabIndex = 1)
         navigationModel.navigateTo(C)
         navigationModel.navigateTo(D)
+        navigationModel.navigateTo(A, addToHistory = false)
 
         // act
         navigationModel.beforeAndAfterLog {
-            navigationModel.navigateTo(A, addToHistory = false)
+            navigationModel.navigateBackTo(A)
         }
-
-        navigationModel.navigateBackTo(A)
-
-        Fore.i(navigationModel.toString(diagnostics = true))
 
         // assert
         assertEquals(false, navigationModel.state.initialLoading)
@@ -1439,6 +1524,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1470,6 +1556,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(A, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(C, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1526,6 +1613,7 @@ class NavigationModelNestedNavTest {
         assertEquals(Z1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals("A>B>X1>C>D>Y1>E>Y2", navigationModel.state.breadcrumbs.joinToString(">"))
+        assertEquals(E, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1581,6 +1669,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(Z1, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(E, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1635,6 +1724,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(Y2, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(E, navigationModel.state.peekBack?.currentLocation())
     }
 
 
@@ -1684,6 +1774,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(E, navigationModel.state.peekBack?.currentLocation())
     }
 
 
@@ -1721,7 +1812,7 @@ class NavigationModelNestedNavTest {
         )
 
         // act
-        navigationModel.navigateBack() //so TabXyz is not longer on history path
+        navigationModel.navigateBack() //so TabXyz is no longer on history path
         navigationModel.navigateTo(E)
         navigationModel.navigateTo(A) { null } // break out to top level
         navigationModel.navigateTo(B)
@@ -1737,6 +1828,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(B, navigationModel.state.comingFrom)
         assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(C, navigationModel.state.peekBack?.currentLocation())
     }
 
 
@@ -1776,6 +1868,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(0, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1814,6 +1907,7 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(TabHost.TabAbc, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(1, navigationModel.state.hostedBy[0].tabIndex)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1843,6 +1937,7 @@ class NavigationModelNestedNavTest {
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(D, navigationModel.state.comingFrom)
         assertEquals(0, navigationModel.state.hostedBy.size)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1900,6 +1995,7 @@ class NavigationModelNestedNavTest {
         assertEquals(Z3(123), navigationModel.state.currentLocation)
         assertEquals(false, navigationModel.state.canNavigateBack)
         assertEquals(C, navigationModel.state.comingFrom)
+        assertEquals(null, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1931,6 +2027,7 @@ class NavigationModelNestedNavTest {
         assertEquals(X1, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -1959,14 +2056,16 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(8, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
-    fun `when navigating back to tabHost - from within nested tabHost - graph is updated with new data`() {
+    fun `when navigating back to tabHost we are already in with addToHistory false - nothing change apart from addToHistory flag`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -1997,6 +2096,7 @@ class NavigationModelNestedNavTest {
         assertEquals(2, navigationModel.state.hostedBy.size)
         assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -2030,6 +2130,7 @@ class NavigationModelNestedNavTest {
         assertEquals(2, navigationModel.state.hostedBy.size)
         assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(X3, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -2067,6 +2168,7 @@ class NavigationModelNestedNavTest {
         assertEquals(X1, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -2096,5 +2198,6 @@ class NavigationModelNestedNavTest {
         assertEquals(X1, navigationModel.state.comingFrom)
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
 }
