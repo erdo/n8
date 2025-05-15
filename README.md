@@ -2,6 +2,10 @@
 
 ![n8_logo](n8_logo_400h.png)
 
+Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
+
+(obviously it also doesn't loose the user's location on config change or process death)
+
 ⚠️help welcomed 🙏(check the issues) ⚠️
 
 - There are two sample apps in the repo that will make things clearer: one Android, one KMP(android/ios)
@@ -22,8 +26,6 @@ GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC724
 _Note: a legacy or hybrid android app that still uses fragments or multiple activities, can't maintain its back stack in the same stateful manner as a 100% compose app can and therefore won't get much utility from N8_
 
 ### Details
-
-Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API
 
 It's not necessary to specify navigation routes upfront, N8 just builds the navigation graph
 as you go, ensuring that back operations always make sense. These are the main functions your code
