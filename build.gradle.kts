@@ -10,11 +10,11 @@
  *
  * ./gradlew clean
  * ./gradlew publishToMavenLocal
- * ./gradlew publishReleasePublicationToMavenCentralRepository --no-daemon --no-parallel
+ * ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon --no-parallel
  *
  * ./gradlew :buildEnvironment
  *
- * ./gradlew :persista-lib:dependencies
+ * ./gradlew :n8-core:dependencies
  *
  * git tag -a v1.5.9 -m 'v1.5.9'
  * git push origin --tags

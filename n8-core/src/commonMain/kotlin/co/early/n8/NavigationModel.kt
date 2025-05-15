@@ -589,7 +589,7 @@ class NavigationModel<L : Any, T : Any>(
      * hostedBy.last() If hostedBy returns an empty List, then the navigation operation will fail (the function
      * will return false).
      *
-     * Depending on how your structure your client code, consider always specifying the tabHostSpec - in that case
+     * Depending on how you structure your client code, consider always specifying the tabHostSpec - in that case
      * if the tabHost does not already exist in the navigation graph, n8 can create it in place. This style is also
      * clearer in the case that the navigation graph has multiple nested TabHosts (n8 always switches on the deepest
      * tabHost in this case)
@@ -994,7 +994,7 @@ class NavigationModel<L : Any, T : Any>(
     fun clearNavigationGraph() {
         updateState(
             NavigationState(
-                navigation = initialNavigation,
+                navigation = initialNavigation._populateChildParents(),
                 willBeAddedToHistory = initialWillBeAddedToHistoryFlag,
                 comingFrom = null,
             )
@@ -1057,7 +1057,10 @@ class NavigationModel<L : Any, T : Any>(
 
     suspend fun import(serializedNav: String, setAsState: Boolean = true): NavigationState<L, T> {
         @Suppress("UNCHECKED_CAST")
-        val newState = Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>
+        val deSerializedState = (Json.decodeFromString(serializer(stateKType), serializedNav) as NavigationState<L, T>)
+        val newState = deSerializedState.copy(
+            navigation = deSerializedState.navigation._populateChildParents()
+        )
         newState.navigation._ensureUniqueTabHosts()
         if (setAsState) {
             updateState(newState.copy(comingFrom = state.currentLocation))

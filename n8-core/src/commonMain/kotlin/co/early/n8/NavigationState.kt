@@ -3,6 +3,7 @@
 package co.early.n8
 
 import co.early.n8.lowlevel.LowLevelApi
+import co.early.n8.lowlevel._applyOneStepBackNavigation
 import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -48,6 +49,10 @@ data class NavigationState<L : Any, T : Any>(
     }
     val breadcrumbs: List<L> by lazy {
         navigation.topItem().breadcrumbs()
+    }
+    val peekBack: Navigation<L, T>? by lazy {
+        val current = navigation.currentItem()
+        current._applyOneStepBackNavigation()
     }
 }
 
@@ -106,6 +111,8 @@ sealed class Navigation<L : Any, T : Any> {
     abstract fun currentItem(): EndNode<L, T>
 
     /**
+     * This is the first Navigation item at the top of the navigation graph and will be a BackStack or a TabHost
+     * Note: this is not the Home location (which will be an EndNode, contained somewhere inside the topItem)
      * This obviously depends on all the parents having already been set correctly
      */
     fun topItem(): Navigation<L, T> {
