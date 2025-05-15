@@ -14,8 +14,8 @@
 See the [dev.to launch post](https://dev.to/erdo/ive-just-open-sourced-n8-4foe) for an intro
 
 ``` kotlin
-implementation("co.early.n8:n8-core:2.0.0-rc.1")
-implementation("co.early.n8:n8-compose:2.0.0-rc.1")
+implementation("co.early.n8:n8-core:2.0.0-rc.2")
+implementation("co.early.n8:n8-compose:2.0.0-rc.2")
 ```
 GPG fingerprint (for optionally verifying the Maven packages): <strong>5B83EC7248CCAEED24076AF87D1CC9121D51BA24</strong> see repo root for the public certificate.
 
