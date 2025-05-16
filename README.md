@@ -134,7 +134,7 @@ sealed class TabHostId {
 }
 ```
 
-Tell N8 what classes you decided on, like this from android:
+Tell N8 what classes you decided on, like this on android:
 
 ``` kotlin
 val n8 = NavigationModel<Location, TabHostId>(
@@ -379,7 +379,7 @@ screen and never have even been added to the navigation graph in the first place
 The "current" location represents the screen the user is currently on and is typically towards the
 bottom right of the graph.
 
-Here's the state of a very simple linear navigation graph showing that the user entered on the
+Here's the state of a very simple linear navigation graph showing that the user's home location is the
 London screen, and is currently on the Tokyo screen:
 
 ``` kotlin
@@ -398,7 +398,7 @@ unit tests or constructing deep links etc:
 
 ``` kotlin
 backStackOf()
-tabHostOf()
+tabsOf()
 endNodeOf()
 ```
 
@@ -452,23 +452,48 @@ related to the tabHistory list
 Each node of the navigation graph is a Navigation item, and as you've probably noticed from the
 examples, a Navigation item can be one of 3 types:
 
-#### 1. BackStack
-
-A list of other Navigation items. The _first_ item is the one closest to the exit. And for a simple
-navigation graph with no TabHosts, the _last_ item is the current item. A BackStack can contain
-EndNodes or TabHosts (but can not directly contain other BackStacks)
-
-#### 2. EndNode
+#### 1. EndNode
 
 Contains a single location only. The currentItem is always an EndNode. An EndNode is always
 contained inside a BackStack. The very top left of the Navigation graph nearest the exit is never
 an unwrapped EndNode (it will always be found inside a BackStack, and sometimes that will be inside
 a TabHost)
 
+``` kotlin
+endNodeOf(MyAccount)
+```
+
+#### 2. BackStack
+
+A list of other Navigation items. The _first_ item is the one closest to the exit. And for a simple
+navigation graph with no TabHosts, the _last_ item is the current item. A BackStack can contain
+EndNodes or TabHosts (but can not directly contain other BackStacks)
+
+``` kotlin
+backStackOf(
+    endNodeOf(MyAccount),
+    endNodeOf(Settings),
+    tabsOf(...)
+)
+```
+
 #### 3. TabHost
 
 Contains a list of BackStacks only (each Tab is represented as a BackStack). A TabHost cannot
 directly contain either EndNodes or other TabHosts
+
+``` kotlin
+tabsOf(
+    tabHistory = listOf(0),
+    tabHostId = TABHOST_SETTINGS,
+    backStackOf(
+        endNodeOf(AudioSettings),
+    ),
+    backStackOf(
+        endNodeOf(VideoSettings),
+    )
+)
+```
 
 #### Logging the state
 
@@ -508,7 +533,7 @@ navigationModel.navigateTo(Madrid)
 
 ``` kotlin
 /**
- * to break out of the BackStack of the current TabHost (TAB_HOST_SETTINGS say) and continue in
+ * to break out of the current TabHost (TAB_HOST_SETTINGS say) and continue in
  * the TabHost parent identified by TAB_HOST_MAIN
  *
 navigationModel.navigateTo(Tokyo) { "TAB_HOST_MAIN" }
@@ -516,7 +541,7 @@ navigationModel.navigateTo(Tokyo) { "TAB_HOST_MAIN" }
 
 ``` kotlin
 /**
- * to break out of the BackStack of the current TabHost (TAB_HOST_SETTINGS say) and continue in
+ * to break out of the current TabHost (TAB_HOST_SETTINGS say) and continue in
  * the top level navigation (which may be a TabHost or a plain BackStack)
  *
 navigationModel.navigateTo(location = SignOutScreen) { null }
@@ -555,7 +580,7 @@ tabsOf(
 ```
 
 **Structural** back navigation here would mean that when the
-user presses back, they would visit the previously visited locations in this tab only, and then
+user presses back, they would visit the previously visited locations in the current tab only, and then
 exit the app (so in the above example, 3 clicks back to exit: Shanghai -> Mumbai -> London -> exit)
 
 By **Temporal** we mean something more like a time based history. Let's take the example from above, a
