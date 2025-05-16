@@ -1,6 +1,5 @@
 package com.kmpfoo.ui.navigation
 
-
 import co.early.fore.core.delegate.Fore
 import co.early.fore.core.logging.MultiplatformLogger
 import co.early.n8.N8
@@ -17,8 +16,8 @@ fun createNavigation(application: Any? = null) {
         homeLocation = Location.Bangkok,
         stateKType = typeOf<NavigationState<Location, Unit>>(),
         dataPath = dataPath(application),
-        logger = MultiplatformLogger("n8")
-        // clearPreviousNavGraph = true
+        logger = MultiplatformLogger("n8"),
+        clearPreviousNavGraph = true
     ).installInterceptor("logger") { old, new ->
         Fore.getLogger().i(
             tag = "N8-INTERCEPT",
@@ -28,10 +27,6 @@ fun createNavigation(application: Any? = null) {
     }
 
     N8.setNavigationModel(n8)
-}
-
-fun getNavigation(): NavigationModel<Location, Unit> {
-    return N8.n8<Location, Unit>()
 }
 
 expect fun dataPath(application: Any? = null): Path

@@ -16,10 +16,12 @@ struct DakarView: View {
             Text("location: Dakar")
                 .font(.system(size: 35, weight: .bold))
             
-            NavigationLink {
-                LAView()
-            } label: {
+            Button(action: { navigationModel.navigateTo(location: Location.LA.shared) }){
                 Text("Go to LA")
+                    .font(.system(size: 25, weight: .bold))
+            }
+            Button(action: { navigationModel.navigateBack() }){
+                Text("Go back")
                     .font(.system(size: 25, weight: .bold))
             }
             .padding()
@@ -30,9 +32,3 @@ struct DakarView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView(counterModel: OG.shared[CounterModel.self])
-//    }
-//}

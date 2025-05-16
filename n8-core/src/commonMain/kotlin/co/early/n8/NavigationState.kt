@@ -29,6 +29,14 @@ data class NavigationState<L : Any, T : Any>(
     val initialLoading: Boolean = false,
 ) {
 
+    /** for kmp swift benefit (where default values don't work) **/
+    constructor(navigation: Navigation<L, T>) : this(
+        navigation = navigation,
+        willBeAddedToHistory = true,
+        comingFrom = null,
+        initialLoading = false,
+    )
+
     init {
         require(navigation.parent == null) {
             "top level navigation parent should be null"
@@ -93,7 +101,7 @@ sealed class Navigation<L : Any, T : Any> {
      * Note, this is a _structural_ parent, the parent is NOT the item the user will navigate to
      * when pressing back.
      */
-     abstract val parent: Navigation<L, T>?
+    abstract val parent: Navigation<L, T>?
 
     /**
      * The child of a BackStack is the last item in the stack
@@ -137,7 +145,7 @@ sealed class Navigation<L : Any, T : Any> {
      * a stack size of 3, it will STILL reply false if its current item, at index 2, is a TabHost
      * which has room to move back due to the fact that it has a tabHistory of size 2 say
      */
-     abstract fun specificItemCanNavigateBack(): Boolean
+    abstract fun specificItemCanNavigateBack(): Boolean
 
     /**
      * True if any children between this item and the currentLocation return true for
@@ -149,7 +157,7 @@ sealed class Navigation<L : Any, T : Any> {
     // to create these, because it's easier and cleaner. We could instead leave the constructor
     // public, but that would just provide another less pretty way to do the same thing
     @Serializable @ExposedCopyVisibility
-    data class EndNode<L : Any, T : Any> internal constructor (
+    data class EndNode<L : Any, T : Any> internal constructor(
         @Serializable
         val location: L
     ) : Navigation<L, T>() {
@@ -209,7 +217,7 @@ sealed class Navigation<L : Any, T : Any> {
     // to create these, because it's easier and cleaner. We could instead leave the constructor
     // public, but that would just provide another less pretty way to do the same thing
     @Serializable @ExposedCopyVisibility
-    data class TabHost<L : Any, T : Any> internal constructor (
+    data class TabHost<L : Any, T : Any> internal constructor(
         @Serializable
         val tabHistory: List<Int>,
         @Serializable

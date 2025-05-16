@@ -3,49 +3,43 @@ import shared
 
 @main
 struct iOSApp: App {
-    
-    private let navigationModel: NavigationModel<Location, KotlinUnit>
-    @StateObject private var navigationState: ObservableState<NavigationState<Location, KotlinUnit>>
-    
+
     init() {
         OG.create()
         OG.initialize()
-        
-        let navModel = OG[NavigationModel<Location, KotlinUnit>.self]
-        _navigationState = navModel.toStateObject { navModel.state }
-        navigationModel = navModel
     }
     
     var body: some Scene {
-        let state = navigationState.state
+        let n8 = OG[NavigationModel<Location, KotlinUnit>.self]
         
         WindowGroup {
-            NavigationStack {
+            N8Host<Location, KotlinUnit>(n8:n8) { navState in
                 Group {
-                    if state.initialLoading {
+                    if navState.initialLoading {
                         ProgressView()
                             .scaleEffect(2)
                             .padding().tint(.blue)
                     } else {
-                        switch state.currentLocation {
-                        case Location.Bangkok.shared:
-                            BangkokView()
-                        case Location.Dakar.shared:
-                            DakarView()
-                        case Location.LA.shared:
-                            LAView()
-                        default:
-                            Text("Unknown location")
-                        }
+                        ContentView(navState:navState)
                     }
-                }
-                .onAppear {
-                    Fore.Companion().i(message: "initial navigation state initialLoading: \(state.initialLoading)")
-                }
-                .onChange(of: state) { newState in
-                    Fore.Companion().i(message: "navigation state changed initialLoading: \(newState.initialLoading)")
                 }
             }
         }
     }
 }
+
+
+//@main
+//struct MyApp: App {
+//    @StateObject private var sessionManager = SessionManager()
+//    @StateObject private var navController = NavigationController<String>()
+//
+//    var body: some Scene {
+//        WindowGroup {
+//            ContentView()
+//                .environmentObject(sessionManager)
+//                .environmentObject(navController)
+//        }
+//    }
+//}
+//
