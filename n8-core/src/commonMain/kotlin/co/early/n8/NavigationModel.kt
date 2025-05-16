@@ -473,6 +473,8 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     /**
+     * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
+     * from
      * Usage:
      * navigateTo(A) // navigate to location A in current tab (or in the current backStack if there is no
      * tab host for the current location)
@@ -828,6 +830,8 @@ class NavigationModel<L : Any, T : Any>(
     }
 
     /**
+     * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
+     * from
      * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before passing it in
      */
     fun navigateBackTo(location: L, addToHistory: Boolean = true) {
@@ -881,6 +885,9 @@ class NavigationModel<L : Any, T : Any>(
      * Video Settings or Account Settings), you just know you want to navigate back to a specific tabHost
      * (e.g. TabHostId.Settings). With this function you will land on whatever location is current on the tabHost
      * requested (providing that tabHost exists in the backStack)
+     *
+     * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
+     * from
      *
      * If the TabHostId is not found in the navigation graph, it will be create in place instead
      */
@@ -979,6 +986,18 @@ class NavigationModel<L : Any, T : Any>(
     /** for kmp swift benefit (where default values don't work) **/
     fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>) {
         return navigateBackTo(tabHostSpec, true, { it })
+    }
+
+    /**
+     * This is intended to be called right before a forward navigation operation,
+     * and it relates to the current location, before the navigation operation is
+     * performed. As such it doesn't cause an observer notification to fire, and
+     * n8 doesn't persist the willBeAddedToHistory value you set (it's intended
+     * to be remembered momentarily while the next navigation operation is
+     * processed only)
+     */
+    fun overrideWillBeAddedToHistory(willBeAddedToHistory: Boolean) {
+        state = state.copy(willBeAddedToHistory = willBeAddedToHistory)
     }
 
     private fun setDataOnCurrentLocation(

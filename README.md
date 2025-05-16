@@ -2,7 +2,7 @@
 
 ![n8_logo](n8_logo_400h.png)
 
-_*Goals of N8 navigation: pure kotlin, low config, minimally coupled, type safe and have an obvious API*_
+*Goals of N8 navigation:* _*pure kotlin, low config, minimally coupled, type safe and have an obvious API*_
 
 (obviously it also doesn't loose the user's location on config change or process death)
 
@@ -60,7 +60,13 @@ UI code remains largely independent of N8 itself.
 You do need to tell N8 what class you are using to keep track of your user's *Location* and your
 *TabHosts* - something like a sealed class works well here, you could use a String if you wanted,
 [but you might not want to](https://github.com/erdo/n8/issues/18). If you don't have any tabbed
-navigations you can just put Unit
+navigations you can just put Unit, but note the below:
+
+_**KMP considerations** In Swift, whatever you choose for Location and TabHost must conform to the
+Hashable protocol. Kotlin enums, data classes and primitives generally are, but there are a few
+gotchas:
+- If your data class has a list in it somewhere, it likely won't be Hashable once translated to the Swift equivalent. In that case you'll need to make it conform to Hashable by implementing the ```hash(into:)``` and ```==``` operators in Swift before using it in iOS 
+- Unit is also not Hashable in Swift, but at the moment KMP translates that to KotlinUnit which is Hashable (If that changes you'll have to choose something more class like or implement the Hashable bits yourself)
 
 Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with N8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted

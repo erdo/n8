@@ -15,10 +15,9 @@ struct LAView: View {
             Text("location: LA")
                 .font(.system(size: 35, weight: .bold))
             
-            Button(action: { navigationModel.navigateBack() }) { // TH: this will do nothing, you should implement a pop, if the navigationModel implements a stack data structure
+            Button(action: { navigationModel.navigateBack() }){
                 Text("Go back")
                     .font(.system(size: 25, weight: .bold))
-                
             }
         }
         .padding()
@@ -27,9 +26,3 @@ struct LAView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView(counterModel: OG.shared[CounterModel.self])
-//    }
-//}
