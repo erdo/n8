@@ -4,9 +4,14 @@ package co.early.n8
 
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._applyOneStepBackNavigation
+import co.early.n8.lowlevel._isBackStack
+import co.early.n8.lowlevel._populateChildParents
 import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.Boolean
+import kotlin.Int
+import kotlin.collections.List
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable
@@ -61,6 +66,60 @@ data class NavigationState<L : Any, T : Any>(
     val peekBack: Navigation<L, T>? by lazy {
         val current = navigation.currentItem()
         current._applyOneStepBackNavigation()
+    }
+    /**
+     * A surrogate for navigation.topItem() to be used especially on iOS
+     * as a NavigationStack base view preview.
+     *
+     * This isn't a full representation of the top navigation item, any
+     * BackStacks only include the first item in the stack, any TabHosts
+     * only include the backstack of the first tab in the history (and
+     * that is repeated for all the tabs).
+     *
+     * The surrogate show be just enough to generate a preview and is
+     * typically going to look like this:
+     *
+     * backStackOf(
+     *     endNodeOf(HomeLocation)
+     * )
+     *
+     * or
+     *
+     * tabsOf(
+     *     backStackOf(
+     *         endNodeOf(HomeLocation)
+     *     )
+     *     backStackOf(
+     *         endNodeOf(HomeLocation)
+     *     )
+     *     backStackOf(
+     *         endNodeOf(HomeLocation)
+     *     )
+     * )
+     *
+     * But could in theory involve multiple nested TabHosts
+     */
+    val homeNavigationSurrogate: Navigation<L, T> by lazy {
+        navigation.topItem().cloneNodeWithFirstChild()._populateChildParents()
+    }
+
+    private fun Navigation<L,T>.cloneNodeWithFirstChild() : Navigation<L,T> {
+        return when (this) {
+            is Navigation.BackStack<L, T> -> backStackOf(
+                stack[0].cloneNodeWithFirstChild()
+            )
+            is Navigation.TabHost<L, T> -> {
+                val firstTab = tabs[tabHistory.first()].cloneNodeWithFirstChild()._isBackStack()
+                tabsOf(
+                    tabHistory = listOf(tabHistory.first()),
+                    tabHostId = tabHostId,
+                    *tabs.map { it ->
+                        firstTab
+                    }.toTypedArray()
+                )
+            }
+            is Navigation.EndNode<L, T> -> endNodeOf(location)
+        }
     }
 }
 

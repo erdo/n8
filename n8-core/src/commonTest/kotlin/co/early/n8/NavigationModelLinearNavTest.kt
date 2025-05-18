@@ -625,6 +625,7 @@ class NavigationModelLinearNavTest {
         assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(Paris, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(Paris, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 
     @Test
@@ -654,6 +655,7 @@ class NavigationModelLinearNavTest {
         assertEquals(London, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
         assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(Paris, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 
     @Test
@@ -807,5 +809,6 @@ class NavigationModelLinearNavTest {
         assertEquals(true, result)
         assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(London, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 }
