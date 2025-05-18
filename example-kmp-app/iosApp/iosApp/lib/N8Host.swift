@@ -28,7 +28,7 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            AnyView(BangkokView())
+            AnyView(uiBuilder(NavigationState<L, T>(navigation:n8.state.homeNavigationSurrogate)))
                 .navigationDestination(for: NavigationState<L, T>.self) { newState in
                     AnyView(uiBuilder(newState))
                 }
