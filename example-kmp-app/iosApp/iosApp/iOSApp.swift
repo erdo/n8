@@ -10,17 +10,17 @@ struct iOSApp: App {
     }
     
     var body: some Scene {
-        let n8 = OG[NavigationModel<Location, KotlinUnit>.self]
+        let n8 = OG[NavigationModel<Location, TabHost>.self]
         
         WindowGroup {
-            N8Host<Location, KotlinUnit>(n8:n8) { navState in
+            N8Host<Location, TabHost>(n8:n8) { navState in
                 Group {
                     if navState.initialLoading {
                         ProgressView()
                             .scaleEffect(2)
                             .padding().tint(.blue)
                     } else {
-                        ContentView(navState:navState)
+                        MainContentView(navState:navState)
                     }
                 }
             }

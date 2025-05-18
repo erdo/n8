@@ -31,7 +31,7 @@ final class OG {
         
         
         // register dependencies for later
-        instance.register(NavKt.getNavigation(), as: NavigationModel<Location, KotlinUnit>.self)
+        instance.register(NavKt.getNavigation(), as: NavigationModel<Location, TabHost>.self)
     }
     
     static func initialize() {
