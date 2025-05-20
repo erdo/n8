@@ -10,8 +10,8 @@
 		058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557BA273AAA24004C7B11 /* Assets.xcassets */; };
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
-		2D0821A62DD6A26700EBE648 /* shared.debug.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D0821A52DD6A26700EBE648 /* shared.debug.xcframework */; };
 		2D8BFCC72DA9B4550048DBCD /* OG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8BFCC62DA9B4500048DBCD /* OG.swift */; };
+		2DA1F82B2DDA4ACD00D2CAA8 /* shared.debug.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DA1F82A2DDA4ACD00D2CAA8 /* shared.debug.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,8 +31,8 @@
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
-		2D0821A52DD6A26700EBE648 /* shared.debug.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = shared.debug.xcframework; path = Frameworks/shared.debug.xcframework; sourceTree = "<group>"; };
 		2D8BFCC62DA9B4500048DBCD /* OG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OG.swift; sourceTree = "<group>"; };
+		2DA1F82A2DDA4ACD00D2CAA8 /* shared.debug.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = shared.debug.xcframework; path = Frameworks/shared.debug.xcframework; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -47,7 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D0821A62DD6A26700EBE648 /* shared.debug.xcframework in Frameworks */,
+				2DA1F82B2DDA4ACD00D2CAA8 /* shared.debug.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,7 +96,7 @@
 		7555FFB0242A642200829871 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2D0821A52DD6A26700EBE648 /* shared.debug.xcframework */,
+				2DA1F82A2DDA4ACD00D2CAA8 /* shared.debug.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -133,8 +133,9 @@
 		7555FF73242A565900829871 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1620;
 				ORGANIZATIONNAME = orgName;
 				TargetAttributes = {
 					7555FF7A242A565900829871 = {
@@ -175,6 +176,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		7555FFB5242A651A00829871 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -242,6 +244,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -303,6 +306,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

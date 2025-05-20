@@ -625,6 +625,7 @@ class NavigationModelLinearNavTest {
         assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(true, navigationModel.state.willBeAddedToHistory)
         assertEquals(Paris, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(Paris, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 
     @Test
@@ -654,6 +655,7 @@ class NavigationModelLinearNavTest {
         assertEquals(London, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
         assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(Paris, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 
     @Test
@@ -807,5 +809,63 @@ class NavigationModelLinearNavTest {
         assertEquals(true, result)
         assertEquals(Tokyo, navigationModel.state.comingFrom)
         assertEquals(null, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(London, navigationModel.state.homeNavigationSurrogate.currentLocation())
+    }
+
+    @Test
+    fun `given currentLocation was added with addToHistory = false - override to true functions correctly`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateTo(Sydney(), addToHistory = false)
+        navigationModel.overrideWillBeAddedToHistory(true)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertEquals(Sydney(), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(Paris, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `given currentLocation was added with addToHistory = true - override to false functions correctly`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(Paris)
+        navigationModel.navigateTo(Sydney(), addToHistory = true)
+        navigationModel.overrideWillBeAddedToHistory(false)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateBack()
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(London, navigationModel.state.peekBack?.currentLocation())
+        assertEquals(London, navigationModel.state.homeNavigationSurrogate.currentLocation())
     }
 }

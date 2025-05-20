@@ -29,4 +29,8 @@ fun createNavigation(application: Any? = null) {
     N8.setNavigationModel(n8)
 }
 
+fun getNavigation(): NavigationModel<Location, Unit> {
+    return N8.n8<Location, Unit>()
+}
+
 expect fun dataPath(application: Any? = null): Path

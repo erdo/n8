@@ -14,4 +14,15 @@ sealed class Location {
     @Serializable
     data object LA : Location()
 
+    @Serializable
+    sealed class EuropeanLocation: Location() {
+        @Serializable
+        data object London : EuropeanLocation()
+
+        @Serializable
+        data object Paris : EuropeanLocation()
+
+        @Serializable
+        data object Milan : EuropeanLocation()
+    }
 }
