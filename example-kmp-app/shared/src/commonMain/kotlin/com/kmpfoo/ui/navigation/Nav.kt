@@ -12,7 +12,7 @@ import kotlin.reflect.typeOf
  * Copyright © 2015-2025 early.co. All rights reserved.
  */
 fun createNavigation(application: Any? = null) {
-    val n8 = NavigationModel<Location, Unit>(
+    val n8 = NavigationModel<Location, TabHost>(
         homeLocation = Location.Bangkok,
         stateKType = typeOf<NavigationState<Location, Unit>>(),
         dataPath = dataPath(application),
@@ -29,8 +29,8 @@ fun createNavigation(application: Any? = null) {
     N8.setNavigationModel(n8)
 }
 
-fun getNavigation(): NavigationModel<Location, Unit> {
-    return N8.n8<Location, Unit>()
+fun getNavigation(): NavigationModel<Location, TabHost> {
+    return N8.n8<Location, TabHost>()
 }
 
 expect fun dataPath(application: Any? = null): Path

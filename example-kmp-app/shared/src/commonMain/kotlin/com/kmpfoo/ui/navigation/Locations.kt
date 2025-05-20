@@ -1,5 +1,8 @@
 package com.kmpfoo.ui.navigation
 
+import co.early.n8.TabHostSpecification
+import com.kmpfoo.ui.navigation.Location.EuropeanLocation.London
+import com.kmpfoo.ui.navigation.Location.EuropeanLocation.Paris
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,3 +29,15 @@ sealed class Location {
         data object Milan : EuropeanLocation()
     }
 }
+
+@Serializable
+sealed class TabHost {
+
+    @Serializable
+    data object TabHost1 : TabHost()
+}
+
+val tabHostSpec1 = TabHostSpecification<Location, TabHost>(
+    tabHostId = TabHost.TabHost1,
+    homeTabLocations = listOf(Paris, London),
+)

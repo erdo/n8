@@ -12,6 +12,7 @@ import com.kmpfoo.android.ui.screens.BangkokScreen
 import com.kmpfoo.android.ui.screens.DakarScreen
 import com.kmpfoo.android.ui.screens.LAScreen
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHost
 
 class MainActivity : ComponentActivity() {
 
@@ -19,11 +20,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface( modifier = Modifier.fillMaxSize()) {
-                N8Host<Location, Unit> { navigationState ->
+                N8Host<Location, TabHost> { navigationState ->
                     when(navigationState.currentLocation){
                         Location.Bangkok -> BangkokScreen(rememberWindowSize())
                         Location.Dakar -> DakarScreen(rememberWindowSize())
                         Location.LA -> LAScreen(rememberWindowSize())
+                        Location.EuropeanLocation.London -> TODO()
+                        Location.EuropeanLocation.Milan -> TODO()
+                        Location.EuropeanLocation.Paris -> TODO()
                     }
                 }
             }

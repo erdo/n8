@@ -4,10 +4,10 @@ import shared
 
 struct BangkokView: View {
     
-    private let navigationModel: NavigationModel<Location, KotlinUnit>
+    private let navigationModel: NavigationModel<Location, TabHost>
     
     init() {
-        navigationModel = OG[NavigationModel<Location, KotlinUnit>.self]
+        navigationModel = OG[NavigationModel<Location, TabHost>.self]
     }
     
     var body: some View {
