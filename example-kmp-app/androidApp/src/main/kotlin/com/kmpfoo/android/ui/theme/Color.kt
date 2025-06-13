@@ -1,6 +1,8 @@
 package com.kmpfoo.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import kotlin.random.Random
+import androidx.core.graphics.toColorInt
 
 /**
  * https://m3.material.io/theme-builder
@@ -69,3 +71,12 @@ val md_theme_dark_outlineVariant = Color(0xFF47464F)
 val md_theme_dark_scrim = Color(0xFF000000)
 
 val seed = Color(0xFF7C7ABA)
+
+
+
+fun randomColorHex(): String {
+    val r = Random.nextInt(0, 256)
+    val g = Random.nextInt(0, 256)
+    val b = Random.nextInt(0, 256)
+    return String.format("#%02X%02X%02X", r, g, b)
+}

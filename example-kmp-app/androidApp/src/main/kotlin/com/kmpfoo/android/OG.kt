@@ -7,6 +7,7 @@ import co.early.fore.core.delegate.Fore
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHostId
 import com.kmpfoo.ui.navigation.createNavigation
 
 /**
@@ -29,7 +30,7 @@ object OG {
 
         createNavigation(application)
 
-        val n8: NavigationModel<Location, Unit> = N8.n8<Location, Unit>()
+        val n8: NavigationModel<Location, TabHostId> = N8.n8<Location, TabHostId>()
 
         // add models to the dependencies map if you will need them later
         dependencies[NavigationModel::class.java] = n8

@@ -14,33 +14,40 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
     @State private var pathChangePending: Int = 0
     @State private var stateChangePending: Int = 0
     @ObservedObject private var n8ObservableObject: ForeObservableObject<NavigationState<L, T>>
-    private let uiBuilder: (NavigationState<L, T>) -> any View
+    private let tabUiBuilder: (T, Int, Bool) -> any View
+    private let locationUiBuilder: (NavigationState<L, T>) -> any View
     private let n8: NavigationModel<L, T>
     
     init(
         n8: NavigationModel<L, T>,
-        @ViewBuilder uiBuilder: @escaping (NavigationState<L, T>) -> any View
+        @ViewBuilder tabUiBuilder: @escaping (T, Int, Bool) -> any View, // takes 1. TabHostId (T) (e.g. SettingsTab, AudioTab, HomeTabs etc) 2. the index of the tab 3. whether the tab should be rendered as selected or not -> returns the UI for the tab
+        @ViewBuilder locationUiBuilder: @escaping (NavigationState<L, T>) -> any View // takes NavigationState and the returns the UI (typically based on state.currentLocation)
     ) {
-        self.uiBuilder = uiBuilder
+        self.tabUiBuilder = tabUiBuilder
+        self.locationUiBuilder = locationUiBuilder
         self.n8ObservableObject = ForeObservableObject(foreModel: n8){ n8.state }
         self.n8 = n8
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            AnyView(uiBuilder(NavigationState<L, T>(navigation:n8.state.homeNavigationSurrogate)))
-                .navigationDestination(for: NavigationState<L, T>.self) { newState in
-                    AnyView(uiBuilder(newState))
-                }
-        }
-        .onReceive(n8ObservableObject.$state) { newState in // for when n8 state changes
-            updatePath(with: newState)
-        }
-        .onChange(of: path) { newPath in // for when user swipes back or uses ios navigation
-            updateState(with: newPath)
+        
+        if !n8.state.hostedBy.isEmpty {
+            setupTabHost(hostedBy:n8.state.hostedBy, depth:0)
+        } else { // simple case, just a regular navigation stack, no tab hosts
+            NavigationStack(path: $path) {
+                AnyView(locationUiBuilder(NavigationState<L, T>(navigation:n8.state.homeNavigationSurrogate)))
+                    .navigationDestination(for: NavigationState<L, T>.self) { newState in
+                        AnyView(locationUiBuilder(newState))
+                    }
+            }
+            .onReceive(n8ObservableObject.$state) { newState in // for when n8 state changes
+                updatePath(with: newState)
+            }
+            .onChange(of: path) { newPath in // for when user swipes back or uses ios navigation
+                updateState(with: newPath)
+            }
         }
     }
-    
     
     private func updatePath(with newState: NavigationState<L, T>) {
         if (stateChangePending == 0) {
@@ -71,7 +78,6 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         }
     }
     
-    
     private func updateState(with newPath: NavigationPath) {
         if (pathChangePending == 0) {
             Fore.companion.d(message: "N8 updating state: system back encountered")
@@ -80,6 +86,31 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         } else {
             Fore.companion.d(message: "N8 updating state: ignoring, path was changed by N8")
             pathChangePending -= 1
+        }
+    }
+    
+    private func setupTabHost(hostedBy: [TabHostLocation<T>], depth: Int) -> some View {
+        let tabHostId: T = hostedBy[depth].tabHostId!
+
+        if let tabHost = n8.state.navigation._tabHostFinder(
+            tabHostIdToFind: tabHostId
+        ) {
+            
+            here we need to setup a N8TabHost<L, T> for the tabHost we have in the navigation stack
+                                                            
+            and do it recursively if depth++ < hostedBy.size  like: setupTabHost(hostedBy, ++depth) because tabHosts can be hosted inside TabHosts
+                                                            
+            
+            return N8TabHost<L, T>(
+                tabHostId: tabHostId,
+                tabCount: tabHost.tabs.count,
+                tabUiBuilder: tabUiBuilder,
+                contentUiBuilder: { locationUiBuilder(n8.state) }  // here we need to wrap the content in recursive tabhosts?
+            )
+            
+        } else {
+            // Return an empty view or a placeholder if the tab host was not found.... todo this would be an error in n8 though and should never happen?
+            return EmptyView()
         }
     }
 }

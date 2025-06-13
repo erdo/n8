@@ -11,57 +11,74 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
 import co.early.fore.core.delegate.Fore
-import co.early.fore.ui.size.WindowSize
 import co.early.n8.NavigationModel
 import com.kmpfoo.android.OG
+import com.kmpfoo.android.ui.theme.Dimens
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHostId
+import com.kmpfoo.ui.navigation.tabHostSpecEurope
+
+private val name = "LA"
+private val nextLocation = Location.NewYork
+private val customNavigation = {
+    navigationModel.switchTab(tabHostSpecEurope, 2)
+    navigationModel.navigateTo(Location.EuropeanLocation.Seine)
+}
+private val navigationModel by lazy {
+    OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+}
 
 @Composable
-fun DakarScreen(
-    size: WindowSize = WindowSize(),
+fun ScreenLA(
+    modifier: Modifier = Modifier,
 ) {
 
-    Fore.i("BangkokScreen $size")
+    Fore.i("${name}Screen")
 
-    val navigationModel: NavigationModel<Location, Unit> = OG[NavigationModel::class.java] as NavigationModel<Location, Unit>
-
-    DakarView(
-        size = size,
+    LAView(
+        modifier = modifier,
+        navigateToNext = { navigationModel.navigateTo(nextLocation) },
+        navigateCustom = customNavigation,
         navigateBack = { navigationModel.navigateBack() },
-        navigateToNext = { navigationModel.navigateTo(Location.LA) },
     )
 }
 
 @Composable
-fun DakarView(
-    size: WindowSize,
-    navigateBack: () -> Unit = {},
+fun LAView(
+    modifier: Modifier,
     navigateToNext: () -> Unit = {},
+    navigateCustom: () -> Unit = {},
+    navigateBack: () -> Unit = {},
 ) {
 
-    Fore.getLogger().i("DakarView")
+    Fore.getLogger().i("${name}View")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .then(modifier),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
         Text(
-            text = "Dakar",
-            style =  TextStyle(
-                fontSize = 50.sp,
+            text = name,
+            style = TextStyle(
+                fontSize = Dimens.fontSizeM,
             ),
         )
 
         Button(
             onClick = navigateToNext
         ) {
-            Text("Go To LA")
+            Text("Go To Next")
+        }
+        Button(
+            onClick = navigateCustom
+        ) {
+            Text("Europe > Rivers > Seine")
         }
         Button(
             onClick = navigateBack

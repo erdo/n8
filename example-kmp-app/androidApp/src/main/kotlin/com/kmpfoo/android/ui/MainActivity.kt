@@ -6,12 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import co.early.fore.ui.size.rememberWindowSize
 import co.early.n8.compose.N8Host
-import com.kmpfoo.android.ui.screens.BangkokScreen
-import com.kmpfoo.android.ui.screens.DakarScreen
-import com.kmpfoo.android.ui.screens.LAScreen
+import com.kmpfoo.android.ui.screens.CurrentScreen
+import com.kmpfoo.android.ui.tabhost.RootTabHostView
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHostId
 
 class MainActivity : ComponentActivity() {
 
@@ -19,14 +18,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface( modifier = Modifier.fillMaxSize()) {
-                N8Host<Location, Unit> { navigationState ->
-                    when(navigationState.currentLocation){
-                        Location.Bangkok -> BangkokScreen(rememberWindowSize())
-                        Location.Dakar -> DakarScreen(rememberWindowSize())
-                        Location.LA -> LAScreen(rememberWindowSize())
+                N8Host<Location, TabHostId> { navigationState ->
+                    if (navigationState.hostedBy.isNotEmpty()){
+                        RootTabHostView(navigationState, navigationState.hostedBy, 0){
+                            CurrentScreen(navigationState)
+                        }
+                    } else {
+                        CurrentScreen(navigationState)
                     }
                 }
             }
         }
     }
 }
+
+
+//do some more custom navigations
+//
+//        try experimental predictive back on this app example?
+//
+//        go back to iOS
+
