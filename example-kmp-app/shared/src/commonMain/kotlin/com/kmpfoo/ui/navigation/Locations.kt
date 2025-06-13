@@ -30,37 +30,37 @@ sealed class Location {
     data object NewYork : Location()
 
     @Serializable
-    sealed class EuropeanLocation(val isCountry: Boolean): Location() {
+    sealed class EuropeanLocation(): Location() {
 
         @Serializable
-        data object London : EuropeanLocation(false)
+        data object London : EuropeanLocation()
 
         @Serializable
-        data object Paris : EuropeanLocation(false)
+        data object Paris : EuropeanLocation()
 
         @Serializable
-        data class Milan(val message: String? = null) : EuropeanLocation(false)
+        data class Milan(val message: String? = null) : EuropeanLocation()
 
         @Serializable
-        data object Poland : EuropeanLocation(true)
+        data object Poland : EuropeanLocation()
 
         @Serializable
-        data object Spain : EuropeanLocation(true)
+        data object Spain : EuropeanLocation()
 
         @Serializable
-        data object France : EuropeanLocation(true)
+        data object France : EuropeanLocation()
 
         @Serializable
-        data object Rhine : EuropeanLocation(false)
+        data object Rhine : EuropeanLocation()
 
         @Serializable
-        data object Danube : EuropeanLocation(false)
+        data object Danube : EuropeanLocation()
 
         @Serializable
-        data object Thames : EuropeanLocation(false)
+        data object Thames : EuropeanLocation()
 
         @Serializable
-        data object Seine : EuropeanLocation(false)
+        data object Seine : EuropeanLocation()
     }
 }
 

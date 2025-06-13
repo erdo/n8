@@ -15,15 +15,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import co.early.fore.core.delegate.Fore
 import co.early.n8.NavigationModel
-import co.early.n8.compose.LocalN8HostState
 import com.kmpfoo.android.ui.theme.Dimens
 import com.kmpfoo.ui.navigation.Location
 import com.kmpfoo.ui.navigation.Location.EuropeanLocation.Milan
 import com.kmpfoo.ui.navigation.TabHostId
+import com.kmpfoo.ui.navigation.tabHostSpecGlobal
 
 private val name = "Milan"
 private val nextLocation = Location.EuropeanLocation.Paris
 private val customNavigation = {
+    // the reason we switch tabs first here is because in the event that
+    // the Bangkok location is not found in the back path, the location
+    // Bangkok will be created in place and in that case we want it created
+    // in the correct tabHost and on the correct tab
+    navigationModel.switchTab(tabHostSpecGlobal, 0)
     navigationModel.navigateBackTo(Location.Bangkok("Message back to Bangkok from Milan"))
 }
 private val navigationModel by lazy {

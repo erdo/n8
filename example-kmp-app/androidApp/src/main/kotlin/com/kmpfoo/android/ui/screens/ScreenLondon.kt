@@ -21,10 +21,12 @@ import com.kmpfoo.ui.navigation.tabHostSpecGlobal
 private val name = "London"
 private val nextLocation = Location.EuropeanLocation.Milan()
 private val customNavigation = {
+    // the reason we switch tabs first here is because in the event that
+    // the Bangkok location is not found in the back path, the location
+    // Bangkok will be created in place and in that case we want it created
+    // in the correct tabHost and on the correct tab
     navigationModel.switchTab(tabHostSpecGlobal, 0)
-    Fore.i(navigationModel.toString(diagnostics = true))
-    navigationModel.navigateBackTo(Location.Bangkok())
-    Fore.i(navigationModel.toString(diagnostics = true))
+    navigationModel.navigateBackTo(Location.Bangkok(), passingData = false)
 }
 private val navigationModel by lazy {
     com.kmpfoo.android.OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
