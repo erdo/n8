@@ -832,9 +832,11 @@ class NavigationModel<L : Any, T : Any>(
     /**
      * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
      * from
-     * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before passing it in
+     * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before
+     * passing it in. If you don't want to prevent this behaviour and use whatever data the destination
+     * already has set @passingData to false
      */
-    fun navigateBackTo(location: L, addToHistory: Boolean = true) {
+    fun navigateBackTo(location: L, addToHistory: Boolean = true, passingData: Boolean = true) {
         logger.d("navigateBackTo() location:$location addToHistory:$addToHistory")
 
         val trimmed = if (!state.willBeAddedToHistory) {
@@ -846,11 +848,11 @@ class NavigationModel<L : Any, T : Any>(
 
                 foundLocationNav._populateChildParents() // see _reverseToLocation() docs
 
-                //replace location as it might have different data
                 logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
+
                 val newNavigation = _mutateNavigation(
                     oldItem = foundLocationNav.currentItem(),
-                    newItem = endNodeOf(location)
+                    newItem = if (passingData) { endNodeOf(location) } else foundLocationNav.currentItem()
                 )
                 updateState(
                     state.copy(

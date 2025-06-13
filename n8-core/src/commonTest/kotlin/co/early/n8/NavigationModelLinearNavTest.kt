@@ -490,6 +490,36 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
+    fun `given Sydney is in the nav graph - navigating back to it and setting passingData = false - prevents overriding data at the destination`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(Sydney(50))
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
+
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(Sydney(10), passingData = false)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertNotEquals(Sydney(10), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(London, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
     fun `given current location is the Paris addToHistory = false - when navigating back to Paris - location not found`() {
 
         // arrange
