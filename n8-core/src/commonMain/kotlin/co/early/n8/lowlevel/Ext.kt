@@ -495,9 +495,9 @@ fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigatio
  * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
  * function initially (not required for subsequent recursive calls)
  *
- * @location location to be searched for
+ * @locationToFind location to be searched for
  *
- * @nav search will be conducted from the currentLocation of this nav graph, and up via
+ * Search will be conducted from the currentLocation of this nav graph, and up via
  * parent relationships, and in the same manner as would a user continually
  * navigating back from the current item until they exit the app
  *
@@ -540,6 +540,13 @@ fun <L : Any, T : Any> Navigation<L, T>._reverseToLocation(locationToFind: L): N
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
+    tabHostIdToFind: T
+): TabHost<L, T>? {
+    return _tabHostFinder(tabHostIdToFind, false)
+}
+
+@LowLevelApi
+private fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
     tabHostIdToFind: T,
     skipParentCheck: Boolean = false
 ): TabHost<L, T>? {

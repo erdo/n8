@@ -2,10 +2,12 @@
 
 package co.early.n8
 
+import co.early.n8.Navigation.TabHost
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._applyOneStepBackNavigation
 import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._populateChildParents
+import co.early.n8.lowlevel._tabHostFinder
 import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -101,6 +103,9 @@ data class NavigationState<L : Any, T : Any>(
      */
     val homeNavigationSurrogate: Navigation<L, T> by lazy {
         navigation.topItem().cloneNodeWithFirstChild()._populateChildParents()
+    }
+    fun locateTabHost(tabHostId: T): TabHost<L, T>? {
+       return  navigation._tabHostFinder(tabHostId)
     }
 
     private fun Navigation<L,T>.cloneNodeWithFirstChild() : Navigation<L,T> {
