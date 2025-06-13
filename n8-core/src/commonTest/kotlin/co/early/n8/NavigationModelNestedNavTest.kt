@@ -2203,4 +2203,31 @@ class NavigationModelNestedNavTest {
         assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(B, navigationModel.state.peekBack?.currentLocation())
     }
+
+    @Test
+    fun `when switching to new nested tabHosts - tabHost root is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecNestedOuter)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Home, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecNestedOuter.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecNestedInner.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
+    }
 }

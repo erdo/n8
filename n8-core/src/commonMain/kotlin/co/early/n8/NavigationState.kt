@@ -462,9 +462,9 @@ data class TabHostLocation<T>(
     val tabIndex: Int
 )
 
-data class TabHostSpecification<L, T>(
+data class TabHostSpecification<L: Any, T: Any>(
     val tabHostId: T,
-    val homeTabLocations: List<L>,
+    val homeTabLocations: List<TabRoot<L, T>>,
     val clearToTabRoot: Boolean = false,
     val backMode: TabBackMode = TabBackMode.Temporal,
     val initialTab: Int = 0,
@@ -481,6 +481,12 @@ data class TabHostSpecification<L, T>(
         }
     }
 }
+
+sealed class TabRoot<L : Any, T : Any> {
+    data class LocationRoot<L : Any, T : Any>(val location: L) : TabRoot<L, T>()
+    data class TabHostRoot<L : Any, T : Any>(val tabHostSpec: TabHostSpecification<L, T>) : TabRoot<L, T>()
+}
+
 
 @Serializable
 sealed class TabBackMode {

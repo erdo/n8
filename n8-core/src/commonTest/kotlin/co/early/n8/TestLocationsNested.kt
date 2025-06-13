@@ -3,6 +3,8 @@ package co.early.n8
 import co.early.n8.NestedTestData.Location.A
 import co.early.n8.NestedTestData.Location.B
 import co.early.n8.NestedTestData.Location.C
+import co.early.n8.NestedTestData.Location.D
+import co.early.n8.NestedTestData.Location.E
 import co.early.n8.NestedTestData.Location.X1
 import co.early.n8.NestedTestData.Location.X2
 import co.early.n8.NestedTestData.Location.X3
@@ -34,6 +36,12 @@ class NestedTestData {
 
         @Serializable
         data object TabZ3 : TabHost()
+
+        @Serializable
+        data object TabInner : TabHost()
+
+        @Serializable
+        data object TabOuter : TabHost()
     }
 
     @Serializable
@@ -91,39 +99,54 @@ class NestedTestData {
 
 val tabHostSpecAbc = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabAbc,
-    homeTabLocations = listOf(A, B, C),
+    homeTabLocations = rootLocationsOf(A, B, C),
 )
 
 val tabHostSpecAbcClear = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabAbc,
-    homeTabLocations = listOf(A, B, C),
+    homeTabLocations = rootLocationsOf(A, B, C),
     clearToTabRoot = true
 )
 
 val tabHostSpecAbcStructural = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabAbcStructural,
-    homeTabLocations = listOf(A, B, C),
+    homeTabLocations = rootLocationsOf(A, B, C),
     backMode = TabBackMode.Structural,
 )
 
 val tabHostSpecX12 = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabX12,
-    homeTabLocations = listOf(X1, X2),
+    homeTabLocations = rootLocationsOf(X1, X2),
 )
 
 val tabHostSpecX123 = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabX123,
-    homeTabLocations = listOf(X1, X2, X3),
+    homeTabLocations = rootLocationsOf(X1, X2, X3),
     initialTab = 1,
 )
 
 val tabHostSpecXyz = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabXyz,
-    homeTabLocations = listOf(X1, Y1, Z1),
+    homeTabLocations = rootLocationsOf(X1, Y1, Z1),
 )
 
 val tabHostSpecZ3 = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
     tabHostId = NestedTestData.TabHost.TabZ3,
-    homeTabLocations = listOf(X1, Y1, Z3()),
+    homeTabLocations = rootLocationsOf(X1, Y1, Z3()),
+    initialTab = 2,
+)
+
+val tabHostSpecNestedInner = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
+    tabHostId = NestedTestData.TabHost.TabInner,
+    homeTabLocations = rootLocationsOf(C, D, E),
+)
+
+val tabHostSpecNestedOuter = TabHostSpecification<NestedTestData.Location, NestedTestData.TabHost>(
+    tabHostId = NestedTestData.TabHost.TabOuter,
+    homeTabLocations = listOf(
+        TabRoot.LocationRoot(A),
+        TabRoot.LocationRoot(B),
+        TabRoot.TabHostRoot(tabHostSpecNestedInner),
+    ),
     initialTab = 2,
 )
