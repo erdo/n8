@@ -489,10 +489,10 @@ fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigatio
 }
 
 /**
- * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
+ * WARNING: _populateChildParents() MUST be called on the navigation graph AFTER calling
  * this function as changing parent references is part of the reversal algorithm
  *
- * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+ * NOTE: _populateChildParents() MUST be called on the navigation graph BEFORE calling this
  * function initially (not required for subsequent recursive calls)
  *
  * @locationToFind location to be searched for

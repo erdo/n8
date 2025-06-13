@@ -844,6 +844,8 @@ class NavigationModel<L : Any, T : Any>(
         trimmed?.let {
             it._reverseToLocation(location)?.let { foundLocationNav ->
 
+                foundLocationNav._populateChildParents() // see _reverseToLocation() docs
+
                 //replace location as it might have different data
                 logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
                 val newNavigation = _mutateNavigation(
@@ -858,6 +860,7 @@ class NavigationModel<L : Any, T : Any>(
                     )
                 )
             } ?: run { // didn't find location so just navigate forward
+                state.navigation._populateChildParents() // see _reverseToLocation() docs
                 logger.d("navigateBackTo()... location NOT FOUND in history, navigating forward instead")
                 navigateTo(location, addToHistory)
             }
