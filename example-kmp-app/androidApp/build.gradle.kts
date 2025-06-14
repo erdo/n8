@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.kmpfoo.android"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.kmpfoo.android"
         minSdk = 21

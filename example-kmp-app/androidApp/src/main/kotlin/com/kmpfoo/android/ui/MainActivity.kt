@@ -3,9 +3,14 @@ package com.kmpfoo.android.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import co.early.fore.core.delegate.Fore
+import co.early.n8.NavigationState
 import co.early.n8.compose.N8Host
 import com.kmpfoo.android.ui.screens.CurrentScreen
 import com.kmpfoo.android.ui.tabhost.RootTabHostView
@@ -18,16 +23,42 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface( modifier = Modifier.fillMaxSize()) {
-                N8Host<Location, TabHostId> { navigationState, _ ->
-                    if (navigationState.hostedBy.isNotEmpty()){
-                        RootTabHostView(navigationState, navigationState.hostedBy, 0){
-                            CurrentScreen(navigationState)
+                N8Host<Location, TabHostId> { navigationState, backProgress ->
+
+                    Fore.e("backProgress: $backProgress")
+
+                    if (backProgress != 0f) {
+                        // predictive back view
+                        navigationState.peekBack?.let { peekBack ->
+                            Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
+                                // synthesize a navigationState based on the peekBack state
+                                ContentRoot(navigationState.copy(navigation = peekBack))
+                            }
+                        }
+                        // current view
+                        Box(Modifier.fillMaxSize().alpha(1f - backProgress)) {
+                            ContentRoot(navigationState)
                         }
                     } else {
-                        CurrentScreen(navigationState)
+                        ContentRoot(navigationState)
                     }
+
+
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ContentRoot(
+    navigationState: NavigationState<Location, TabHostId>,
+) {
+    if (navigationState.hostedBy.isNotEmpty()){
+        RootTabHostView(navigationState, navigationState.hostedBy, 0){
+            CurrentScreen(navigationState)
+        }
+    } else {
+        CurrentScreen(navigationState)
     }
 }

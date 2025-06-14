@@ -70,7 +70,6 @@ fun <L : Any, T : Any> Activity.N8Host(
     var backProgress by remember { mutableFloatStateOf(0f) }
 
     PredictiveBack(navigationState, { navigationModel.navigateBack() }) { progress ->
-        Fore.e("progress: $progress")
         backProgress = progress
     }
 

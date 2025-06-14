@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -35,7 +37,6 @@ import backInterceptor
 import co.early.fore.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
-import co.early.n8.Navigation
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 import co.early.n8.compose.N8Host
@@ -198,7 +199,12 @@ private fun RowScope.TabUi(text: String, image: ImageVector, enabled: Boolean, a
             if (enabled) {
                 action()
             }
-        }
+        },
+        colors = NavigationBarItemDefaults.colors(
+            indicatorColor = Color.Transparent,
+            unselectedIconColor = Color.Black.copy(alpha = 0.4f),
+            unselectedTextColor = Color.Black.copy(alpha = 0.4f),
+        )
     )
 }
 
