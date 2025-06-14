@@ -92,7 +92,7 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
     private func setupTabHost(hostedBy: [TabHostLocation<T>], depth: Int) -> some View {
         let tabHostId: T = hostedBy[depth].tabHostId!
 
-        if let tabHost = n8.state.navigation._tabHostFinder(
+        if let tabHost = n8.state.locateTabHost(
             tabHostIdToFind: tabHostId
         ) {
             

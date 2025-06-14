@@ -6,7 +6,6 @@ import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
 import co.early.n8.TabHostLocation
 import co.early.n8.lowlevel.LowLevelApi
-import co.early.n8.lowlevel._tabHostFinder
 import com.kmpfoo.android.OG
 import com.kmpfoo.ui.navigation.Location
 import com.kmpfoo.ui.navigation.TabHostId
@@ -15,7 +14,6 @@ private val navModel by lazy {
     OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
 }
 
-@OptIn(LowLevelApi::class)
 @Composable
 fun RootTabHostView(
     navigationState: NavigationState<Location, TabHostId>,
@@ -26,7 +24,7 @@ fun RootTabHostView(
 ) {
 
     val tabHostLocation = wrappingTabHosts[depth]
-    val tabHost = navigationState.navigation._tabHostFinder(tabHostLocation.tabHostId)
+    val tabHost = navigationState.locateTabHost(tabHostLocation.tabHostId)
 
     requireNotNull(tabHost){
         "this should never be null, it means the tabHost does not exist in the navigation graph yet, check your code"

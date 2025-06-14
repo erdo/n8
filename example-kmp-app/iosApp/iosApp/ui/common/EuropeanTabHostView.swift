@@ -20,7 +20,7 @@ struct EuropeanTabHostView: View {
             AnyView(locationViewBuilder(location))
         }
         
-        if let tabHost = navState.navigation._tabHostFinder(
+        if let tabHost = navState.locateTabHost(
             tabHostIdToFind: tabHostId,
             skipParentCheck: false
         ) {
