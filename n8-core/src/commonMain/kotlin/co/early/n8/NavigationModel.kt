@@ -882,7 +882,7 @@ class NavigationModel<L : Any, T : Any>(
 
     /** for kmp swift benefit (where default values don't work) **/
     fun navigateBackTo(location: L) {
-        return navigateBackTo(location, true)
+        return navigateBackTo(location, true, true)
     }
 
     /**
