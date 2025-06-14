@@ -33,7 +33,9 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import kotlin.test.AfterTest
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class NavigationModelNestedNavTest {
 
@@ -2118,7 +2120,7 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.beforeAndAfterLog {
+        val success = navigationModel.beforeAndAfterLog {
             navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc, addToHistory = false)
         }
 
@@ -2126,6 +2128,7 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(9, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
+        assertTrue(success)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
@@ -2136,7 +2139,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost which is not found - creates that TabHost in place`() {
+    fun `when navigating back to tabHost which is not found in back path OR whole navigation graph - create that TabHost in place`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -2153,7 +2156,7 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.beforeAndAfterLog {
+        val success = navigationModel.beforeAndAfterLog {
             navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
         }
 
@@ -2161,12 +2164,83 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(9, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
+        assertTrue(success)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
         assertEquals(2, navigationModel.state.hostedBy.size)
         assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(X3, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when navigating back to tabHost which is not found in back path OR whole navigation graph - and createInPlace is false - do NOT create that TabHost in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz, createInPlaceIfNotFound = false)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertFalse(success)
+        assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X2, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when navigating back to tabHost which is not found in back path but DOES exist in navigation graph - no NOT create that TabHost in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecXyz)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertTrue(success)
+        assertEquals(E, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
