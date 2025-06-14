@@ -31,11 +31,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-//do some more custom navigations
-//
-//        try experimental predictive back on this app example?
-//
-//        go back to iOS
-

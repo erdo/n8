@@ -22,6 +22,7 @@ private val name = "Dakar"
 private val nextLocation = Location.LA
 private val customNavigation = {
     navigationModel.navigateBackTo(Location.NewYork)
+    Unit
 }
 private val navigationModel by lazy {
     OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>

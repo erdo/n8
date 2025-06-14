@@ -27,6 +27,7 @@ private val customNavigation = {
     // in the correct tabHost and tab
     navigationModel.switchTab(tabHostSpecEurope, 1)
     navigationModel.navigateBackTo(Location.EuropeanLocation.London)
+    Unit
 }
 private val navigationModel by lazy {
     com.kmpfoo.android.OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
