@@ -447,7 +447,7 @@ private fun <L : Any, T : Any> EndNode<L, T>._createItemNavigatedBackCopy(): Nav
 
 private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
-        copy(tabHistory = tabHistory.toMutableList().also { it.removeLast() })
+        copy(tabHistory = tabHistory.toMutableList().also { it.removeLastOrNull() })
     } else this
 }
 
@@ -458,7 +458,7 @@ private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Nav
  */
 private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
-        copy(stack = stack.toMutableList().also { it.removeLast() })
+        copy(stack = stack.toMutableList().also { it.removeLastOrNull() })
     } else this
 }
 
