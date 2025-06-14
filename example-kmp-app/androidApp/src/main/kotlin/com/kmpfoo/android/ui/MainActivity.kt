@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface( modifier = Modifier.fillMaxSize()) {
-                N8Host<Location, TabHostId> { navigationState ->
+                N8Host<Location, TabHostId> { navigationState, _ ->
                     if (navigationState.hostedBy.isNotEmpty()){
                         RootTabHostView(navigationState, navigationState.hostedBy, 0){
                             CurrentScreen(navigationState)

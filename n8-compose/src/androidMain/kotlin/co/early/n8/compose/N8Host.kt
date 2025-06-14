@@ -1,18 +1,23 @@
 package co.early.n8.compose
 
 import android.app.Activity
+import android.os.Build
+import android.window.BackEvent
+import android.window.OnBackAnimationCallback
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import co.early.fore.compose.observeAsState
 import co.early.fore.core.delegate.Fore
-import co.early.fore.core.observer.threadName
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
@@ -30,7 +35,7 @@ val LocalN8HostState = compositionLocalOf<NavigationState<*, *>> {
 fun <L : Any, T : Any> Activity.N8Host(
     navigationModel: NavigationModel<L, T> = N8.n8(),
     onBack: (suspend (NavigationState<L, T>) -> Boolean)? = null, // true = handled/blocked/intercepted
-    content: @Composable (NavigationState<L, T>) -> Unit,
+    content: @Composable (NavigationState<L, T>, Float) -> Unit,
 ) {
 
     val navigationState by navigationModel.observeAsState { navigationModel.state }
@@ -62,18 +67,62 @@ fun <L : Any, T : Any> Activity.N8Host(
         }
     }
 
-//    BackHandler(enabled = true) {
-//        val intercepted = onBack?.invoke(navigationState) == true
-//        if (!intercepted) {
-//            if (navigationState.canNavigateBack) {
-//                navigationModel.navigateBack()
-//            } else {
-//                this.finish()
-//            }
-//        }
-//    }
+    var backProgress by remember { mutableFloatStateOf(0f) }
+
+    PredictiveBack(navigationState, { navigationModel.navigateBack() }) { progress ->
+        Fore.e("progress: $progress")
+        backProgress = progress
+    }
 
     CompositionLocalProvider(LocalN8HostState provides navigationState) {
-        content(navigationState)
+        content(navigationState, backProgress)
+    }
+}
+
+
+@Composable
+fun <L : Any, T : Any> Activity.PredictiveBack(
+    navigationState: NavigationState<L, T>,
+    navigateBack: () -> Unit = {},
+    onBackProgress: (Float) -> Unit = {}
+) {
+
+    val canPop = navigationState.canNavigateBack
+
+    DisposableEffect(canPop) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+
+            val callback = object : OnBackAnimationCallback {
+                override fun onBackStarted(backEvent: BackEvent) {
+                    onBackProgress(0f)
+                }
+
+                override fun onBackProgressed(backEvent: BackEvent) {
+                    onBackProgress(backEvent.progress)
+                }
+
+                override fun onBackCancelled() {
+                    onBackProgress(0f)
+                }
+
+                override fun onBackInvoked() {
+                    onBackProgress(0f)
+                    navigateBack()
+                }
+            }
+
+            if (canPop) {
+                onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    callback
+                )
+            }
+
+            onDispose {
+                onBackInvokedDispatcher.unregisterOnBackInvokedCallback(callback)
+            }
+        } else {
+            onDispose { }
+        }
     }
 }

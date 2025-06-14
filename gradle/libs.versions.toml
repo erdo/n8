@@ -8,7 +8,7 @@ composeUiVersion = "1.7.8"
 composeMultiplatformUiVersion = "1.7.3"
 jvm-toolchain = "21"
 jvm-target = "1.8"
-androidCompileSdk = "34"
+androidCompileSdk = "36"
 androidTargetSdk = "34"
 androidMinSdk = "21"
 
@@ -19,7 +19,7 @@ kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1"
 kotlinx-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0"
 
 # androidx compose
-compose-activity = "androidx.activity:activity-compose:1.8.2"
+compose-activity = "androidx.activity:activity-compose:1.10.1"
 compose-constraint-layout = "androidx.constraintlayout:constraintlayout-compose:1.1.1"
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "composeUiVersion" }
