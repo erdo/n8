@@ -3,6 +3,7 @@ package foo.bar.n8.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -28,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -66,6 +69,9 @@ import foo.bar.n8.ui.screens.TokyoScreen
 
 class Activity : ComponentActivity() {
 
+    val alphaEasing = CubicBezierEasing(0.970f, 0.050f, 0.460f, 0.985f)
+    val scaleEasing = CubicBezierEasing(0.380f, 0.185f, 0.000f, 0.990f)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -85,18 +91,30 @@ class Activity : ComponentActivity() {
                             CircularProgressIndicator()
                         }
                     } else {
-                        if (backProgress != 0f && peekBackNavState != null) {
+
+                        peekBackNavState?.let { peek ->
                             // predictive back view
-                            Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
-                                ContentRoot(peekBackNavState)
+                            Box(Modifier.fillMaxSize()) {
+                                ContentRoot(peek)
                             }
                             // current view
-                            Box(Modifier.fillMaxSize().alpha(1f - backProgress)) {
+                            val elevationPx = with(LocalDensity.current) { (6.dp * backProgress.let { it * it }).toPx() }
+                            val alpha = 1 - alphaEasing.transform(backProgress)
+                            val scale = 1f - (0.4f * scaleEasing.transform(backProgress))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .alpha(alpha)
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                        shadowElevation = elevationPx
+                                    }
+                            ) {
                                 ContentRoot(navigationState)
                             }
-                        } else {
-                            ContentRoot(navigationState)
-                        }
+                        } ?: run { ContentRoot(navigationState) }
                     }
                 }
             }

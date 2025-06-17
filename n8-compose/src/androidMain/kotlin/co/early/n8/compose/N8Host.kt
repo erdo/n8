@@ -69,7 +69,7 @@ fun <L : Any, T : Any> Activity.N8Host(
     var backProgress by remember { mutableFloatStateOf(0f) }
 
     PredictiveBack(navigationState, { navigationModel.navigateBack() }) { progress ->
-        backProgress = progress
+        backProgress = progress.coerceIn(0f, 1f)
     }
 
     val peekBackNavState = navigationState.peekBack?.let { peekBack ->

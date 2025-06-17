@@ -560,7 +560,11 @@ navigationModel.navigateTo(location = SignOutScreen) { null }
 TabHosts tend to treat the back operation in one of 2 different ways. N8 calls these two modes
 "Structural" and "Temporal".
 
-By Structural we mean something akin to the old "up" operation in android. Let's say you have an
+By Structural we mean as the user navigates back, once they are at the root location of the tab,
+one more back navigation exits the user from that TabHost entirely (i.e. the user doesn't cycle
+through previously visited tabs on their way back).
+
+Let's say you have an
 app that contains a single TabHost with 3 tabs, let's say the user has built up a history on this
 TabHost by selecting all 3 tabs in turn, but while they have been on the current tab, has
 only navigated to 2 new locations.
