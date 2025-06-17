@@ -163,7 +163,10 @@ fun <L : Any, T : Any> _mutateNavigation(
             },
             ensureOnHistoryPath = ensureOnHistoryPath
         )
-    } ?: newItem._populateChildParents()
+    } ?: run {
+        Fore.d("mutateNavigation()... reached the home item.")
+        newItem._populateChildParents()
+    }
 
     return result
 }
@@ -172,6 +175,8 @@ fun <L : Any, T : Any> _mutateNavigation(
  * For a newly created navigation (especially one which has been copied and altered from an
  * original) the children may not realise who their new parent is, this function corrects that
  * information
+ *
+ * Works from the level it's called at, down towards the EndNodes
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._populateChildParents(): Navigation<L, T> {

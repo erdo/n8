@@ -1870,6 +1870,47 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
+    fun `when peakBack is called - original navigation child parent relationships are untouched`(){
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation =  backStackOf(
+                endNodeOf(Home),
+                tabsOf(
+                    tabHistory = listOf(0,1,2),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(D)
+                    ),
+                    backStackOf(
+                        endNodeOf(B)
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    )
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        val peekBack = navigationModel.beforeAndAfterLog {
+            navigationModel.state.peekBack
+        }
+
+        Fore.i("peekBack:${peekBack?.toString(diagnostics = true)}")
+
+        // assert
+        val stateTabHost = navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()
+        val peekBackStateTabHost = peekBack?.currentItem()?.parent?.parent?._isTabHost()
+
+        assertEquals(3, stateTabHost?.tabHistory?.size)
+        assertEquals(2, peekBackStateTabHost?.tabHistory?.size)
+    }
+
+    @Test
     fun `given target exists on back path inside tab - back times=3 navigates to target`() {
         // arrange
         val initialTabs = tabsOf<Location, TabHost>(

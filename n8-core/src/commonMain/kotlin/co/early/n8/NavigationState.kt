@@ -66,8 +66,7 @@ data class NavigationState<L : Any, T : Any>(
         navigation.topItem().breadcrumbs()
     }
     val peekBack: Navigation<L, T>? by lazy {
-        val current = navigation.currentItem()
-        current._applyOneStepBackNavigation()
+        navigation.deepCopy()._populateChildParents().currentItem()._applyOneStepBackNavigation()
     }
     /**
      * A surrogate for navigation.topItem() to be used especially on iOS
@@ -154,6 +153,8 @@ sealed class Navigation<L : Any, T : Any> {
      * NB: this typically is called on the topItem: navigation.topItem().breadcrumbs()
      */
     abstract fun breadcrumbs(): List<L>
+
+    abstract fun deepCopy(): Navigation<L, T>
 
     /**
      * All the items contained in the stack of a BackStack have that BackStack as their parent.
@@ -248,6 +249,12 @@ sealed class Navigation<L : Any, T : Any> {
             return listOf(location)
         }
 
+        override fun deepCopy(): EndNode<L, T> {
+            return EndNode(
+                location = location
+            )
+        }
+
         override fun toString(): String {
             return "${this::class.simpleName}[${location::class.simpleName}]"
         }
@@ -324,6 +331,18 @@ sealed class Navigation<L : Any, T : Any> {
             return tabHistory.flatMap {
                 tabs[it].breadcrumbs()
             }
+        }
+
+        override fun deepCopy(): TabHost<L, T> {
+            return TabHost(
+                tabHistory = tabHistory,
+                tabHostId = tabHostId,
+                tabs = tabs.map {
+                    it.deepCopy()
+                },
+                clearToTabRootDefault = clearToTabRootDefault,
+                tabBackModeDefault = tabBackModeDefault,
+            )
         }
 
         override fun toString(): String {
@@ -409,6 +428,12 @@ sealed class Navigation<L : Any, T : Any> {
             return stack.flatMap {
                 it.breadcrumbs()
             }
+        }
+
+        override fun deepCopy(): BackStack<L, T> {
+            return BackStack(
+                stack = stack.map { it.deepCopy() }
+            )
         }
 
         override fun toString(): String {
