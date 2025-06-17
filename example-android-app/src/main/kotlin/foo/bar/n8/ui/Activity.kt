@@ -75,7 +75,7 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                N8Host(onBack = backInterceptor()) { navigationState, backProgress ->
+                N8Host(onBack = backInterceptor()) { navigationState, peekBackNavState, backProgress ->
 
                     if (navigationState.initialLoading) {
                         Box(
@@ -85,14 +85,10 @@ class Activity : ComponentActivity() {
                             CircularProgressIndicator()
                         }
                     } else {
-
-                        if (backProgress != 0f) {
+                        if (backProgress != 0f && peekBackNavState != null) {
                             // predictive back view
-                            navigationState.peekBack?.let { peekBack ->
-                                Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
-                                    // synthesize a navigationState based on the peekBack state
-                                    ContentRoot(navigationState.copy(navigation = peekBack))
-                                }
+                            Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
+                                ContentRoot(peekBackNavState)
                             }
                             // current view
                             Box(Modifier.fillMaxSize().alpha(1f - backProgress)) {

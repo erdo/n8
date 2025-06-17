@@ -17,7 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import co.early.fore.compose.observeAsState
-import co.early.fore.core.delegate.Fore
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
@@ -29,13 +28,13 @@ val LocalN8HostState = compositionLocalOf<NavigationState<*, *>> {
 
 /**
  * Top level navigation container for the app, anything wrapped inside this element will receive the
- * current page for rendering
+ * current state for rendering, and the peekBack state + backProgress for predictive back animation
  */
 @Composable @Suppress("FunctionNaming")
 fun <L : Any, T : Any> Activity.N8Host(
     navigationModel: NavigationModel<L, T> = N8.n8(),
     onBack: (suspend (NavigationState<L, T>) -> Boolean)? = null, // true = handled/blocked/intercepted
-    content: @Composable (NavigationState<L, T>, Float) -> Unit,
+    content: @Composable (NavigationState<L, T>, NavigationState<L, T>?, Float) -> Unit, // current state, peek back state, back progress
 ) {
 
     val navigationState by navigationModel.observeAsState { navigationModel.state }
@@ -73,8 +72,15 @@ fun <L : Any, T : Any> Activity.N8Host(
         backProgress = progress
     }
 
+    val peekBackNavState = navigationState.peekBack?.let { peekBack ->
+        navigationState.copy(
+            navigation = peekBack,
+            comingFrom = null // we don't want to see any custom transition animation stuff in the peek back preview
+        )
+    }
+
     CompositionLocalProvider(LocalN8HostState provides navigationState) {
-        content(navigationState, backProgress)
+        content(navigationState, peekBackNavState, backProgress)
     }
 }
 

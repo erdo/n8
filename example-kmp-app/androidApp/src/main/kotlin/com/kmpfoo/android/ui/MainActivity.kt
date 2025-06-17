@@ -23,17 +23,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Surface( modifier = Modifier.fillMaxSize()) {
-                N8Host<Location, TabHostId> { navigationState, backProgress ->
+                N8Host<Location, TabHostId> { navigationState, peekBackNavState, backProgress ->
 
-                    Fore.e("backProgress: $backProgress")
-
-                    if (backProgress != 0f) {
+                    if (backProgress != 0f && peekBackNavState != null) {
                         // predictive back view
-                        navigationState.peekBack?.let { peekBack ->
-                            Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
-                                // synthesize a navigationState based on the peekBack state
-                                ContentRoot(navigationState.copy(navigation = peekBack))
-                            }
+                        Box(Modifier.fillMaxSize().alpha(backProgress * 0.5f)) {
+                            ContentRoot(peekBackNavState)
                         }
                         // current view
                         Box(Modifier.fillMaxSize().alpha(1f - backProgress)) {
@@ -42,8 +37,6 @@ class MainActivity : ComponentActivity() {
                     } else {
                         ContentRoot(navigationState)
                     }
-
-
                 }
             }
         }
