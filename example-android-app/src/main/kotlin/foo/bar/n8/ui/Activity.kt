@@ -81,7 +81,7 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                N8Host(onBack = backInterceptor()) { navigationState, peekBackNavState, backProgress ->
+                N8Host(onBackCheck = backInterceptor()) { navigationState, peekBackNavState, backProgress ->
 
                     if (navigationState.initialLoading) {
                         Box(

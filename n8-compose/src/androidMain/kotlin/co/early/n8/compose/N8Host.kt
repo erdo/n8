@@ -4,15 +4,16 @@ import android.app.Activity
 import android.os.Build
 import android.window.BackEvent
 import android.window.OnBackAnimationCallback
+import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
-import androidx.activity.compose.BackHandler
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,101 +34,118 @@ val LocalN8HostState = compositionLocalOf<NavigationState<*, *>> {
 @Composable @Suppress("FunctionNaming")
 fun <L : Any, T : Any> Activity.N8Host(
     navigationModel: NavigationModel<L, T> = N8.n8(),
-    onBack: (suspend (NavigationState<L, T>) -> Boolean)? = null, // true = handled/blocked/intercepted
+    onBackCheck: (suspend (NavigationState<L, T>) -> Boolean)? = null, // true = handled/blocked/intercepted
     content: @Composable (NavigationState<L, T>, NavigationState<L, T>?, Float) -> Unit, // current state, peek back state, back progress
 ) {
 
     val navigationState by navigationModel.observeAsState { navigationModel.state }
+    val canNavigateBack = navigationState.canNavigateBack
+    var systemBackParams by remember { mutableStateOf(SystemBackParams()) }
+    val legacyBackDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val backDispatcher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { onBackInvokedDispatcher } else null
 
-    val backEvent = remember { mutableStateOf(false) }
+    DisposableEffect(canNavigateBack) {
+        val systemCallback = when {
+            // android 14, API 34+ full predictive back animation
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                object : OnBackAnimationCallback {
+                    override fun onBackStarted(backEvent: BackEvent) {
+                        systemBackParams = SystemBackParams()
+                    }
 
-    if (onBack == null){
-        BackHandler(navigationState.canNavigateBack) {
-            navigationModel.navigateBack()
+                    override fun onBackProgressed(backEvent: BackEvent) {
+                        systemBackParams = SystemBackParams(
+                            backProgress = backEvent.progress.coerceIn(0f, 1f),
+                        )
+                    }
+
+                    override fun onBackCancelled() {
+                        systemBackParams = SystemBackParams()
+                    }
+
+                    override fun onBackInvoked() {
+                        systemBackParams = systemBackParams.copy(backEvent = true)
+                    }
+                }.also { animationCallBack ->
+                    backDispatcher?.registerOnBackInvokedCallback(
+                        OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                        animationCallBack
+                    )
+                }
+            }
+            // android 13, API 33 - gesture back but no animation
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                OnBackInvokedCallback {
+                    systemBackParams = SystemBackParams(backEvent = true)
+                }.also { gestureCallback ->
+                    backDispatcher?.registerOnBackInvokedCallback(
+                        OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                        gestureCallback
+                    )
+                }
+            }
+            // android 12 / API 32 and below - just simple system back press
+            else -> {
+                object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        systemBackParams = SystemBackParams(backEvent = true)
+                    }
+                }.also { simpleCallback ->
+                    legacyBackDispatcher?.addCallback(simpleCallback)
+                }
+            }
         }
-    } else {
-        BackHandler(enabled = true) {
-            backEvent.value = true
+
+        onDispose {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                    onBackInvokedDispatcher.unregisterOnBackInvokedCallback(
+                        systemCallback as OnBackAnimationCallback
+                    )
+                }
+
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                    onBackInvokedDispatcher.unregisterOnBackInvokedCallback(
+                        systemCallback as OnBackInvokedCallback
+                    )
+                }
+
+                else -> (systemCallback as? OnBackPressedCallback?)?.remove()
+
+            }
         }
     }
 
-    LaunchedEffect(backEvent.value) {
-        if (backEvent.value) {
-            val intercepted = onBack?.invoke(navigationState) == true
+    LaunchedEffect(systemBackParams.backEvent) {
+        if (systemBackParams.backEvent) {
+            val intercepted = onBackCheck?.invoke(navigationState) == true
 
             if (!intercepted) {
-                if (navigationState.canNavigateBack) {
+                if (canNavigateBack) {
                     navigationModel.navigateBack()
                 } else {
                     this@N8Host.finish()
                 }
             }
-            backEvent.value = false
+            systemBackParams = SystemBackParams()
         }
     }
 
-    var backProgress by remember { mutableFloatStateOf(0f) }
-
-    PredictiveBack(navigationState, { navigationModel.navigateBack() }) { progress ->
-        backProgress = progress.coerceIn(0f, 1f)
-    }
-
-    val peekBackNavState = navigationState.peekBack?.let { peekBack ->
-        navigationState.copy(
-            navigation = peekBack,
-            comingFrom = null // we don't want to see any custom transition animation stuff in the peek back preview
-        )
-    }
-
-    CompositionLocalProvider(LocalN8HostState provides navigationState) {
-        content(navigationState, peekBackNavState, backProgress)
-    }
-}
-
-
-@Composable
-fun <L : Any, T : Any> Activity.PredictiveBack(
-    navigationState: NavigationState<L, T>,
-    navigateBack: () -> Unit = {},
-    onBackProgress: (Float) -> Unit = {}
-) {
-
-    val canPop = navigationState.canNavigateBack
-
-    DisposableEffect(canPop) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-
-            val callback = object : OnBackAnimationCallback {
-                override fun onBackStarted(backEvent: BackEvent) {
-                    onBackProgress(0f)
-                }
-
-                override fun onBackProgressed(backEvent: BackEvent) {
-                    onBackProgress(backEvent.progress)
-                }
-
-                override fun onBackCancelled() {
-                    onBackProgress(0f)
-                }
-
-                override fun onBackInvoked() {
-                    onBackProgress(0f)
-                    navigateBack()
-                }
-            }
-
-            if (canPop) {
-                onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                    callback
+    val peekBackNavState = if (systemBackParams.backProgress != 0f) {
+            navigationState.peekBack?.let { peekBack ->
+                navigationState.copy(
+                    navigation = peekBack,
+                    comingFrom = null // we don't want to see any custom transition animation stuff in the peek back preview
                 )
             }
+        } else null
 
-            onDispose {
-                onBackInvokedDispatcher.unregisterOnBackInvokedCallback(callback)
-            }
-        } else {
-            onDispose { }
-        }
+    CompositionLocalProvider(LocalN8HostState provides navigationState) {
+        content(navigationState, peekBackNavState, systemBackParams.backProgress)
     }
 }
+
+private data class SystemBackParams(
+    val backEvent: Boolean = false,
+    val backProgress: Float = 0f,
+)
