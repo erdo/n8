@@ -5,7 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,7 +17,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import co.early.fore.core.delegate.Fore
 import co.early.n8.NavigationState
 import co.early.n8.compose.N8Host
 import com.kmpfoo.android.ui.screens.CurrentScreen
@@ -29,7 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Surface( modifier = Modifier.fillMaxSize()) {
+            Surface(modifier = Modifier.fillMaxSize()) {
                 N8Host<Location, TabHostId> { navigationState, peekBackNavState, backProgress ->
 
                     peekBackNavState?.let { peek ->
@@ -65,11 +68,17 @@ class MainActivity : ComponentActivity() {
 private fun ContentRoot(
     navigationState: NavigationState<Location, TabHostId>,
 ) {
-    if (navigationState.hostedBy.isNotEmpty()){
-        RootTabHostView(navigationState, navigationState.hostedBy, 0){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues())
+    ) {
+        if (navigationState.hostedBy.isNotEmpty()) {
+            RootTabHostView(navigationState, navigationState.hostedBy, 0) {
+                CurrentScreen(navigationState)
+            }
+        } else {
             CurrentScreen(navigationState)
         }
-    } else {
-        CurrentScreen(navigationState)
     }
 }
