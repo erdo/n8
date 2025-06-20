@@ -1,12 +1,12 @@
 import SwiftUI
 import shared
 
-struct MilanView: View {
+struct ViewMilan: View {
 
-    private let navigationModel: NavigationModel<Location, TabHost>
+    private let navigationModel: NavigationModel<Location, TabHostId>
 
     init() {
-        navigationModel = OG[NavigationModel<Location, TabHost>.self]
+        navigationModel = OG[NavigationModel<Location, TabHostId>.self]
     }
     
     var body: some View {
@@ -18,7 +18,7 @@ struct MilanView: View {
             Button(action: { navigationModel.navigateTo(location: Location.EuropeanLocationParis.shared) }){
                 Text("Go to Paris")
                     .font(.system(size: 25, weight: .bold))
-            }
+            }.padding()
             Button(action: { navigationModel.navigateTo(location: Location.EuropeanLocationLondon.shared) }){
                 Text("Go to London")
                     .font(.system(size: 25, weight: .bold))

@@ -3,6 +3,7 @@
 package co.early.n8
 
 import co.early.n8.Navigation.TabHost
+import co.early.n8.OperationType.None
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._applyOneStepBackNavigation
 import co.early.n8.lowlevel._isBackStack
@@ -34,6 +35,8 @@ data class NavigationState<L : Any, T : Any>(
     val comingFrom: L? = null,
     @Transient
     val initialLoading: Boolean = false,
+    @Transient
+    val lastOperationType: OperationType = None,
 ) {
 
     /** for kmp swift benefit (where default values don't work) **/
@@ -520,5 +523,20 @@ sealed class TabBackMode {
 
     @Serializable
     data object Temporal : TabBackMode()
+}
 
+@Serializable
+sealed class OperationType {
+
+    @Serializable
+    data object None : OperationType()
+
+    @Serializable
+    data object Push : OperationType()
+
+    @Serializable
+    data object Pop : OperationType()
+
+    @Serializable
+    data object Switch : OperationType()
 }

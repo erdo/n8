@@ -2,24 +2,25 @@
 import SwiftUI
 import shared
 
-struct LAView: View {
+struct ViewDakar: View {
 
-    private let navigationModel: NavigationModel<Location, TabHost>
+    private let navigationModel: NavigationModel<Location, TabHostId>
 
     init() {
-        navigationModel = OG[NavigationModel<Location, TabHost>.self]
+        navigationModel = OG[NavigationModel<Location, TabHostId>.self]
     }
     
     var body: some View {
+        
         VStack {
-            Text("location: LA")
+            Text("location: Dakar")
                 .font(.system(size: 35, weight: .bold))
             
-            Button(action: { navigationModel.switchTab(tabHostSpec: LocationsKt.tabHostSpec1)}){
-                Text("Go to European Tabs")
+            Button(action: { navigationModel.navigateTo(location: Location.LA.shared) }){
+                Text("Go to LA")
                     .font(.system(size: 25, weight: .bold))
             }
-            
+
             Button(action: { navigationModel.navigateBack() }){
                 Text("Go back")
                     .font(.system(size: 25, weight: .bold))
@@ -27,8 +28,8 @@ struct LAView: View {
             .padding()
         }
         .padding()
-        .background(Color.mint)
-        .navigationTitle("LA")
+        .background(Color.orange)
+        .navigationTitle("Dakar")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

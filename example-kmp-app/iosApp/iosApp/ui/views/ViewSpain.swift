@@ -1,21 +1,22 @@
+
 import SwiftUI
 import shared
 
-struct ParisView: View {
+struct ViewSpain: View {
 
-    private let navigationModel: NavigationModel<Location, TabHost>
+    private let navigationModel: NavigationModel<Location, TabHostId>
 
     init() {
-        navigationModel = OG[NavigationModel<Location, TabHost>.self]
+        navigationModel = OG[NavigationModel<Location, TabHostId>.self]
     }
     
     var body: some View {
         
         VStack {
-            Text("location: Paris")
+            Text("location: Spain")
                 .font(.system(size: 35, weight: .bold))
             
-            Button(action: { navigationModel.navigateTo(location: Location.EuropeanLocationMilan.shared) }){
+            Button(action: { navigationModel.navigateTo(location: Location.EuropeanLocationMilan(message: nil)) }){
                 Text("Go to Milan")
                     .font(.system(size: 25, weight: .bold))
             }
@@ -26,8 +27,8 @@ struct ParisView: View {
             .padding()
         }
         .padding()
-        .background(Color.pink)
-        .navigationTitle("Paris")
+        .background(Color.yellow)
+        .navigationTitle("Spain")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

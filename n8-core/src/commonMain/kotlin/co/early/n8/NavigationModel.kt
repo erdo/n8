@@ -582,6 +582,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigated,
                 willBeAddedToHistory = addToHistory,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.Push,
             )
         )
     }
@@ -709,6 +710,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigated,
                 willBeAddedToHistory = true,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.Switch, should we be switch, push or none here?.... also add tests...
             )
         )
         return true
@@ -807,6 +809,7 @@ class NavigationModel<L : Any, T : Any>(
                     navigation = setDataOnCurrentLocation(newNavigation, setData),
                     willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
+                    lastOperationType = OperationType.Pop,
                 )
             )
         }
@@ -867,6 +870,7 @@ class NavigationModel<L : Any, T : Any>(
                         navigation = newNavigation,
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Pop,
                     )
                 )
 
@@ -888,6 +892,7 @@ class NavigationModel<L : Any, T : Any>(
                         navigation = backStackOf(endNodeOf(location)),
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Push,
                     )
                 )
             }
@@ -934,6 +939,7 @@ class NavigationModel<L : Any, T : Any>(
                     navigation = setDataOnCurrentLocation(state.navigation.currentItem(), setData),
                     willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
+                    lastOperationType = OperationType.None,
                 )
             )
             return true
@@ -958,6 +964,7 @@ class NavigationModel<L : Any, T : Any>(
                         navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Switch,
                     )
                 )
 
@@ -983,7 +990,8 @@ class NavigationModel<L : Any, T : Any>(
                             state.copy(
                                 navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
                                 comingFrom = state.currentLocation,
-                                willBeAddedToHistory = addToHistory
+                                willBeAddedToHistory = addToHistory,
+                                lastOperationType = OperationType.Push,
                             )
                         )
                     }
@@ -999,13 +1007,13 @@ class NavigationModel<L : Any, T : Any>(
                         navigation = setDataOnCurrentLocation(tabsOf(tabHostSpec).currentItem(), setData),
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Push,
                     )
                 )
             }
         }
         return createInPlaceIfNotFound
     }
-
 
     /** for kmp swift benefit (where default values don't work) **/
     fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, setData: (L) -> L = { it }): Boolean {
@@ -1062,6 +1070,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigation,
                 willBeAddedToHistory = addToHistory,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.None,
             )
         )
     }

@@ -10,22 +10,34 @@ struct iOSApp: App {
     }
     
     var body: some Scene {
-        let n8 = OG[NavigationModel<Location, TabHost>.self]
+        let n8: NavigationModel<Location, TabHostId> = OG[NavigationModel<Location, TabHostId>.self]
         
         WindowGroup {
-            N8Host<Location, TabHost>(
-                n8:n8,
-                tabUiBuilder: { tabHostId, index, selected in
-                    Label(tabHostId.description, systemImage: "gearshape.fill") // to do also need to handle click listeners here or not?
-                }
+            N8Host<Location, TabHostId>(
+                n8:n8
             ) { navState in
                 Group {
                     if navState.initialLoading {
                         ProgressView()
-                            .scaleEffect(2)
+                            .scaleEffect(3)
                             .padding().tint(.blue)
                     } else {
-                        MainContentView(navState:navState)
+//                        if !n8.state.hostedBy.isEmpty {
+//                            
+//    //                            N8TabHost<L, T>(
+//    //                                navModel: n8,
+//    //                                navState: navState,
+//    //                                tabHosts: { tabHostId, index, selected in
+//    //                                    Label(tabHostId.description, systemImage: "gearshape.fill") // to do also need to handle click listeners here or not?
+//    //                                },
+//    //                                currentLocation:MainContentView(navState:navState)
+//    //                            )
+//
+//                            CustomTabView()
+//                            MainContentView(navState:navState)
+//                        } else {
+                            MainContentView(navState:navState)
+//                        }
                     }
                 }
             }
@@ -48,3 +60,52 @@ struct iOSApp: App {
 //    }
 //}
 //
+
+
+
+//            switch tabHostLocation.tabHostId {
+//            case TabHostId.EuropeTabHost.shared:
+//                return AnyView(TabHostEurope(content: nestedContent))
+//            case TabHostId.GlobalTabHost.shared:
+//                return AnyView(TabHostGlobal(content: nestedContent))
+//            default:
+//                fatalError("unrecognised tabHostId '\(String(describing: tabHostLocation.tabHostId))'")
+//            }
+
+
+
+//struct ExampleContentView: View {
+//    let tabIds = ["one", "two", "three"]
+//
+//    var body: some View {
+//        TabHost(
+//            tabs: tabIds,
+//            content: { id in
+//                Text("Tab content for \(id)")
+//            },
+//            tabItem: { id in
+//                Label(id.capitalized, systemImage: "\(tabIds.firstIndex(of: id)! + 1).circle")
+//            }
+//        )
+//    }
+//}
+
+
+
+
+
+//struct ExampleContentView: View {
+//    let tabIds = ["one", "two", "three"]
+//
+//    var body: some View {
+//        TabHost(
+//            tabs: tabIds,
+//            content: { id in
+//                Text("Tab content for \(id)")
+//            },
+//            tabItem: { id in
+//                Label(id.capitalized, systemImage: "\(tabIds.firstIndex(of: id)! + 1).circle")
+//            }
+//        )
+//    }
+//}

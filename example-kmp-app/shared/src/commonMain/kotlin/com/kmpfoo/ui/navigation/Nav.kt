@@ -5,6 +5,7 @@ import co.early.fore.core.logging.MultiplatformLogger
 import co.early.n8.N8
 import co.early.n8.NavigationModel
 import co.early.n8.NavigationState
+import com.kmpfoo.logging.WarningsAndErrorsLogger
 import okio.Path
 import kotlin.reflect.typeOf
 
@@ -17,6 +18,7 @@ fun createNavigation(application: Any? = null) {
         initialWillBeAddedToHistoryFlag = false,
         stateKType = typeOf<NavigationState<Location, TabHostId>>(),
         dataPath = dataPath(application),
+        //logger = WarningsAndErrorsLogger(MultiplatformLogger("n8")),
         logger = MultiplatformLogger("n8"),
         clearPreviousNavGraph = true
     ).installInterceptor("logger") { old, new ->

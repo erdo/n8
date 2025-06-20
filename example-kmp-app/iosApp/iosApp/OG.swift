@@ -17,7 +17,7 @@ final class OG {
         
         #if DEBUG
         Fore.Companion().setDelegate(
-            delegate:DebugDelegateDefault(
+            delegate:WarningsAndErrorsDelegate(
                 tagPrefix: "foo_"
             )
         )
@@ -31,7 +31,7 @@ final class OG {
         
         
         // register dependencies for later
-        instance.register(NavKt.getNavigation(), as: NavigationModel<Location, TabHost>.self)
+        instance.register(NavKt.getNavigation(), as: NavigationModel<Location, TabHostId>.self)
     }
     
     static func initialize() {
