@@ -28,6 +28,11 @@ struct ViewMilan: View {
                     .font(.system(size: 25, weight: .bold))
             }
             .padding()
+            Button(action: { navigationModel.navigateBack(times: 2) }){
+                Text("Go back x2")
+                    .font(.system(size: 25, weight: .bold))
+            }
+            .padding()
         }
         .padding()
         .background(Color.brown)

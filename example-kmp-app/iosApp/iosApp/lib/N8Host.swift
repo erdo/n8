@@ -5,22 +5,22 @@ import shared
 
 struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         
-    @ObservedObject private var pathController: N8PathController
+    @ObservedObject private var pathController: N8PathController<L, T>
     @State private var navigationSource: NavigationSource = .none
     
     @ObservedObject private var n8ObservableObject: ForeObservableObject<NavigationState<L, T>>
     private let uiBuilder: (NavigationState<L, T>) -> any View
     private let n8: NavigationModel<L, T>
     
-
     init(
         n8: NavigationModel<L, T>,
-        @ViewBuilder uiBuilder: @escaping (NavigationState<L, T>) -> any View // takes NavigationState and then returns the UI (typically based on state.currentLocation)
+        // uiBuilder takes NavigationState and then returns the UI (typically based on state.currentLocation)
+        @ViewBuilder uiBuilder: @escaping (NavigationState<L, T>) -> any View
     ) {
         self.uiBuilder = uiBuilder
         self.n8ObservableObject = ForeObservableObject(foreModel: n8){ n8.state }
         self.n8 = n8
-        self.pathController = N8PathController(withInitialState: n8.state)
+        self.pathController = N8PathController<L, T>(navigationModel:n8)
     }
 
     var body: some View {
@@ -47,37 +47,10 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
     
     private func stateChanged(to newState: NavigationState<L, T>) {
         
-        Fore.companion.e(message: "stateChanged() lastOp:\(newState.lastOperationType) backsToExit:\(newState.backsToExit) navigationSource:\(navigationSource)")
-        
-        var originallyFromPath = true
-        if (navigationSource != .path){
-            originallyFromPath = false
-            Fore.companion.e(message: "---- N8 CHANGED FIRST ----")
-        }
-            
+        Fore.companion.e(message: "stateChanged() navigationSource:\(navigationSource) backsToExit:\(newState.backsToExit)")
+
         navigationSource = .n8
-        
-        if newState.backsToExit == 1 {
-            // at home location, in iOS we depend on and empty NavigationPath and the root view, set above
-            Fore.companion.e(message: "N8 updating path: Home location - so path should be empty")
-            pathController.setPathForNoItems()
-            
-        } else if newState.backsToExit == 2 {
-            // the path should contain only one item representing the current location (the home location is the root view in iOS)
-            Fore.companion.e(message: "N8 updating path: Second location - so path represents the current state only [0]")
-            pathController.setPathForOneItem()
-        
-        } else if newState.backsToExit == 3 {
-            // the path should contain 2 items representing the back location and the current location (with the home location in the root view)
-            Fore.companion.e(message: "N8 updating path: [1] = peekBack state, [0] = current state")
-            pathController.setPathForTwoItems()
-            
-        } else {
-            // the path should contain 3 items representing the back-back location, the back location, and the current location
-            // previous navigation items in the back path still exist in memory managed by N8
-            Fore.companion.e(message: "N8 updating path: [2] = peekBack.peekBack state, [1] = peekBack state, [0] = current state")
-            pathController.setPathForThreeOrMoreItems(with: originallyFromPath ? OperationType.None() : newState.lastOperationType)
-        }
+        pathController.syncPathWithN8()
     }
     
     private func pathChanged(to newPath: NavigationPath) {
@@ -86,14 +59,8 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         
         if (navigationSource == .n8) {
             navigationSource = .none
-            
         } else {
-            
-            Fore.companion.e(message: "---- PATH CHANGED FIRST ----")
-            
             navigationSource = .path
-            
-            Fore.companion.e(message: "N8 about to update state: system back encountered (new PATH size:\(newPath.count))")
             n8.navigateBack()
         }
     }

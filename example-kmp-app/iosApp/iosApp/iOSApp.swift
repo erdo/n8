@@ -22,22 +22,7 @@ struct iOSApp: App {
                             .scaleEffect(3)
                             .padding().tint(.blue)
                     } else {
-//                        if !n8.state.hostedBy.isEmpty {
-//                            
-//    //                            N8TabHost<L, T>(
-//    //                                navModel: n8,
-//    //                                navState: navState,
-//    //                                tabHosts: { tabHostId, index, selected in
-//    //                                    Label(tabHostId.description, systemImage: "gearshape.fill") // to do also need to handle click listeners here or not?
-//    //                                },
-//    //                                currentLocation:MainContentView(navState:navState)
-//    //                            )
-//
-//                            CustomTabView()
-//                            MainContentView(navState:navState)
-//                        } else {
-                            MainContentView(navState:navState)
-//                        }
+                        MainContentView(navState:navState)
                     }
                 }
             }
