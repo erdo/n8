@@ -30,7 +30,7 @@ private val customNavigation = {
     Unit
 }
 private val navigationModel by lazy {
-    com.kmpfoo.android.OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    com.kmpfoo.android.OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable

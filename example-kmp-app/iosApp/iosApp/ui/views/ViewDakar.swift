@@ -3,33 +3,46 @@ import SwiftUI
 import shared
 
 struct ViewDakar: View {
-
-    private let navigationModel: NavigationModel<Location, TabHostId>
-
-    init() {
-        navigationModel = OG[NavigationModel<Location, TabHostId>.self]
-    }
     
-    var body: some View {
-        
-        VStack {
-            Text("location: Dakar")
-                .font(.system(size: 35, weight: .bold))
-            
-            Button(action: { navigationModel.navigateTo(location: Location.LA.shared) }){
-                Text("Go to LA")
-                    .font(.system(size: 25, weight: .bold))
-            }
+    @EnvironmentN8<Location, TabHostId> private var n8
+    @EnvironmentN8PreBackHandler private var preBackHandler
+    
+    let label: String = "Dakar"
+    let color: Color = Color.orange
 
-            Button(action: { navigationModel.navigateBack() }){
-                Text("Go back")
-                    .font(.system(size: 25, weight: .bold))
+    var body: some View {
+        ZStack {
+            color.ignoresSafeArea()
+            VStack {
+                Text("location: \(label)")
+                    .font(.system(size: 35, weight: .bold))
+                    .padding()
+                
+                Button(action: { n8.navigateTo(location: Location.LA.shared) }){
+                    Text("Go to LA")
+                        .font(.system(size: 25, weight: .bold))
+                }
+                .padding()
+                
+                Button(action: { preBackHandler.prepareBack {
+                    n8.navigateBackTo(location: Location.NewYork.shared)
+                } }){
+                    Text("Back to New York")
+                        .font(.system(size: 25, weight: .bold))
+                }
+                .padding()
+
+                Button(action: { preBackHandler.prepareBack {
+                    n8.navigateBack()
+                } }){
+                    Text("Go back")
+                        .font(.system(size: 25, weight: .bold))
+                }
+                .padding()
             }
             .padding()
+            .navigationTitle(label)
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .padding()
-        .background(Color.orange)
-        .navigationTitle("Dakar")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -1,20 +1,57 @@
 import SwiftUI
 import shared
 
-//func currentScreenView(navigationState: NavigationState, modifier: some ViewModifier = EmptyModifier()) -> some View {
-//    let currentLocation = navigationState.currentLocation
-//
-//    return Group {
-//        switch currentLocation {
-//        case .welcome:
-//            ScreenWelcome().modifier(modifier.background(Color(red: 0.7, green: 1.0, blue: 0.85))) // Mint Green
-//        case .home:
-//            ScreenHome().modifier(modifier.background(Color(red: 1.0, green: 0.76, blue: 0.8))) // Soft Pink
-//        case .bangkok(let location):
-//            ScreenBangkok(location: location).modifier(modifier.background(Color(red: 1.0, green: 1.0, blue: 0.7))) // Light Yellow
-//        case .dakar:
-//            ScreenDakar().modifier(modifier.background(Color(red: 0.8, green: 1.0, blue: 1.0))) // Pale Cyan
-//        // ... Add other cases similarly ...
-//        }
-//    }
-//}
+struct CurrentView: View {
+    
+    @EnvironmentN8<Location, TabHostId> private var n8
+    
+    let navState: NavigationState<Location, TabHostId>
+    
+    init(navState: NavigationState<Location, TabHostId>) {
+        self.navState = navState
+    }
+    
+    var body: some View {
+        AnyView(currentViewMapper(currentLocation: navState.currentLocation))
+    }
+}
+
+@ViewBuilder
+private func currentViewMapper(currentLocation: Location) -> any View {
+    switch currentLocation {
+        case Location.Welcome.shared:
+            ViewWelcome()
+        case Location.Home.shared:
+            ViewHome()
+        case let location as Location.Bangkok:
+            ViewBangkok()
+        case Location.Dakar.shared:
+            ViewDakar()
+        case Location.LA.shared:
+            ViewLA()
+        case Location.NewYork.shared:
+            ViewNewYork()
+        case Location.EuropeanLocationLondon.shared:
+            ViewLondon()
+        case let location as Location.EuropeanLocationMilan:
+            ViewMilan(location:location)
+        case Location.EuropeanLocationParis.shared:
+            ViewParis()
+        case Location.EuropeanLocationDanube.shared:
+            ViewDanube()
+        case Location.EuropeanLocationFrance.shared:
+            ViewFrance()
+        case Location.EuropeanLocationPoland.shared:
+            ViewPoland()
+        case Location.EuropeanLocationRhine.shared:
+            ViewRhine()
+        case Location.EuropeanLocationSeine.shared:
+            ViewSeine()
+        case Location.EuropeanLocationSpain.shared:
+            ViewSpain()
+        case Location.EuropeanLocationThames.shared:
+            ViewThames()
+        default:
+            Text("Unknown location \(currentLocation)")
+    }
+}

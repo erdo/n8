@@ -480,15 +480,15 @@ private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): N
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigation<L, T>? {
-    Fore.d("calculateBackStep() type:${this::class.simpleName} navigation:${this}")
+    Fore.d("_applyOneStepBackNavigation() type:${this::class.simpleName} navigation:${this}")
     return if (specificItemCanNavigateBack()) {
-        Fore.d("calculateBackStep()... item CAN navigate back")
+        Fore.d("_applyOneStepBackNavigation()... item CAN navigate back")
         _mutateNavigation(
             oldItem = this,
             newItem = this._createItemNavigatedBackCopy()
         )
     } else { // try to move up the chain
-        Fore.d("calculateBackStep()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
+        Fore.d("_applyOneStepBackNavigation()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
         parent?._applyOneStepBackNavigation()
     }
 }

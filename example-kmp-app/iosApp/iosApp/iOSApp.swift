@@ -11,8 +11,8 @@ struct iOSApp: App {
     
     var body: some Scene {
         let n8: NavigationModel<Location, TabHostId> = OG[NavigationModel<Location, TabHostId>.self]
-        
         WindowGroup {
+         //   PlatformTabView() // to test plaftormTabHostView it needs to be run at the top level
             N8Host<Location, TabHostId>(
                 n8:n8
             ) { navState in
@@ -22,7 +22,7 @@ struct iOSApp: App {
                             .scaleEffect(3)
                             .padding().tint(.blue)
                     } else {
-                        MainContentView(navState:navState)
+                        ContentRoot(navState:navState)
                     }
                 }
             }
@@ -30,67 +30,23 @@ struct iOSApp: App {
     }
 }
 
+struct ContentRoot: View {
+    
+    @EnvironmentN8<Location, TabHostId> private var n8
+    
+    let navState: NavigationState<Location, TabHostId>
+    
+    init(navState: NavigationState<Location, TabHostId>) {
+        self.navState = navState
+    }
 
-//@main
-//struct MyApp: App {
-//    @StateObject private var sessionManager = SessionManager()
-//    @StateObject private var navController = NavigationController<String>()
-//
-//    var body: some Scene {
-//        WindowGroup {
-//            ContentView()
-//                .environmentObject(sessionManager)
-//                .environmentObject(navController)
-//        }
-//    }
-//}
-//
-
-
-
-//            switch tabHostLocation.tabHostId {
-//            case TabHostId.EuropeTabHost.shared:
-//                return AnyView(TabHostEurope(content: nestedContent))
-//            case TabHostId.GlobalTabHost.shared:
-//                return AnyView(TabHostGlobal(content: nestedContent))
-//            default:
-//                fatalError("unrecognised tabHostId '\(String(describing: tabHostLocation.tabHostId))'")
-//            }
-
-
-
-//struct ExampleContentView: View {
-//    let tabIds = ["one", "two", "three"]
-//
-//    var body: some View {
-//        TabHost(
-//            tabs: tabIds,
-//            content: { id in
-//                Text("Tab content for \(id)")
-//            },
-//            tabItem: { id in
-//                Label(id.capitalized, systemImage: "\(tabIds.firstIndex(of: id)! + 1).circle")
-//            }
-//        )
-//    }
-//}
-
-
-
-
-
-//struct ExampleContentView: View {
-//    let tabIds = ["one", "two", "three"]
-//
-//    var body: some View {
-//        TabHost(
-//            tabs: tabIds,
-//            content: { id in
-//                Text("Tab content for \(id)")
-//            },
-//            tabItem: { id in
-//                Label(id.capitalized, systemImage: "\(tabIds.firstIndex(of: id)! + 1).circle")
-//            }
-//        )
-//    }
-//}
+    var body: some View {
+        if !n8.state.hostedBy.isEmpty {
+            RootTabHostView(n8:n8) {
+                AnyView(CurrentView(navState:navState))
+            }
+        } else {
+            CurrentView(navState:navState)
+        }
+    }
+}

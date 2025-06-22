@@ -1,8 +1,6 @@
 import SwiftUI
 import shared
 
-tidy, make a new comit, then work on TabUIs, copy pattern from android as path should now be a none issue?
-can we totally get rid of OperationType from n8 lib?
 
 /**
  * NavigationPath controller. SwiftUI runs its navigation change animations based on a diff of the old path size and the new path size. If the path increases in size the system assumes we
@@ -25,17 +23,31 @@ can we totally get rid of OperationType from n8 lib?
  * [9, 9, 9, 9, 9,... 2, 1, 0] - we could be anywhere else in the navigation graph (we only keep track of the last 3 locations), in this example we have 5 buffer characters for performing 5 pop
  * animations before we run out
  */
-class N8PathController<L: AnyObject & Hashable, T: AnyObject & Hashable>: ObservableObject {
+class N8PathController<L: AnyObject & Hashable, T: AnyObject & Hashable>: ObservableObject, BackPreHandler {
 
     @Published var path = NavigationPath()
     private let n8: NavigationModel<L, T>
     private let bufferValue = 9
     var loggingArray : [Int] = [0]
     
+    private(set) var preparing: Bool = false
+    
     init (navigationModel: NavigationModel<L, T>) {
         self.n8 = navigationModel
     }
     
+    // use this to wrap any form of back navigation you want to perform to ensure the system
+    // starts a valid back animation, _before_ our navigation state is changed, you will
+    // see animation jank otherwise
+    func prepareBack(action: @escaping () -> Void){
+        preparing = true
+        path.removeLast()
+        DispatchQueue.main.async {
+            action()
+            self.preparing = false
+        }
+    }
+
     func syncPathWithN8(){
         
         if n8.state.backsToExit == 1 {
@@ -87,4 +99,9 @@ class N8PathController<L: AnyObject & Hashable, T: AnyObject & Hashable>: Observ
         path = tempPath
         loggingArray = tempArray
     }
+}
+
+protocol BackPreHandler {
+    var preparing: Bool { get }
+    func prepareBack(action: @escaping () -> Void)
 }

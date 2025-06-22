@@ -1,5 +1,6 @@
 package com.kmpfoo.ui.navigation
 
+import co.early.n8.TabBackMode
 import co.early.n8.TabHostSpecification
 import co.early.n8.TabRoot
 import com.kmpfoo.ui.navigation.Location.EuropeanLocation.Danube
@@ -75,7 +76,7 @@ sealed class TabHostId {
 }
 
 
-// inner tab
+// android tabs
 val tabHostSpecEurope = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.EuropeTabHost,
     homeTabLocations = listOf(
@@ -84,8 +85,6 @@ val tabHostSpecEurope = TabHostSpecification<Location, TabHostId>(
         TabRoot.LocationRoot(Danube),
     )
 )
-
-// outer tab
 val tabHostSpecGlobal = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.GlobalTabHost,
     homeTabLocations = listOf(
@@ -94,3 +93,25 @@ val tabHostSpecGlobal = TabHostSpecification<Location, TabHostId>(
     ),
     initialTab = 0,
 )
+
+// slightly different behaviour for iOS tabs
+val tabHostSpecEuropeIos = TabHostSpecification<Location, TabHostId>(
+    tabHostId = TabHostId.EuropeTabHost,
+    homeTabLocations = listOf(
+        TabRoot.LocationRoot(Spain),
+        TabRoot.LocationRoot(London),
+        TabRoot.LocationRoot(Danube),
+    ),
+    backMode = TabBackMode.Structural,
+)
+
+val tabHostSpecGlobalIos = TabHostSpecification<Location, TabHostId>(
+    tabHostId = TabHostId.GlobalTabHost,
+    homeTabLocations = listOf(
+        TabRoot.LocationRoot(NewYork),
+        TabRoot.TabHostRoot(tabHostSpecEuropeIos),
+    ),
+    initialTab = 0,
+    backMode = TabBackMode.Structural,
+)
+

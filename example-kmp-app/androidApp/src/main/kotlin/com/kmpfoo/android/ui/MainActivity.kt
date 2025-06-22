@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
@@ -35,29 +37,38 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.fillMaxSize()) {
                 N8Host<Location, TabHostId> { navigationState, peekBackNavState, backProgress ->
 
-                    peekBackNavState?.let { peek ->
-                        // predictive back view
-                        Box(Modifier.fillMaxSize()) {
-                            ContentRoot(peek)
-                        }
-                        // current view
-                        val elevationPx = with(LocalDensity.current) { (6.dp * backProgress.let { it * it }).toPx() }
-                        val alpha = 1 - alphaEasing.transform(backProgress)
-                        val scale = 1f - (0.4f * scaleEasing.transform(backProgress))
-
+                    if (navigationState.initialLoading) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .alpha(alpha)
-                                .graphicsLayer {
-                                    scaleX = scale
-                                    scaleY = scale
-                                    shadowElevation = elevationPx
-                                }
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            ContentRoot(navigationState)
+                            CircularProgressIndicator()
                         }
-                    } ?: run { ContentRoot(navigationState) }
+                    } else {
+                        peekBackNavState?.let { peek ->
+                            // predictive back view
+                            Box(Modifier.fillMaxSize()) {
+                                ContentRoot(peek)
+                            }
+                            // current view
+                            val elevationPx = with(LocalDensity.current) { (6.dp * backProgress.let { it * it }).toPx() }
+                            val alpha = 1 - alphaEasing.transform(backProgress)
+                            val scale = 1f - (0.4f * scaleEasing.transform(backProgress))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .alpha(alpha)
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                        shadowElevation = elevationPx
+                                    }
+                            ) {
+                                ContentRoot(navigationState)
+                            }
+                        } ?: run { ContentRoot(navigationState) }
+                    }
                 }
             }
         }

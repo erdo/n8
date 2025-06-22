@@ -9,15 +9,18 @@ import co.early.n8.NavigationModel
 import com.kmpfoo.ui.navigation.Location
 import com.kmpfoo.ui.navigation.TabHostId
 import com.kmpfoo.ui.navigation.createNavigation
+import kotlin.reflect.KClass
 
 /**
  * Copyright © 2015-2023 early.co. All rights reserved.
+ *
+ * simple manual DI for the sample, but you do you
  */
 @Suppress("UNUSED_PARAMETER")
 object OG {
 
     private var initialized = false
-    private val dependencies = HashMap<Class<*>, Any>()
+    private val dependencies = HashMap<KClass<*>, Any>()
 
     fun setApplication(application: Application) {
 
@@ -33,7 +36,7 @@ object OG {
         val n8: NavigationModel<Location, TabHostId> = N8.n8<Location, TabHostId>()
 
         // add models to the dependencies map if you will need them later
-        dependencies[NavigationModel::class.java] = n8
+        dependencies[NavigationModel::class] = n8
     }
 
     fun init() {
@@ -58,7 +61,7 @@ object OG {
      * Call it like this:
      *
      * <code>
-     *     yourModel = OG[YourModel::class.java]
+     *     yourModel = OG[YourModel::class]
      * </code>
      *
      * If you want to more tightly scoped object, one way is to pass a factory class here and create
@@ -66,9 +69,9 @@ object OG {
      *
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(model: Class<T>): T = dependencies[model] as T
+    operator fun <T : Any> get(model: KClass<T>): T = dependencies[model] as T
 
-    fun <T> putMock(clazz: Class<T>, instance: T) {
+    fun <T : Any> putMock(clazz: KClass<T>, instance: T) {
         dependencies[clazz] = instance as Any
     }
 }

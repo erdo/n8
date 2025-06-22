@@ -4,7 +4,7 @@ import shared
 
 
 struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
-        
+    
     @ObservedObject private var pathController: N8PathController<L, T>
     @State private var navigationSource: NavigationSource = .none
     
@@ -20,7 +20,7 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         self.uiBuilder = uiBuilder
         self.n8ObservableObject = ForeObservableObject(foreModel: n8){ n8.state }
         self.n8 = n8
-        self.pathController = N8PathController<L, T>(navigationModel:n8)
+        self.pathController = N8PathController<L, T>(navigationModel: n8)
     }
 
     var body: some View {
@@ -31,11 +31,20 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
                     if backCount == 0 {
                         AnyView(uiBuilder(n8.state))
                     } else if backCount == 1 {
-                        AnyView(uiBuilder(NavigationState(navigation:n8.state.peekBack!)))
+                        if let peekBack = n8.state.peekBack {
+                            AnyView(uiBuilder(NavigationState(navigation: peekBack)))
+                        }
                     } else if backCount == 2 {
-                        AnyView(uiBuilder(NavigationState(navigation:NavigationState(navigation:n8.state.peekBack!).peekBack!)))
+                        if let peekBack = n8.state.peekBack,
+                           let peekBackPeekBack = NavigationState(navigation: peekBack).peekBack {
+                            AnyView(uiBuilder(NavigationState(navigation: peekBackPeekBack)))
+                        }
                     }
                 }
+        }
+        .transformEnvironment(\.self) { environment in
+            environment[NavigationModelKey<L, T>.self] = n8
+            environment[BackPreHandlerKey.self] = pathController as any BackPreHandler
         }
         .onReceive(n8ObservableObject.$state) { newState in // for when n8 state changes
             stateChanged(to: newState)
@@ -61,7 +70,9 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
             navigationSource = .none
         } else {
             navigationSource = .path
-            n8.navigateBack()
+            if !pathController.preparing { // if we are not in the middle of preparing, that means this path change has come from the system
+                n8.navigateBack()
+            }
         }
     }
     
@@ -69,5 +80,60 @@ struct N8Host<L: AnyObject & Hashable, T: AnyObject & Hashable>: View {
         case none
         case path
         case n8
+    }
+}
+
+
+// MARK: - @EnvironmentN8<Location, TabHostId> private var n8
+
+struct NavigationModelKey<L: AnyObject & Hashable, T: AnyObject & Hashable>: EnvironmentKey {
+    static var defaultValue: NavigationModel<L, T>? { nil }
+}
+
+extension EnvironmentValues {
+    func n8<L: AnyObject & Hashable, T: AnyObject & Hashable>() -> NavigationModel<L, T> {
+        guard let model = self[NavigationModelKey<L, T>.self] else {
+            fatalError("n8 not found in environment. You can only call this from a child of the N8Host hierarchy")
+        }
+        return model
+    }
+}
+
+@propertyWrapper
+struct EnvironmentN8<L: AnyObject & Hashable, T: AnyObject & Hashable>: DynamicProperty {
+    @Environment(\.self) private var environment
+    
+    var wrappedValue: NavigationModel<L, T> {
+        environment.n8()
+    }
+}
+
+
+// MARK: - @EnvironmentN8PreBackHandler private var preBackHandler
+
+struct BackPreHandlerKey: EnvironmentKey {
+    static let defaultValue: BackPreHandler = DefaultBackPreHandler()
+}
+
+extension EnvironmentValues {
+    var backPreHandler: BackPreHandler {
+        get { self[BackPreHandlerKey.self] }
+    }
+}
+
+@propertyWrapper
+struct EnvironmentN8PreBackHandler: DynamicProperty {
+    @Environment(\.backPreHandler) private var _backPreHandler: BackPreHandler
+
+    var wrappedValue: BackPreHandler {
+        _backPreHandler
+    }
+}
+
+struct DefaultBackPreHandler: BackPreHandler {
+    var preparing: Bool = false
+    
+    func prepareBack(action: @escaping () -> Void) {
+        fatalError("preBackHandler not found in environment. You can only call this from a child of the N8Host hierarchy")
     }
 }

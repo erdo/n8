@@ -20,7 +20,7 @@ import com.kmpfoo.ui.navigation.TabHostId
 private val name = "Thames"
 private val nextLocation = Location.EuropeanLocation.Danube
 private val navigationModel by lazy {
-    com.kmpfoo.android.OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    com.kmpfoo.android.OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable

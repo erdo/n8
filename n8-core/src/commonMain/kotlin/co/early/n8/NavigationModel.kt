@@ -1090,6 +1090,7 @@ class NavigationModel<L : Any, T : Any>(
 
     private fun updateState(newState: NavigationState<L, T>) {
         state = checkInterceptors(newState)
+        logger.v("n8 state: ${state.navigation.toString(diagnostics = false)}")
         notifyObservers()
         perSista.write(state, stateKType) {}
     }

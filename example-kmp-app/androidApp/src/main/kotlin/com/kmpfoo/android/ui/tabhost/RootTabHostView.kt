@@ -10,7 +10,7 @@ import com.kmpfoo.ui.navigation.Location
 import com.kmpfoo.ui.navigation.TabHostId
 
 private val navModel by lazy {
-    OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable

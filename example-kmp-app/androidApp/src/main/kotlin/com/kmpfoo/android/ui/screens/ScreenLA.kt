@@ -26,7 +26,7 @@ private val customNavigation = {
     navigationModel.navigateTo(Location.EuropeanLocation.Seine)
 }
 private val navigationModel by lazy {
-    OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable

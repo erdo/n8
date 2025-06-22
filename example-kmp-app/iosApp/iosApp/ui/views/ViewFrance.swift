@@ -1,13 +1,14 @@
 import SwiftUI
 import shared
 
-struct ViewLondon: View {
-
+struct ViewFrance: View {
+    
+    
     @EnvironmentN8<Location, TabHostId> private var n8
     @EnvironmentN8PreBackHandler private var preBackHandler
     
-    let label: String = "London"
-    let color: Color = Color.yellow
+    let label: String = "France"
+    let color: Color = Color.teal
 
     var body: some View {
         ZStack {
@@ -17,27 +18,27 @@ struct ViewLondon: View {
                     .font(.system(size: 35, weight: .bold))
                     .padding()
                 
-                Button(action: { n8.navigateTo(location: Location.EuropeanLocationMilan(message: nil)) }){
-                    Text("Go to Milan")
+                Button(action: { n8.navigateTo(location: Location.EuropeanLocationPoland.shared) }){
+                    Text("Go to Poland")
                         .font(.system(size: 25, weight: .bold))
                 }
                 .padding()
                 
                 Button(action: {
                     // the reason we switch tabs first here is because in the event that
-                    // the Bangkok location is not found on the back path, the location
-                    // Bangkok will be created in place and in that case we want it created
+                    // the London location is not found on the back path, the location
+                    // London will be created in place and in that case we want it created
                     // in the correct tabHost and on the correct tab
-                    n8.switchTab(tabHostSpec: LocationsKt.tabHostSpecGlobalIos, tabIndex: 0)
+                    n8.switchTab(tabHostSpec: LocationsKt.tabHostSpecEuropeIos, tabIndex: 0)
                     preBackHandler.prepareBack {
-                        n8.navigateTo(location:Location.Bangkok(message: nil))
+                        n8.navigateBackTo(location: Location.EuropeanLocationLondon.shared)
                     }
                 }){
-                    Text("Go to Bangkok")
+                    Text("City > London")
                         .font(.system(size: 25, weight: .bold))
                 }
                 .padding()
-
+                
                 Button(action: { preBackHandler.prepareBack {
                     n8.navigateBack()
                 } }){

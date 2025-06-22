@@ -4,25 +4,29 @@ import shared
 
 struct ViewWelcome: View {
     
-    private let navigationModel: NavigationModel<Location, TabHostId>
+    @EnvironmentN8<Location, TabHostId> private var n8
+    @EnvironmentN8PreBackHandler private var preBackHandler
     
-    init() {
-        navigationModel = OG[NavigationModel<Location, TabHostId>.self]
-    }
-    
+    let label: String = "Welcome (one time)"
+    let color: Color = Color.purple
+
     var body: some View {
-        VStack {
-            Text("location: One time Welcome screen")
-                .font(.system(size: 35, weight: .bold))
-            Button(action: { navigationModel.navigateTo(location: Location.Home.shared) }){
-                Text("Go to Home")
-                    .font(.system(size: 25, weight: .bold))
+        ZStack {
+            color.ignoresSafeArea()
+            VStack {
+                Text("location: \(label)")
+                    .font(.system(size: 35, weight: .bold))
+                    .padding()
+
+                Button(action: { n8.navigateTo(location: Location.Home.shared) }){
+                    Text("Go to Home")
+                        .font(.system(size: 25, weight: .bold))
+                }
+                .padding()
             }
             .padding()
+            .navigationTitle(label)
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .padding()
-        .background(Color.green)
-        .navigationTitle("Welcome")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }

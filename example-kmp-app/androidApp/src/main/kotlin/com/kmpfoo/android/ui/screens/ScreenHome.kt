@@ -22,7 +22,7 @@ import com.kmpfoo.ui.navigation.tabHostSpecGlobal
 private val name = "Home"
 private val nextLocation = Location.Bangkok
 private val navigationModel by lazy {
-    OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable
@@ -65,7 +65,7 @@ fun HomeView(
         Button(
             onClick = navigateToNext
         ) {
-            Text("Go To Tabs")
+            Text("Go to Tabs")
         }
     }
 }

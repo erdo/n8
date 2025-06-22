@@ -2,7 +2,7 @@ import Foundation
 import shared
 
 /*
- get dependencies from anywhere like this counterModel = OG[CounterModel.self]
+ simple manual DI for the sample, but you do you. get dependencies from anywhere like this counterModel = OG[CounterModel.self]
  */
 final class OG {
 
@@ -16,10 +16,14 @@ final class OG {
     static func create() {
         
         #if DEBUG
+        // commenting out the logging will make things run noticeably faster
+//        Fore.Companion().setDelegate(
+//            delegate:WarningsAndErrorsDelegate(
+//                tagPrefix: "foo_"
+//            )
+//        )
         Fore.Companion().setDelegate(
-            delegate:WarningsAndErrorsDelegate(
-                tagPrefix: "foo_"
-            )
+            delegate:DebugDelegateDefault(tagPrefix: "foo_")
         )
         #endif
         

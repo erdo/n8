@@ -25,7 +25,7 @@ private val customNavigation = {
     Unit
 }
 private val navigationModel by lazy {
-    OG[NavigationModel::class.java] as NavigationModel<Location, TabHostId>
+    OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
 }
 
 @Composable

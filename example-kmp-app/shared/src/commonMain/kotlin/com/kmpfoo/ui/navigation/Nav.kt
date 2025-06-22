@@ -18,8 +18,6 @@ fun createNavigation(application: Any? = null) {
         initialWillBeAddedToHistoryFlag = false,
         stateKType = typeOf<NavigationState<Location, TabHostId>>(),
         dataPath = dataPath(application),
-        //logger = WarningsAndErrorsLogger(MultiplatformLogger("n8")),
-        logger = MultiplatformLogger("n8"),
         clearPreviousNavGraph = true
     ).installInterceptor("logger") { old, new ->
         Fore.getLogger().i(
