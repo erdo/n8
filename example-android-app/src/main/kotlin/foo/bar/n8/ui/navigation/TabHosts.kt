@@ -1,6 +1,7 @@
 package foo.bar.n8.ui.navigation
 
 import co.early.n8.TabHostSpecification
+import co.early.n8.rootLocationsOf
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,15 +19,15 @@ sealed class TabHostId {
 
 val tabHostSpecMain = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.TabsMain,
-    homeTabLocations = listOf(Location.EuropeanLocations.Paris, Location.NewYork, Location.Tokyo),
+    homeTabLocations = rootLocationsOf(Location.EuropeanLocations.Paris, Location.NewYork, Location.Tokyo),
 )
 
 val tabHostSpecSettings = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.TabsSettings,
-    homeTabLocations = listOf(Location.Dakar, Location.Bangkok),
+    homeTabLocations = rootLocationsOf(Location.Dakar, Location.Bangkok),
 )
 
 val tabHostSpecAccount = TabHostSpecification<Location, TabHostId>(
     tabHostId = TabHostId.TabsAccount,
-    homeTabLocations = listOf(Location.Mumbai, Location.LA, Location.Seoul),
+    homeTabLocations = rootLocationsOf(Location.Mumbai, Location.LA, Location.Seoul),
 )

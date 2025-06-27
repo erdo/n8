@@ -5,6 +5,7 @@
         android:allowBackup="false"
         android:supportsRtl="true"
         android:name=".App"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.AppTheme">
         <activity
             android:name=".ui.MainActivity"

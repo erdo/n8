@@ -28,7 +28,8 @@ _Note: a legacy or hybrid android app that still uses fragments or multiple acti
 ### Details
 
 It's not necessary to specify navigation routes upfront, N8 just builds the navigation graph
-as you go, ensuring that back operations always make sense. These are the main functions your code
+as you go, ensuring that back operations always make sense (you are in complete control of the 
+navigation graph and can re-write it as you wish). These are the main functions your code
 needs to call to navigate around the app: ```navigateTo(), navigateBack(), navigateBackTo(), switchTab()```
 
 ``` kotlin
@@ -58,15 +59,13 @@ To use N8 in your app, you don't need to implement any special interfaces on you
 UI code remains largely independent of N8 itself.
 
 You do need to tell N8 what class you are using to keep track of your user's *Location* and your
-*TabHosts* - something like a sealed class works well here, you could use a String if you wanted,
-[but you might not want to](https://github.com/erdo/n8/issues/18). If you don't have any tabbed
-navigations you can just put Unit, but note the below:
+*TabHosts*, whatever you choose needs to have sensible equals() and hashcode() implementations for 
+Kotlin and be Hashable in Swift - something like a sealed class works well here. If you don't have
+any tabbed navigations you can just put Unit for the TabHost class, but read the note for KMP:
 
-_**KMP considerations** In Swift, whatever you choose for Location and TabHost must conform to the
-Hashable protocol. Kotlin enums, data classes and primitives generally are, but there are a few
-gotchas:
-- If your data class has a list in it somewhere, it likely won't be Hashable once translated to the Swift equivalent. In that case you'll need to make it conform to Hashable by implementing the ```hash(into:)``` and ```==``` operators in Swift before using it in iOS 
-- Unit is also not Hashable in Swift, but at the moment KMP translates that to KotlinUnit which is Hashable (If that changes you'll have to choose something more class like or implement the Hashable bits yourself)
+**KMP** Unit is not Hashable in Swift, but at the moment KMP translates that to KotlinUnit which is 
+Hashable (If that changes you'll have to choose something more class like or implement the Hashable 
+bits yourself)
 
 Here's are some examples. "Location" and "TabHostId" are your own class and nothing to do with N8 code, you
 could call them "CosmicGirl" and "Loquat" if you wanted
@@ -186,13 +185,19 @@ setContent {
 Pass the N8 instance around the app using your choice of DI, or access it directly like this:
 
 ``` kotlin
-N8.n8()
+val n8 = N8.n8()
 ```
 
 In Compose style, you can also access the current navigation state from within N8Host scope:
 
 ``` kotlin
 val navigationState = LocalN8HostState
+```
+
+Or like this, it's the same immutable state:
+
+``` kotlin
+val navigationState = n8.state
 ```
 
 Call the navigation functions from within ClickListeners / ViewModels / ActionHandlers etc as
@@ -218,7 +223,7 @@ LowLevelApi - and they come with a warning! it's much easier to misuse these fun
 regular API)
 
 There is an example in the sample app in CustomNavigationExt.kt and more information about N8's
-data structure bellow (which should be considered required reading before attempting to write a
+data structure below (which should be considered required reading before attempting to write a
 custom navigation mutation)
 
 ### Interceptors
@@ -287,8 +292,8 @@ added during construction).
 
 The current state of the navigation is always exportable/importable. In fact the whole state is
 serialized and persisted to local storage at each navigation step. You can take this serialized
-state, send the String to someone in a message, import it into their app and thus transfer an entire
-navigation state to another phone.
+state, send the String to someone in a message, import it into their app and thus transfer an 
+entire navigation state to another phone.
 
 For deep linking you probably want to construct a custom navigation state, which is easy to do
 with the helper functions, for example:
@@ -345,7 +350,7 @@ the rest of the navigation graph, so there is no way to loose it by rotating the
 quitting the app, it becomes part of the graph and will still be there when you navigate back.
 
 Quite often you will want to collect some user data on a screen and then pass that data back to
-a previous location:
+a previous location, here's how to do that:
 
 ``` kotlin
 navigationModel.navigateTo(Sydney())
@@ -369,8 +374,7 @@ If you want to know how all this is working, the first step is to understand the
 underlying data structure used to represent the state of the navigation at any point in time.
 
 The navigation graph is represented as an immutable tree structure, when N8 logs its state, it logs
-that
-tree structure from top-left to bottom-right, like a file explorer.
+that tree structure from top-left to bottom-right, like a file explorer.
 
 The first item is drawn on the top-left, and represents the entry into the app. As the user navigates 
 to different locations, the tree structure grows down and right as locations are added in such a way 
@@ -380,7 +384,7 @@ by continually pressing back.
 We call this first item (or the last item before exit as a user navigates back) the "home" location. 
 The home location of a nav graph is not necessarily where the user entered because the graph can
 be arbitrarily re-written. Or the location where the user entered may have been some kind of intro
-screen and never have even been added to the navigation graph in the first place (using `willBeAddedToHistory = false`)
+screen and not have been kept in the navigation graph in the first place (using `willBeAddedToHistory = false`)
 
 The "current" location represents the screen the user is currently on and is typically towards the
 bottom right of the graph.
@@ -510,10 +514,9 @@ navigation graph.
 n8.toString(diagnostics = false)
 ```
 
-will give you an output
-similar to the examples shown above. The outputs are deliberately formatted to be copy-pasteable
-directly into your kotlin code with only minor changes so you can re-create the graph for further
-experimentation.
+will give you an output similar to the examples shown above. The outputs are deliberately formatted
+to be copy-pasteable directly into your kotlin code with only minor changes so you can re-create
+the graph for further experimentation.
 
 ``` kotlin
 n8.toString(diagnostics = true)
@@ -525,10 +528,9 @@ issues or clients implementing custom mutations
 ### TabHost navigation
 
 TabHosts can be nested arbitrarily and are identified by an id. Changing tabs by specifying a
-tabIndex, adding a brand new TabHost at the user's current location, optionally clearing the tab's
-history when the user selects that tab, or breaking out of a TabHost completely and continuing on a
-tab
-from a parent TabHost is all supported with the same functions:
+tabIndex, adding a brand new nested TabHost at the user's current location, optionally clearing 
+the tab's history when the user selects that tab, or breaking out of a TabHost completely and 
+continuing on a tab from a parent TabHost is all supported with the same functions:
 
 ``` kotlin
 /**
@@ -558,7 +560,11 @@ navigationModel.navigateTo(location = SignOutScreen) { null }
 TabHosts tend to treat the back operation in one of 2 different ways. N8 calls these two modes
 "Structural" and "Temporal".
 
-By Structural we mean something akin to the old "up" operation in android. Let's say you have an
+By Structural we mean as the user navigates back, once they are at the root location of the tab,
+one more back navigation exits the user from that TabHost entirely (i.e. the user doesn't cycle
+through previously visited tabs on their way back).
+
+Let's say you have an
 app that contains a single TabHost with 3 tabs, let's say the user has built up a history on this
 TabHost by selecting all 3 tabs in turn, but while they have been on the current tab, has
 only navigated to 2 new locations.
@@ -623,6 +629,16 @@ Note that N8 implements those two modes using only the **tabHistory** field.
 
 You can set the TabBackMode via the ```switchTab()``` function. The default
 is ```TabBackMode.Temporal```
+
+
+### Nomenclature: Back path vs Navigation graph
+**Structural** TabHosts introduce the possibility for locations to be present in the navigation
+graph which are not reachable by only making back operations (they are still reachable by switching
+tabs etc).
+
+In the Structural example above, the *back path* looks like this: Shanghai -> Mumbai -> London
+
+But the full *navigation graph* also contains the locations: Houston, Tokyo, Paris, Sydney
 
 
 ## License

@@ -22,6 +22,8 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import kotlin.test.AfterTest
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class NavigationModelLinearNavTest {
 
@@ -435,6 +437,57 @@ class NavigationModelLinearNavTest {
     }
 
     @Test
+    fun `given location is not on back path - when navigating back to it - location is created in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateBackTo(Paris)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(4, navigationModel.state.backsToExit)
+        assertEquals(Paris, navigationModel.state.currentLocation)
+        assertEquals(Tokyo, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Tokyo, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `given location is not on back path and createInPlaceIfNotFound is false - when navigating back to it - location is NOT created in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(NewYork)
+        navigationModel.navigateTo(Tokyo)
+        val success = navigationModel.navigateBackTo(Paris, createInPlaceIfNotFound = false)
+        Fore.i(navigationModel.toString(diagnostics = true))
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(3, navigationModel.state.backsToExit)
+        assertFalse(success)
+        assertEquals(Tokyo, navigationModel.state.currentLocation)
+        assertEquals(NewYork, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(NewYork, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
     fun `given location has been visited twice before - when navigating back to it - the most recent entry becomes the current page`() {
 
         // arrange
@@ -487,6 +540,37 @@ class NavigationModelLinearNavTest {
         assertEquals(Paris, navigationModel.state.comingFrom)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
         assertEquals(Tokyo, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `given Sydney is in the nav graph - navigating back to it and setting passingData = false - prevents overriding data at the destination`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, Unit>(
+            homeLocation = London,
+            stateKType = typeOf<NavigationState<Location, Unit>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.navigateTo(Sydney(50))
+        navigationModel.navigateTo(Tokyo)
+        navigationModel.navigateTo(Paris)
+
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(Sydney(10), passingData = false)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertTrue(success)
+        assertEquals(Sydney(50), navigationModel.state.currentLocation)
+        assertNotEquals(Sydney(10), navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Paris, navigationModel.state.comingFrom)
+        assertEquals(true, navigationModel.state.willBeAddedToHistory)
+        assertEquals(London, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test

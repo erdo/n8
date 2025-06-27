@@ -33,7 +33,9 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import kotlin.test.AfterTest
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class NavigationModelNestedNavTest {
 
@@ -1833,6 +1835,80 @@ class NavigationModelNestedNavTest {
         assertEquals(C, navigationModel.state.peekBack?.currentLocation())
     }
 
+    @Test
+    fun `when navigating back to a location which doesnt exist - in the tab of an outer tabHost - the history of an inner tabHost on another tab of the outer tabHost remains in tact`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+        navigationModel.switchTab(tabHostSpecNestedOuter) // initial tab for outer tabHost is 2, which contains inner tabHost
+        navigationModel.switchTab(1) // therefore refers to inner tabHost tab
+        navigationModel.switchTab(tabHostSpecNestedOuter, 0) // switch on outer tab leaving inner tab with tabHistory [0,1]
+
+        // act
+        navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(F)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertEquals(F, navigationModel.state.currentLocation)
+        assertEquals(2, navigationModel.state.navigation.currentItem()
+            .parent!!._isBackStack()
+            .parent!!._isTabHost().tabs[2].stack[0]._isTabHost().tabHistory.size)
+        assertEquals(1, navigationModel.state.navigation.currentItem()
+            .parent!!._isBackStack()
+            .parent!!._isTabHost().tabs[2].stack[0]._isTabHost().tabHistory[1])
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(A, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals(A, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when peakBack is called - original navigation child parent relationships are untouched`(){
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            initialNavigation =  backStackOf(
+                endNodeOf(Home),
+                tabsOf(
+                    tabHistory = listOf(0,1,2),
+                    tabHostId = tabHostSpecAbc.tabHostId,
+                    backStackOf(
+                        endNodeOf(A),
+                        endNodeOf(D)
+                    ),
+                    backStackOf(
+                        endNodeOf(B)
+                    ),
+                    backStackOf(
+                        endNodeOf(C)
+                    )
+                )
+            ),
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        val peekBack = navigationModel.beforeAndAfterLog {
+            navigationModel.state.peekBack
+        }
+
+        Fore.i("peekBack:${peekBack?.toString(diagnostics = true)}")
+
+        // assert
+        val stateTabHost = navigationModel.state.navigation.currentItem().parent?.parent?._isTabHost()
+        val peekBackStateTabHost = peekBack?.currentItem()?.parent?.parent?._isTabHost()
+
+        assertEquals(3, stateTabHost?.tabHistory?.size)
+        assertEquals(2, peekBackStateTabHost?.tabHistory?.size)
+    }
 
     @Test
     fun `given target exists on back path inside tab - back times=3 navigates to target`() {
@@ -2085,7 +2161,7 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.beforeAndAfterLog {
+        val success = navigationModel.beforeAndAfterLog {
             navigationModel.navigateBackTo(tabHostSpec = tabHostSpecAbc, addToHistory = false)
         }
 
@@ -2093,6 +2169,7 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(9, navigationModel.state.backsToExit)
         assertEquals(X3, navigationModel.state.currentLocation)
+        assertTrue(success)
         assertEquals(false, navigationModel.state.willBeAddedToHistory)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
@@ -2103,7 +2180,7 @@ class NavigationModelNestedNavTest {
     }
 
     @Test
-    fun `when navigating back to tabHost which is not found - creates that TabHost in place`() {
+    fun `when navigating back to tabHost which is not found in back path OR whole navigation graph - create that TabHost in place`() {
 
         // arrange
         val navigationModel = NavigationModel<Location, TabHost>(
@@ -2120,7 +2197,7 @@ class NavigationModelNestedNavTest {
         navigationModel.navigateTo(location = X3)
 
         // act
-        navigationModel.beforeAndAfterLog {
+        val success = navigationModel.beforeAndAfterLog {
             navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
         }
 
@@ -2128,12 +2205,83 @@ class NavigationModelNestedNavTest {
         assertEquals(false, navigationModel.state.initialLoading)
         assertEquals(9, navigationModel.state.backsToExit)
         assertEquals(X1, navigationModel.state.currentLocation)
+        assertTrue(success)
         assertEquals(true, navigationModel.state.canNavigateBack)
         assertEquals(X3, navigationModel.state.comingFrom)
         assertEquals(2, navigationModel.state.hostedBy.size)
         assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals( tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
         assertEquals(X3, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when navigating back to tabHost which is not found in back path OR whole navigation graph - and createInPlace is false - do NOT create that TabHost in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbc, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz, createInPlaceIfNotFound = false)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(8, navigationModel.state.backsToExit)
+        assertFalse(success)
+        assertEquals(X3, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X2, navigationModel.state.comingFrom)
+        assertEquals(1, navigationModel.state.hostedBy.size)
+        assertEquals( tabHostSpecAbc.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(X2, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when navigating back to tabHost which is not found in back path but DOES exist in navigation graph - no NOT create that TabHost in place`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = A,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 0)
+        navigationModel.navigateTo(location = D)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecXyz)
+        navigationModel.navigateTo(location = E)
+        navigationModel.switchTab(tabHostSpec = tabHostSpecAbcStructural, tabIndex = 1)
+        navigationModel.navigateTo(location = F)
+        navigationModel.navigateTo(location = X2)
+        navigationModel.navigateTo(location = X3)
+
+        // act
+        val success = navigationModel.beforeAndAfterLog {
+            navigationModel.navigateBackTo(tabHostSpec = tabHostSpecXyz)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(5, navigationModel.state.backsToExit)
+        assertTrue(success)
+        assertEquals(E, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(X3, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecAbcStructural.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecXyz.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(X1, navigationModel.state.peekBack?.currentLocation())
     }
 
     @Test
@@ -2202,5 +2350,32 @@ class NavigationModelNestedNavTest {
         assertEquals(1, navigationModel.state.hostedBy.size)
         assertEquals(tabHostSpecZ3.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
         assertEquals(B, navigationModel.state.peekBack?.currentLocation())
+    }
+
+    @Test
+    fun `when switching to new nested tabHosts - tabHost root is correct`() {
+
+        // arrange
+        val navigationModel = NavigationModel<Location, TabHost>(
+            homeLocation = Home,
+            stateKType = typeOf<NavigationState<Location, TabHost>>(),
+            dataPath = dataPath,
+        )
+
+        // act
+        navigationModel.beforeAndAfterLog {
+            navigationModel.switchTab(tabHostSpec = tabHostSpecNestedOuter)
+        }
+
+        // assert
+        assertEquals(false, navigationModel.state.initialLoading)
+        assertEquals(2, navigationModel.state.backsToExit)
+        assertEquals(C, navigationModel.state.currentLocation)
+        assertEquals(true, navigationModel.state.canNavigateBack)
+        assertEquals(Home, navigationModel.state.comingFrom)
+        assertEquals(2, navigationModel.state.hostedBy.size)
+        assertEquals(tabHostSpecNestedOuter.tabHostId, navigationModel.state.hostedBy[0].tabHostId)
+        assertEquals(tabHostSpecNestedInner.tabHostId, navigationModel.state.hostedBy[1].tabHostId)
+        assertEquals(Home, navigationModel.state.peekBack?.currentLocation())
     }
 }

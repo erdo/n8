@@ -11,55 +11,66 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
 import co.early.fore.core.delegate.Fore
-import co.early.fore.ui.size.WindowSize
 import co.early.n8.NavigationModel
-import com.kmpfoo.android.OG
+import com.kmpfoo.android.ui.theme.Dimens
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHostId
+
+private val name = "Thames"
+private val nextLocation = Location.EuropeanLocation.Danube
+private val navigationModel by lazy {
+    com.kmpfoo.android.OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
+}
 
 @Composable
-fun BangkokScreen(
-    size: WindowSize = WindowSize(),
+fun ScreenThames(
+    modifier: Modifier = Modifier,
 ) {
 
-    Fore.i("BangkokScreen $size")
+    Fore.i("${name}Screen")
 
-    val navigationModel: NavigationModel<Location, Unit> = OG[NavigationModel::class.java] as NavigationModel<Location, Unit>
-
-    BangkokView(
-        size = size,
-        navigateToNext = { navigationModel.navigateTo(Location.Dakar) },
+    ThamesView(
+        modifier = modifier,
+        navigateToNext = { navigationModel.navigateTo(nextLocation) },
+        navigateBack = { navigationModel.navigateBack() },
     )
 }
 
 @Composable
-fun BangkokView(
-    size: WindowSize,
+fun ThamesView(
+    modifier: Modifier,
     navigateToNext: () -> Unit = {},
+    navigateBack: () -> Unit = {},
 ) {
 
-    Fore.getLogger().i("BangkokView")
+    Fore.getLogger().i("${name}View")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .then(modifier),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
         Text(
-            text = "Bangkok",
-            style =  TextStyle(
-                fontSize = 50.sp,
+            text = name,
+            style = TextStyle(
+                fontSize = Dimens.fontSizeM,
             ),
         )
 
         Button(
             onClick = navigateToNext
         ) {
-            Text("Go To Dakar")
+            Text("Go To Next")
+        }
+        Button(
+            onClick = navigateBack
+        ) {
+            Text("Go Back")
         }
 
     }

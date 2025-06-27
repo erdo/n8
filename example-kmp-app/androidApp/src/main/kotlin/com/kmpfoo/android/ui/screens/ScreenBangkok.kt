@@ -3,6 +3,7 @@ package com.kmpfoo.android.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -11,57 +12,76 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import co.early.fore.core.delegate.Fore
-import co.early.fore.ui.size.WindowSize
 import co.early.n8.NavigationModel
 import com.kmpfoo.android.OG
+import com.kmpfoo.android.ui.theme.Dimens
 import com.kmpfoo.ui.navigation.Location
+import com.kmpfoo.ui.navigation.TabHostId
+
+private val name = "Bangkok"
+private val nextLocation = Location.Dakar
+private val navigationModel by lazy {
+    OG[NavigationModel::class] as NavigationModel<Location, TabHostId>
+}
 
 @Composable
-fun DakarScreen(
-    size: WindowSize = WindowSize(),
+fun ScreenBangkok(
+    location: Location.Bangkok,
+    modifier: Modifier = Modifier,
 ) {
 
-    Fore.i("BangkokScreen $size")
+    Fore.i("${name}Screen")
 
-    val navigationModel: NavigationModel<Location, Unit> = OG[NavigationModel::class.java] as NavigationModel<Location, Unit>
-
-    DakarView(
-        size = size,
+    BangkokView(
+        location = location,
+        modifier = modifier,
+        navigateToNext = { navigationModel.navigateTo(nextLocation) },
         navigateBack = { navigationModel.navigateBack() },
-        navigateToNext = { navigationModel.navigateTo(Location.LA) },
     )
 }
 
 @Composable
-fun DakarView(
-    size: WindowSize,
-    navigateBack: () -> Unit = {},
+fun BangkokView(
+    location: Location.Bangkok,
+    modifier: Modifier,
     navigateToNext: () -> Unit = {},
+    navigateBack: () -> Unit = {},
 ) {
 
-    Fore.getLogger().i("DakarView")
+    Fore.getLogger().i("${name}View")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .then(modifier),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
+        location.message?.let {
+            Text(
+                text = it,
+                style = TextStyle(
+                    fontSize = Dimens.fontSizeS,
+                ),
+                modifier = Modifier.padding(20.dp)
+            )
+        }
+
         Text(
-            text = "Dakar",
-            style =  TextStyle(
-                fontSize = 50.sp,
+            text = name,
+            style = TextStyle(
+                fontSize = Dimens.fontSizeM,
             ),
         )
 
         Button(
             onClick = navigateToNext
         ) {
-            Text("Go To LA")
+            Text("Go To Next")
         }
         Button(
             onClick = navigateBack

@@ -49,7 +49,10 @@ internal fun <L : Any, T : Any> tabsOf(
         ),
         tabHostId = tabHostSpec.tabHostId,
         tabs = tabHostSpec.homeTabLocations.map {
-            backStackOf(endNodeOf(it))
+            when (it) {
+                is TabRoot.LocationRoot<L, T> -> backStackOf(endNodeOf(it.location))
+                is TabRoot.TabHostRoot<L, T> -> backStackOf(tabsOf(it.tabHostSpec))
+            }
         },
         clearToTabRootDefault = tabHostSpec.clearToTabRoot,
         tabBackModeDefault = tabHostSpec.backMode,
@@ -60,6 +63,14 @@ fun <L : Any, T : Any> endNodeOf(
     location: L,
 ): EndNode<L, T> {
     return EndNode(location)
+}
+
+fun <L : Any, T : Any> rootLocationsOf(
+    vararg roots: L,
+): List<TabRoot<L, T>> {
+    return roots.map {
+        TabRoot.LocationRoot(it)
+    }
 }
 
 /**

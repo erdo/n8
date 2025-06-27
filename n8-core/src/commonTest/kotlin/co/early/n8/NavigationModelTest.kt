@@ -195,7 +195,10 @@ class NavigationModelTest {
             navigationModel.switchTab(
                 TabHostSpecification(
                     tabHostId = 1,
-                    homeTabLocations = listOf(Paris, NewYork),
+                    homeTabLocations = listOf(
+                        TabRoot.LocationRoot(Paris),
+                        TabRoot.LocationRoot(NewYork)
+                    ),
                 )
             )
         } catch (e: Exception) {

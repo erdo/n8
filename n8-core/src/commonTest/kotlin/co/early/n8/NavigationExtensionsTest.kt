@@ -422,8 +422,8 @@ class NavigationExtensionsTest {
             oldItem = tabHost,
             newItem = tabHost.copy(
                 tabHistory = tabHost.tabHistory.toMutableList()
-                    .also { it.removeLast() },
-                tabs = tabHost.tabs.toMutableList().also { it.removeLast() }
+                    .also { it.removeLastOrNull() },
+                tabs = tabHost.tabs.toMutableList().also { it.removeLastOrNull() }
             )
         )
 

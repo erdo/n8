@@ -2,10 +2,13 @@
 
 package co.early.n8
 
+import co.early.n8.Navigation.TabHost
+import co.early.n8.OperationType.None
 import co.early.n8.lowlevel.LowLevelApi
 import co.early.n8.lowlevel._applyOneStepBackNavigation
 import co.early.n8.lowlevel._isBackStack
 import co.early.n8.lowlevel._populateChildParents
+import co.early.n8.lowlevel._tabHostFinder
 import co.early.n8.lowlevel.render
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -32,6 +35,8 @@ data class NavigationState<L : Any, T : Any>(
     val comingFrom: L? = null,
     @Transient
     val initialLoading: Boolean = false,
+    @Transient
+    val lastOperationType: OperationType = None,
 ) {
 
     /** for kmp swift benefit (where default values don't work) **/
@@ -64,8 +69,7 @@ data class NavigationState<L : Any, T : Any>(
         navigation.topItem().breadcrumbs()
     }
     val peekBack: Navigation<L, T>? by lazy {
-        val current = navigation.currentItem()
-        current._applyOneStepBackNavigation()
+        navigation.deepCopy()._populateChildParents().currentItem()._applyOneStepBackNavigation()
     }
     /**
      * A surrogate for navigation.topItem() to be used especially on iOS
@@ -101,6 +105,9 @@ data class NavigationState<L : Any, T : Any>(
      */
     val homeNavigationSurrogate: Navigation<L, T> by lazy {
         navigation.topItem().cloneNodeWithFirstChild()._populateChildParents()
+    }
+    fun locateTabHost(tabHostId: T): TabHost<L, T>? {
+       return  navigation._tabHostFinder(tabHostId)
     }
 
     private fun Navigation<L,T>.cloneNodeWithFirstChild() : Navigation<L,T> {
@@ -149,6 +156,8 @@ sealed class Navigation<L : Any, T : Any> {
      * NB: this typically is called on the topItem: navigation.topItem().breadcrumbs()
      */
     abstract fun breadcrumbs(): List<L>
+
+    abstract fun deepCopy(): Navigation<L, T>
 
     /**
      * All the items contained in the stack of a BackStack have that BackStack as their parent.
@@ -243,6 +252,12 @@ sealed class Navigation<L : Any, T : Any> {
             return listOf(location)
         }
 
+        override fun deepCopy(): EndNode<L, T> {
+            return EndNode(
+                location = location
+            )
+        }
+
         override fun toString(): String {
             return "${this::class.simpleName}[${location::class.simpleName}]"
         }
@@ -319,6 +334,18 @@ sealed class Navigation<L : Any, T : Any> {
             return tabHistory.flatMap {
                 tabs[it].breadcrumbs()
             }
+        }
+
+        override fun deepCopy(): TabHost<L, T> {
+            return TabHost(
+                tabHistory = tabHistory,
+                tabHostId = tabHostId,
+                tabs = tabs.map {
+                    it.deepCopy()
+                },
+                clearToTabRootDefault = clearToTabRootDefault,
+                tabBackModeDefault = tabBackModeDefault,
+            )
         }
 
         override fun toString(): String {
@@ -406,6 +433,12 @@ sealed class Navigation<L : Any, T : Any> {
             }
         }
 
+        override fun deepCopy(): BackStack<L, T> {
+            return BackStack(
+                stack = stack.map { it.deepCopy() }
+            )
+        }
+
         override fun toString(): String {
             return "${this::class.simpleName}(${stack.size})"
         }
@@ -457,9 +490,9 @@ data class TabHostLocation<T>(
     val tabIndex: Int
 )
 
-data class TabHostSpecification<L, T>(
+data class TabHostSpecification<L: Any, T: Any>(
     val tabHostId: T,
-    val homeTabLocations: List<L>,
+    val homeTabLocations: List<TabRoot<L, T>>,
     val clearToTabRoot: Boolean = false,
     val backMode: TabBackMode = TabBackMode.Temporal,
     val initialTab: Int = 0,
@@ -477,6 +510,12 @@ data class TabHostSpecification<L, T>(
     }
 }
 
+sealed class TabRoot<L : Any, T : Any> {
+    data class LocationRoot<L : Any, T : Any>(val location: L) : TabRoot<L, T>()
+    data class TabHostRoot<L : Any, T : Any>(val tabHostSpec: TabHostSpecification<L, T>) : TabRoot<L, T>()
+}
+
+
 @Serializable
 sealed class TabBackMode {
     @Serializable
@@ -484,5 +523,20 @@ sealed class TabBackMode {
 
     @Serializable
     data object Temporal : TabBackMode()
+}
 
+@Serializable
+sealed class OperationType {
+
+    @Serializable
+    data object None : OperationType()
+
+    @Serializable
+    data object Push : OperationType()
+
+    @Serializable
+    data object Pop : OperationType()
+
+    @Serializable
+    data object Switch : OperationType()
 }

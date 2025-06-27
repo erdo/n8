@@ -163,7 +163,10 @@ fun <L : Any, T : Any> _mutateNavigation(
             },
             ensureOnHistoryPath = ensureOnHistoryPath
         )
-    } ?: newItem._populateChildParents()
+    } ?: run {
+        Fore.d("mutateNavigation()... reached the home item.")
+        newItem._populateChildParents()
+    }
 
     return result
 }
@@ -172,6 +175,8 @@ fun <L : Any, T : Any> _mutateNavigation(
  * For a newly created navigation (especially one which has been copied and altered from an
  * original) the children may not realise who their new parent is, this function corrects that
  * information
+ *
+ * Works from the level it's called at, down towards the EndNodes
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._populateChildParents(): Navigation<L, T> {
@@ -447,7 +452,7 @@ private fun <L : Any, T : Any> EndNode<L, T>._createItemNavigatedBackCopy(): Nav
 
 private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
-        copy(tabHistory = tabHistory.toMutableList().also { it.removeLast() })
+        copy(tabHistory = tabHistory.toMutableList().also { it.removeLastOrNull() })
     } else this
 }
 
@@ -458,7 +463,7 @@ private fun <L : Any, T : Any> TabHost<L, T>._createItemNavigatedBackCopy(): Nav
  */
 private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): Navigation<L, T> {
     return if (specificItemCanNavigateBack()) {
-        copy(stack = stack.toMutableList().also { it.removeLast() })
+        copy(stack = stack.toMutableList().also { it.removeLastOrNull() })
     } else this
 }
 
@@ -475,29 +480,29 @@ private fun <L : Any, T : Any> BackStack<L, T>._createItemNavigatedBackCopy(): N
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._applyOneStepBackNavigation(): Navigation<L, T>? {
-    Fore.d("calculateBackStep() type:${this::class.simpleName} navigation:${this}")
+    Fore.d("_applyOneStepBackNavigation() type:${this::class.simpleName} navigation:${this}")
     return if (specificItemCanNavigateBack()) {
-        Fore.d("calculateBackStep()... item CAN navigate back")
+        Fore.d("_applyOneStepBackNavigation()... item CAN navigate back")
         _mutateNavigation(
             oldItem = this,
             newItem = this._createItemNavigatedBackCopy()
         )
     } else { // try to move up the chain
-        Fore.d("calculateBackStep()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
+        Fore.d("_applyOneStepBackNavigation()... item CANNOT navigate back, (need to move up chain to parent) directParent:${parent}")
         parent?._applyOneStepBackNavigation()
     }
 }
 
 /**
- * WARNING: populateParents() MUST be called on the navigation graph AFTER calling
+ * WARNING: _populateChildParents() MUST be called on the navigation graph AFTER calling
  * this function as changing parent references is part of the reversal algorithm
  *
- * NOTE: populateParents() MUST be called on the navigation graph BEFORE calling this
+ * NOTE: _populateChildParents() MUST be called on the navigation graph BEFORE calling this
  * function initially (not required for subsequent recursive calls)
  *
- * @location location to be searched for
+ * @locationToFind location to be searched for
  *
- * @nav search will be conducted from the currentLocation of this nav graph, and up via
+ * Search will be conducted from the currentLocation of this nav graph, and up via
  * parent relationships, and in the same manner as would a user continually
  * navigating back from the current item until they exit the app
  *
@@ -540,6 +545,13 @@ fun <L : Any, T : Any> Navigation<L, T>._reverseToLocation(locationToFind: L): N
  */
 @LowLevelApi
 fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
+    tabHostIdToFind: T
+): TabHost<L, T>? {
+    return _tabHostFinder(tabHostIdToFind, false)
+}
+
+@LowLevelApi
+private fun <L : Any, T : Any> Navigation<L, T>._tabHostFinder(
     tabHostIdToFind: T,
     skipParentCheck: Boolean = false
 ): TabHost<L, T>? {

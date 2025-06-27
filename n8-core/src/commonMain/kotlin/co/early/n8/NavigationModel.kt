@@ -582,6 +582,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigated,
                 willBeAddedToHistory = addToHistory,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.Push,
             )
         )
     }
@@ -709,6 +710,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigated,
                 willBeAddedToHistory = true,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.Switch, should we be switch, push or none here?.... also add tests...
             )
         )
         return true
@@ -807,6 +809,7 @@ class NavigationModel<L : Any, T : Any>(
                     navigation = setDataOnCurrentLocation(newNavigation, setData),
                     willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
+                    lastOperationType = OperationType.Pop,
                 )
             )
         }
@@ -832,9 +835,19 @@ class NavigationModel<L : Any, T : Any>(
     /**
      * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
      * from
-     * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before passing it in
+     * Note: there is no need for a setData{} parameter here, you set the data on the Location itself before
+     * passing it in. If you don't want to prevent this behaviour and use whatever data the destination
+     * already has set @passingData to false
+     *
+     * By default if the location is not found it will be created in place. Note that if you are navigating back
+     * to a location that you expect to find in a different tab or even tabHost, you might not want to create
+     * it inside your current Tab, to prevent this behaviour set @createInPlaceIfNotFound to false. Another option
+     * is to first switch to the Tab or TabHost you expect to find your location in and search from there (in
+     * which case if the location is not found, it will be created in place at the correct tab or tabHost)
+     *
+     * @returns false if location was not found AND was not created
      */
-    fun navigateBackTo(location: L, addToHistory: Boolean = true) {
+    fun navigateBackTo(location: L, addToHistory: Boolean = true, passingData: Boolean = true, createInPlaceIfNotFound: Boolean = true): Boolean {
         logger.d("navigateBackTo() location:$location addToHistory:$addToHistory")
 
         val trimmed = if (!state.willBeAddedToHistory) {
@@ -844,54 +857,72 @@ class NavigationModel<L : Any, T : Any>(
         trimmed?.let {
             it._reverseToLocation(location)?.let { foundLocationNav ->
 
-                //replace location as it might have different data
+                foundLocationNav._populateChildParents() // see _reverseToLocation() docs
+
                 logger.d("navigateBackTo()... location FOUND in history: ${foundLocationNav.currentLocation()::class.simpleName}")
+
                 val newNavigation = _mutateNavigation(
                     oldItem = foundLocationNav.currentItem(),
-                    newItem = endNodeOf(location)
+                    newItem = if (passingData) { endNodeOf(location) } else foundLocationNav.currentItem()
                 )
                 updateState(
                     state.copy(
                         navigation = newNavigation,
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Pop,
                     )
                 )
+
+                return true
             } ?: run { // didn't find location so just navigate forward
-                logger.d("navigateBackTo()... location NOT FOUND in history, navigating forward instead")
-                navigateTo(location, addToHistory)
+                state.navigation._populateChildParents() // see _reverseToLocation() docs
+                logger.d("navigateBackTo()... location NOT FOUND in history, createInPlaceIfNotFound:$createInPlaceIfNotFound")
+                if (createInPlaceIfNotFound) {
+                    navigateTo(location, addToHistory)
+                }
             }
         } ?: run { // trimmed has removed all remaining nav
 
             logger.d("trimmed to nothing")
 
-            updateState(
-                NavigationState(
-                    navigation = backStackOf(endNodeOf(location)),
-                    willBeAddedToHistory = addToHistory,
-                    comingFrom = state.currentLocation,
+            if (createInPlaceIfNotFound) {
+                updateState(
+                    NavigationState(
+                        navigation = backStackOf(endNodeOf(location)),
+                        willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Push,
+                    )
                 )
-            )
+            }
         }
+        return createInPlaceIfNotFound
     }
 
     /** for kmp swift benefit (where default values don't work) **/
-    fun navigateBackTo(location: L) {
-        return navigateBackTo(location, true)
+    fun navigateBackTo(location: L): Boolean {
+        return navigateBackTo(location, true, true)
     }
 
     /**
      * Sometimes you might not know which specific Location you want to navigate back to (e.g. Audio settings,
      * Video Settings or Account Settings), you just know you want to navigate back to a specific tabHost
      * (e.g. TabHostId.Settings). With this function you will land on whatever location is current on the tabHost
-     * requested (providing that tabHost exists in the backStack)
+     * requested (providing that tabHost exists on the back path)
      *
      * @addToHistory refers to the screen about to be navigated _to_ when it eventually is navigated away
      * from
      *
-     * If the TabHostId is not found in the navigation graph, it will be create in place instead
+     * By default if the tabHost is not found it will be created in place. Note that if you are navigating back
+     * to a tabHost that you expect to find nested in a different tab or tabHost, you might not want to create
+     * it inside your current Tab, to prevent this behaviour set @createInPlaceIfNotFound to false. Another option
+     * is to first switch to the Tab or TabHost you expect to find your tabHost hosted within and search from there (in
+     * which case if the location is not found, it will be created in place at the correct tab or tabHost)
+     *
+     * @returns false if location was not found AND was not created
      */
-    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true, setData: (L) -> L = { it }) {
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean = true, createInPlaceIfNotFound: Boolean = true, setData: (L) -> L = { it }) : Boolean {
         logger.d("navigateBackTo() tabHostId:${tabHostSpec.tabHostId} addToHistory:$addToHistory")
 
         requireValidTabHostClass(tabHostSpec)
@@ -908,9 +939,10 @@ class NavigationModel<L : Any, T : Any>(
                     navigation = setDataOnCurrentLocation(state.navigation.currentItem(), setData),
                     willBeAddedToHistory = addToHistory,
                     comingFrom = state.currentLocation,
+                    lastOperationType = OperationType.None,
                 )
             )
-            return
+            return true
         }
 
         val trimmed = if (!state.willBeAddedToHistory) {
@@ -932,60 +964,65 @@ class NavigationModel<L : Any, T : Any>(
                         navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
                         willBeAddedToHistory = addToHistory,
                         comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Switch,
                     )
                 )
+
+                return true
             } ?: run {
-                logger.d("tabHost ${tabHostSpec.tabHostId} NOT FOUND in navigation graph, creating in place instead")
+                logger.d("tabHost ${tabHostSpec.tabHostId} NOT FOUND in navigation graph, createInPlaceIfNotFound:$createInPlaceIfNotFound")
 
-                trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
+                if (createInPlaceIfNotFound) {
+                    trimmed.currentItem()._requireParent()._isBackStack().let { parent ->
 
-                    val newParent = parent.copy(
-                        stack = parent.stack.toMutableList().also { parentStack ->
-                            parentStack.add(tabsOf(tabHostSpec))
-                        }
-                    )._populateChildParents()
+                        val newParent = parent.copy(
+                            stack = parent.stack.toMutableList().also { parentStack ->
+                                parentStack.add(tabsOf(tabHostSpec))
+                            }
+                        )._populateChildParents()
 
-                    val newNavigation = _mutateNavigation(
-                        oldItem = parent,
-                        newItem = newParent
-                    )
-
-                    updateState(
-                        state.copy(
-                            navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
-                            comingFrom = state.currentLocation,
-                            willBeAddedToHistory = addToHistory
+                        val newNavigation = _mutateNavigation(
+                            oldItem = parent,
+                            newItem = newParent
                         )
-                    )
+
+                        updateState(
+                            state.copy(
+                                navigation = setDataOnCurrentLocation(newNavigation.currentItem(), setData),
+                                comingFrom = state.currentLocation,
+                                willBeAddedToHistory = addToHistory,
+                                lastOperationType = OperationType.Push,
+                            )
+                        )
+                    }
                 }
             }
         } ?: run { // trimmed has removed all remaining nav
 
-            logger.d("trimmed to nothing")
+            logger.d("trimmed to nothing, creating as home item createInPlaceIfNotFound:$createInPlaceIfNotFound")
 
-            updateState(
-                NavigationState(
-                    navigation = setDataOnCurrentLocation(tabsOf(tabHostSpec).currentItem(), setData),
-                    willBeAddedToHistory = addToHistory,
-                    comingFrom = state.currentLocation,
+            if (createInPlaceIfNotFound) {
+                updateState(
+                    NavigationState(
+                        navigation = setDataOnCurrentLocation(tabsOf(tabHostSpec).currentItem(), setData),
+                        willBeAddedToHistory = addToHistory,
+                        comingFrom = state.currentLocation,
+                        lastOperationType = OperationType.Push,
+                    )
                 )
-            )
+            }
         }
+        return createInPlaceIfNotFound
     }
 
     /** for kmp swift benefit (where default values don't work) **/
-    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, addToHistory: Boolean) {
-        return navigateBackTo(tabHostSpec, addToHistory, { it })
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, setData: (L) -> L = { it }): Boolean {
+        return navigateBackTo(tabHostSpec, true, true, setData)
     }
 
     /** for kmp swift benefit (where default values don't work) **/
-    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>, setData: (L) -> L = { it }) {
-        return navigateBackTo(tabHostSpec, true, setData)
-    }
-
-    /** for kmp swift benefit (where default values don't work) **/
-    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>) {
-        return navigateBackTo(tabHostSpec, true, { it })
+    fun navigateBackTo(tabHostSpec: TabHostSpecification<L, T>): Boolean {
+        return navigateBackTo(tabHostSpec, true, true, { it })
     }
 
     /**
@@ -1033,6 +1070,7 @@ class NavigationModel<L : Any, T : Any>(
                 navigation = navigation,
                 willBeAddedToHistory = addToHistory,
                 comingFrom = state.currentLocation,
+                lastOperationType = OperationType.None,
             )
         )
     }
@@ -1052,6 +1090,7 @@ class NavigationModel<L : Any, T : Any>(
 
     private fun updateState(newState: NavigationState<L, T>) {
         state = checkInterceptors(newState)
+        logger.v("n8 state: ${state.navigation.toString(diagnostics = false)}")
         notifyObservers()
         perSista.write(state, stateKType) {}
     }

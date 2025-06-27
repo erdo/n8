@@ -10,17 +10,19 @@ struct iOSApp: App {
     }
     
     var body: some Scene {
-        let n8 = OG[NavigationModel<Location, KotlinUnit>.self]
-        
+        let n8: NavigationModel<Location, TabHostId> = OG[NavigationModel<Location, TabHostId>.self]
         WindowGroup {
-            N8Host<Location, KotlinUnit>(n8:n8) { navState in
+         //   PlatformTabView() // to test plaftormTabHostView it needs to be run at the top level
+            N8Host<Location, TabHostId>(
+                n8:n8
+            ) { navState in
                 Group {
                     if navState.initialLoading {
                         ProgressView()
-                            .scaleEffect(2)
+                            .scaleEffect(3)
                             .padding().tint(.blue)
                     } else {
-                        ContentView(navState:navState)
+                        ContentRoot(navState:navState)
                     }
                 }
             }
@@ -28,18 +30,23 @@ struct iOSApp: App {
     }
 }
 
+struct ContentRoot: View {
+    
+    @EnvironmentN8<Location, TabHostId> private var n8
+    
+    let navState: NavigationState<Location, TabHostId>
+    
+    init(navState: NavigationState<Location, TabHostId>) {
+        self.navState = navState
+    }
 
-//@main
-//struct MyApp: App {
-//    @StateObject private var sessionManager = SessionManager()
-//    @StateObject private var navController = NavigationController<String>()
-//
-//    var body: some Scene {
-//        WindowGroup {
-//            ContentView()
-//                .environmentObject(sessionManager)
-//                .environmentObject(navController)
-//        }
-//    }
-//}
-//
+    var body: some View {
+        if !n8.state.hostedBy.isEmpty {
+            RootTabHostView(n8:n8) {
+                AnyView(CurrentView(navState:navState))
+            }
+        } else {
+            CurrentView(navState:navState)
+        }
+    }
+}

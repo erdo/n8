@@ -75,8 +75,9 @@ kotlin {
 }
 
 android {
-    namespace = "com.deleteme.kmpfoo"
-    compileSdk = 35
+    namespace = "com.kmpfoo.shared"
+    compileSdk = 36
+
     defaultConfig {
         minSdk = 21
     }

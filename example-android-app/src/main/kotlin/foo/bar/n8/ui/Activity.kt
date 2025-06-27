@@ -3,6 +3,7 @@ package foo.bar.n8.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -19,14 +20,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,6 +41,7 @@ import co.early.fore.core.delegate.Fore
 import co.early.fore.ui.size.WindowSize
 import co.early.n8.N8
 import co.early.n8.NavigationModel
+import co.early.n8.NavigationState
 import co.early.n8.compose.N8Host
 import co.early.n8.isIndexOnPath
 import foo.bar.n8.ui.common.StateWrapperView
@@ -60,8 +67,10 @@ import foo.bar.n8.ui.screens.StockholmScreen
 import foo.bar.n8.ui.screens.SydneyScreen
 import foo.bar.n8.ui.screens.TokyoScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 class Activity : ComponentActivity() {
+
+    val alphaEasing = CubicBezierEasing(0.970f, 0.050f, 0.460f, 0.985f)
+    val scaleEasing = CubicBezierEasing(0.380f, 0.185f, 0.000f, 0.990f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,21 +81,9 @@ class Activity : ComponentActivity() {
 
             WindowSize {
 
-                N8Host(onBack = backInterceptor() ) { navigationState ->
+                N8Host(onBackCheck = backInterceptor()) { navigationState, peekBackNavState, backProgress ->
 
-                    val location = navigationState.currentLocation
-                    Fore.i("Latest Location is:$location")
-                    Fore.i("Previous Location was:${navigationState.comingFrom}")
-
-                    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
-                    // access N8 via the delegate or pass the instance around using DI
-                    val n8: NavigationModel<Location, TabHostId> = N8.n8()
-
-                    // from within the N8Host{} scope you can also access LocalN8HostState
-                    // val navigationState = LocalN8HostState
-
-                    if (navigationState.initialLoading){
+                    if (navigationState.initialLoading) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -95,59 +92,102 @@ class Activity : ComponentActivity() {
                         }
                     } else {
 
-                        Scaffold(
-                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                            topBar = {},
-                            content = { scaffoldPadding ->
-                                val paddingValues = PaddingValues(
-                                    end = scaffoldPadding.calculateEndPadding(LocalLayoutDirection.current) + 16.dp, // https://stackoverflow.com/a/76029778
-                                    start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
-                                    top = scaffoldPadding.calculateTopPadding() + 8.dp,
-                                    bottom = scaffoldPadding.calculateBottomPadding()
-                                )
-                                MainContent(location, paddingValues)
-                            },
-                            bottomBar = {
-                                if (location != Location.Home) {
-                                    NavigationBar {
-                                        TabUi(
-                                            text = "Tab 0",
-                                            image = Default.AddCircle,
-                                            enabled = !navigationState.hostedBy.isIndexOnPath(
-                                                index = 0,
-                                                tabHostId = tabHostSpecMain.tabHostId
-                                            )
-                                        ) {
-                                            n8.switchTab(tabHostSpecMain, 0)
-                                        }
-                                        TabUi(
-                                            text = "Tab 1",
-                                            image = Default.Favorite,
-                                            enabled = !navigationState.hostedBy.isIndexOnPath(
-                                                index = 1,
-                                                tabHostId = tabHostSpecMain.tabHostId
-                                            )
-                                        ) {
-                                            n8.switchTab(tabHostSpecMain, 1)
-                                        }
-                                        TabUi(
-                                            text = "Tab 2",
-                                            image = Default.Settings,
-                                            enabled = !navigationState.hostedBy.isIndexOnPath(
-                                                index = 2,
-                                                tabHostId = tabHostSpecMain.tabHostId
-                                            )
-                                        ) {
-                                            n8.switchTab(tabHostSpecMain, 2)
-                                        }
-                                    }
-                                }
+                        peekBackNavState?.let { peek ->
+                            // predictive back view
+                            Box(Modifier.fillMaxSize()) {
+                                ContentRoot(peek)
                             }
-                        )
+                            // current view
+                            val elevationPx = with(LocalDensity.current) { (6.dp * backProgress.let { it * it }).toPx() }
+                            val alpha = 1 - alphaEasing.transform(backProgress)
+                            val scale = 1f - (0.4f * scaleEasing.transform(backProgress))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .alpha(alpha)
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                        shadowElevation = elevationPx
+                                    }
+                            ) {
+                                ContentRoot(navigationState)
+                            }
+                        } ?: run { ContentRoot(navigationState) }
                     }
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun ContentRoot(
+        navigationState: NavigationState<Location, TabHostId>,
+    ) {
+        // from within the N8Host{} scope you can also access LocalN8HostState
+        // val navigationState = LocalN8HostState
+
+        // access N8 via the delegate or pass the instance around using DI
+        val n8: NavigationModel<Location, TabHostId> = N8.n8()
+
+        val location = navigationState.currentLocation
+        Fore.i("Latest Location is:$location")
+        Fore.i("Previous Location was:${navigationState.comingFrom}")
+
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {},
+            content = { scaffoldPadding ->
+                val paddingValues = PaddingValues(
+                    end = scaffoldPadding.calculateEndPadding(LocalLayoutDirection.current) + 16.dp, // https://stackoverflow.com/a/76029778
+                    start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current) + 16.dp,
+                    top = scaffoldPadding.calculateTopPadding() + 8.dp,
+                    bottom = scaffoldPadding.calculateBottomPadding()
+                )
+                MainContent(location, paddingValues)
+            },
+            bottomBar = {
+                if (location != Location.Home) {
+                    NavigationBar {
+                        TabUi(
+                            text = "Tab 0",
+                            image = Default.AddCircle,
+                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                index = 0,
+                                tabHostId = tabHostSpecMain.tabHostId
+                            )
+                        ) {
+                            n8.switchTab(tabHostSpecMain, 0)
+                        }
+                        TabUi(
+                            text = "Tab 1",
+                            image = Default.Favorite,
+                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                index = 1,
+                                tabHostId = tabHostSpecMain.tabHostId
+                            )
+                        ) {
+                            n8.switchTab(tabHostSpecMain, 1)
+                        }
+                        TabUi(
+                            text = "Tab 2",
+                            image = Default.Settings,
+                            enabled = !navigationState.hostedBy.isIndexOnPath(
+                                index = 2,
+                                tabHostId = tabHostSpecMain.tabHostId
+                            )
+                        ) {
+                            n8.switchTab(tabHostSpecMain, 2)
+                        }
+                    }
+                }
+            }
+        )
+
     }
 }
 
@@ -173,7 +213,12 @@ private fun RowScope.TabUi(text: String, image: ImageVector, enabled: Boolean, a
             if (enabled) {
                 action()
             }
-        }
+        },
+        colors = NavigationBarItemDefaults.colors(
+            indicatorColor = Color.Transparent,
+            unselectedIconColor = Color.Black.copy(alpha = 0.4f),
+            unselectedTextColor = Color.Black.copy(alpha = 0.4f),
+        )
     )
 }
 
